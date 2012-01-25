@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2010-2011 Joerie de Gram <j.de.gram@gmail.com>
  *
+ * Modified for Jet - KB <kbjetdroid@gmail.com>
+ *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,6 +30,7 @@
 
 #define IPC_CLIENT_TYPE_FMT      0
 #define IPC_CLIENT_TYPE_RFS      1
+#define IPC_CLIENT_TYPE_PACKET   2 //For Jet
 
 #define IPC_COMMAND(f)  ((f->group << 8) | f->index)
 #define IPC_GROUP(m)    (m >> 8)
@@ -40,6 +43,30 @@ struct ipc_header {
 } __attribute__((__packed__));
 
 struct ipc_message_info {
+    unsigned char mseq;
+    unsigned char aseq;
+    unsigned char group;
+    unsigned char index;
+    unsigned char type;
+    unsigned int length;
+    unsigned char *data;
+};
+
+struct fifoPacketHeader
+{
+	uint32_t magic; //filled by modemctl
+	uint32_t cmd;
+	uint32_t datasize;
+};
+
+struct modem_io {
+	uint32_t magic; //filled by modemctl
+	uint32_t cmd;
+	uint32_t datasize;
+	void *data;
+};
+
+struct ipc_packet {
     unsigned char mseq;
     unsigned char aseq;
     unsigned char group;
@@ -71,16 +98,18 @@ int ipc_client_set_io_handlers(struct ipc_client *client,
 int ipc_client_set_all_handlers_data(struct ipc_client *client, void *data);
 
 int ipc_client_bootstrap_modem(struct ipc_client *client);
+int ipc_client_modem_operations(struct ipc_client *client, void *data, unsigned int cmd);
 int ipc_client_open(struct ipc_client *client);
 int ipc_client_close(struct ipc_client *client);
 int ipc_client_power_on(struct ipc_client *client);
 int ipc_client_power_off(struct ipc_client *client);
 
-int ipc_client_recv(struct ipc_client *client, struct ipc_message_info *response);
+int ipc_client_recv(struct ipc_client *client, struct modem_io *response);
 
 /* Convenience functions for ipc_send */
 void ipc_client_send(struct ipc_client *client, const unsigned short command, const char type, unsigned char *data,
                      const int length, unsigned char mseq);
+int _ipc_client_send(struct ipc_client *client, struct modem_io *request);
 void ipc_client_send_get(struct ipc_client *client, const unsigned short command, unsigned char mseq);
 void ipc_client_send_exec(struct ipc_client *client, const unsigned short command, unsigned char mseq);
 

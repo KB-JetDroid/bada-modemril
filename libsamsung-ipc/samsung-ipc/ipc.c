@@ -4,6 +4,8 @@
  * Copyright (C) 2010-2011 Joerie de Gram <j.de.gram@gmail.com>
  *               2011 Simon Busch <morphis@gravedo.de>
  *
+ * Modified for Jet - KB <kbjetdroid@gmail.com>
+ *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -151,6 +153,16 @@ int ipc_client_bootstrap_modem(struct ipc_client *client)
     return client->ops->bootstrap(client);
 }
 
+int ipc_client_modem_operations(struct ipc_client *client, void *data, unsigned int cmd)
+{
+    if (client == NULL ||
+        client->ops == NULL ||
+        client->ops->modem_operations == NULL)
+        return -1;
+
+    return client->ops->modem_operations(client, data, cmd);
+}
+
 int ipc_client_open(struct ipc_client *client)
 {
     int type;
@@ -178,6 +190,7 @@ int ipc_client_close(struct ipc_client *client)
 
 int ipc_client_power_on(struct ipc_client *client)
 {
+	return 0; //for jet
     if (client == NULL ||
         client->handlers == NULL ||
         client->handlers->open == NULL)
@@ -188,7 +201,8 @@ int ipc_client_power_on(struct ipc_client *client)
 
 int ipc_client_power_off(struct ipc_client *client)
 {
-    if (client == NULL ||
+	return 0; //for jet
+	if (client == NULL ||
         client->handlers == NULL ||
         client->handlers->open == NULL)
         return -1;
@@ -196,7 +210,7 @@ int ipc_client_power_off(struct ipc_client *client)
     return client->handlers->power_off(client->handlers->power_off_data);
 }
 
-int _ipc_client_send(struct ipc_client *client, struct ipc_message_info *request)
+int _ipc_client_send(struct ipc_client *client, struct modem_io *request)
 {
     if (client == NULL ||
         client->ops == NULL ||
@@ -233,7 +247,7 @@ void ipc_client_send(struct ipc_client *client, const unsigned short command, co
     _ipc_client_send(client, &request);
 }
 
-int ipc_client_recv(struct ipc_client *client, struct ipc_message_info *response)
+int ipc_client_recv(struct ipc_client *client, struct modem_io *response)
 {
     if (client == NULL ||
         client->ops == NULL ||

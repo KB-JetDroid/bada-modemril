@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2010-2011 Joerie de Gram <j.de.gram@gmail.com>
  *
+ * Modified for Jet - KB <kbjetdroid@gmail.com>
+ *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,6 +27,8 @@
 #include "device/crespo/call.h"
 #elif defined(DEVICE_H1)
 #include "device/h1/call.h"
+#elif defined(DEVICE_JET)
+#include "device/jet/call.h"
 #endif
 
 /* Message types */

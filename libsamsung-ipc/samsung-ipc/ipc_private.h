@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2011 Simon Busch <morphis@gravedo.de>
  *
+ * Modified for Jet - KB <kbjetdroid@gmail.com>
+ *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -29,8 +31,9 @@ void ipc_client_log(struct ipc_client *client, const char *message, ...);
 
 struct ipc_ops {
     int (*bootstrap)(struct ipc_client *client);
-    int (*send)(struct ipc_client *client, struct ipc_message_info *);
-    int (*recv)(struct ipc_client *client, struct ipc_message_info *);
+    int (*modem_operations)(struct ipc_client *client, void *data, unsigned int cmd);
+    int (*send)(struct ipc_client *client, struct modem_io *);
+    int (*recv)(struct ipc_client *client, struct modem_io *);
 };
 
 struct ipc_handlers {
