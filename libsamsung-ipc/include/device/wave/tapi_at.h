@@ -26,5 +26,10 @@
 /**
  * All the TAPI AT context structures specific to Wave will be defined here
  */
+enum TAPI_AT_TYPE
+{
+	TAPI_AT_INIT = 0xA3
+};
+
 
 #endif

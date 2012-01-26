@@ -32,7 +32,71 @@
 /**
  * All the TAPI Network context structures generic to all Mocha devices will be defined here
  */
+typedef unsigned long uint32_t;
+typedef unsigned char uint8_t; //in case there are such definitions remove these
+
+//TODO: check if following definitions does apply to JET too, confirm it for WAVE
+struct tapiNetRegistrationFail {
+	uint8_t state;
+	uint8_t cause;
+} __attribute__((__packed__));
+
+#define NET_MAX_NAME_LEN 40 //it's kinda guess
+#define NET_MAX_SPN_LEN 24 //same as above
+
+struct tapiNetworkInfo { //not sure if it's specific to WAVE or same for JET, 
+//most likely sizeof should be 0x78 bytes for WAVE
+	uint8_t serviceLevel;
+	uint8_t serviceType;
+	uint8_t psServiceType;
+	uint8_t _unknown_; //its possible that here is whole systemId structure
+	uint8_t systemType; //9 - unknown, ignored when offline mode, 7 - unknown
+	uint8_t _unknown2_[23];	//its possible that here is whole systemId structure
+	char name[NET_MAX_NAME_LEN];
+	char spn[NET_MAX_SPN_LEN];
+	uint32_t bRoaming;
+	uint32_t bDisplayPplmn;
+	uint32_t bDisplaySpn;
+	uint8_t _unknown3_[8]; //this can belong to NetworkInfo or registrationFail
+	struct tapiNetRegistrationFail registrationFail;	
+	uint8_t _unknown4_[6]; //this can belong to NetworkInfo or registrationFail
+	
+} __attribute__((__packed__));
+
+struct tapiStartupNetworkInfo {
+//most likely sizeof should be 0x14 bytes for WAVE
+	uint32_t bAuto;
+	uint32_t bAttach;
+	uint8_t networkOrder;
+	uint8_t serviceDomain;
+	uint8_t _unknown_[2];
+	uint32_t mode;
+	uint8_t subs;
+	uint8_t bFlight;
+} __attribute__((__packed__));
+
+struct tapiCellInfo {
+//most likely sizeof should be 0x1C bytes for WAVE
+	uint32_t bCellChanged;
+	uint32_t bRACChanged;
+	uint32_t bLACChanged;
+	uint32_t bPLMNChanged;
+	uint8_t cellId[4];
+	uint8_t racId;
+	uint8_t ladId[2];
+	uint8_t plnmId[3];
+	uint8_t cbchStatus;
+	uint8_t _unknown_;
+} __attribute__((__packed__));
+
 
 void tapi_network_handler(unsigned short tapiNetType, unsigned int tapiNetLength, char *tapiNetData);
+
+
+void tapi_network_apiRequest(unsigned int tapiNetLength, char *tapiNetData);
+void tapi_network_setSubscriptionMode(unsigned int tapiNetLength, char *tapiNetData);
+void tapi_network_commonError(unsigned int tapiNetLength, char *tapiNetData)
+void tapi_network_radioInfo(unsigned int tapiNetLength, char *tapiNetData);
+void tapi_network_commonError(unsigned int tapiNetLength, char *tapiNetData)
 
 #endif

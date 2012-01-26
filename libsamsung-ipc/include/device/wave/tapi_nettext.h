@@ -26,5 +26,10 @@
 /**
  * All the TAPI Nettext (sms) context structures specific to Wave will be defined here
  */
+enum TAPI_NETTEXT_TYPE
+{
+	TAPI_NETTEXT_SETMEMAVAIL = 0x3A,
+	TAPI_NETTEXT_SETCBSETTING = 0x3E, //size of buf is 0x64 here
+};
 
 #endif
