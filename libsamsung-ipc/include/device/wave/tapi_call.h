@@ -26,5 +26,9 @@
 /**
  * All the TAPI call context structures specific to Wave will be defined here
  */
-
+enum TAPI_CALL_TYPE
+{
+	TAPI_CALL_APIREQ 	= 0x0,
+};
+ 
 #endif
