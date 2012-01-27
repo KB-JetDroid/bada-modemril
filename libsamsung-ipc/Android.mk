@@ -20,6 +20,7 @@ samsung-ipc_files := \
 	samsung-ipc/sec.c \
 	samsung-ipc/fm_packet.c \
 	samsung-ipc/proto_packet.c \
+	samsung-ipc/sim_packet.c \
 	samsung-ipc/ipc_packet.c \
 	samsung-ipc/tapi_packet.c \
 	samsung-ipc/tapi_call.c \

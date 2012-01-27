@@ -214,6 +214,9 @@ void modem_response_handle(struct ipc_client *client, struct modem_io *resp)
         case FIFO_PKT_TAPI:
         	modem_response_tapi(client, resp);
         break;
+        case FIFO_PKT_SIM:
+        	modem_response_sim(client, resp);
+        break;
         default :
         	DEBUG_I("Packet type 0x%x not yet handled\n", resp->cmd);
         	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
