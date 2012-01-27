@@ -1,7 +1,8 @@
 /**
  * This file is part of libsamsung-ipc.
  *
- * Copyright (C) 2012 KB <kbjetdroid@gmail.com>
+ * Copyright (C) 2012 Dominik Marszk <dmarszk@gmail.com>
+ *                    KB <kbjetdroid@gmail.com>
  *
  * Implemented as per the Mocha AP-CP protocol analysis done by Dominik Marszk
  *
@@ -32,8 +33,6 @@
 /**
  * All the TAPI Network context structures generic to all Mocha devices will be defined here
  */
-typedef unsigned long uint32_t;
-typedef unsigned char uint8_t; //in case there are such definitions remove these
 
 //TODO: check if following definitions does apply to JET too, confirm it for WAVE
 struct tapiNetRegistrationFail {
@@ -90,13 +89,15 @@ struct tapiCellInfo {
 } __attribute__((__packed__));
 
 
-void tapi_network_handler(unsigned short tapiNetType, unsigned int tapiNetLength, char *tapiNetData);
+void tapi_network_handler(uint16_t tapiNetworkType, uint32_t tapiNetworkLength, uint8_t *tapiNetworkData);
 
 
-void tapi_network_apiRequest(unsigned int tapiNetLength, char *tapiNetData);
-void tapi_network_setSubscriptionMode(unsigned int tapiNetLength, char *tapiNetData);
-void tapi_network_commonError(unsigned int tapiNetLength, char *tapiNetData)
-void tapi_network_radioInfo(unsigned int tapiNetLength, char *tapiNetData);
-void tapi_network_commonError(unsigned int tapiNetLength, char *tapiNetData)
+//void tapi_network_apiRequest(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_startup(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_setSubscriptionMode(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_radioInfo(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_networkSelect(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_commonError(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_cellInfo(uint32_t tapiNetLength, uint8_t *tapiNetData);
 
 #endif

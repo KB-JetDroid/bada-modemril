@@ -47,7 +47,7 @@ char *jetFWVersion = "S800MPOJB1";
  * TODO: Read sound config data from file
  */
 //	File									Field	Default	Hex
-int RCV_MSM_Data[] =	{	-1900	,	//	<RX_CALL_VOL>	-900	-0x384
+int32_t RCV_MSM_Data[] =	{	-1900	,	//	<RX_CALL_VOL>	-900	-0x384
 							-1900	,	//		-900	-0x384
 							-1500	,	//		-600	-0x258
 							-1500	,	//		-600	-0x258
@@ -148,7 +148,7 @@ int RCV_MSM_Data[] =	{	-1900	,	//	<RX_CALL_VOL>	-900	-0x384
 							450	,	//		450	0x1C2
 							12000	,	//		12000	0x2EE0
 							4000	};	//		4000	0xFA0
-int EAR_MSM_Data[] =	{	-1200	,	//	<RX_CALL_VOL>	-1500	-0x5DC
+int32_t EAR_MSM_Data[] =	{	-1200	,	//	<RX_CALL_VOL>	-1500	-0x5DC
 							-1200	,	//		-1500	-0x5DC
 							-900	,	//		-1200	-0x4B0
 							-900	,	//		-1200	-0x4B0
@@ -249,7 +249,7 @@ int EAR_MSM_Data[] =	{	-1200	,	//	<RX_CALL_VOL>	-1500	-0x5DC
 							900	,	//		900	0x384
 							13000	,	//		13000	0x32C8
 							4000	};	//		4000	0xFA0
-int SPK_MSM_Data[] =	{	-900	,	//	<RX_CALL_VOL>	-900	-0x384
+int32_t SPK_MSM_Data[] =	{	-900	,	//	<RX_CALL_VOL>	-900	-0x384
 							-900	,	//		-900	-0x384
 							-600	,	//		-600	-0x258
 							-600	,	//		-600	-0x258
@@ -350,7 +350,7 @@ int SPK_MSM_Data[] =	{	-900	,	//	<RX_CALL_VOL>	-900	-0x384
 							700	,	//		700	0x2BC
 							6000	,	//		6000	0x1770
 							4000	};	//		4000	0xFA0
-int BTH_MSM_Data[] =	{	400	,	//	<RX_CALL_VOL>	400	0x190
+int32_t BTH_MSM_Data[] =	{	400	,	//	<RX_CALL_VOL>	400	0x190
 							400	,	//		400	0x190
 							400	,	//		400	0x190
 							400	,	//		400	0x190
@@ -452,14 +452,14 @@ int BTH_MSM_Data[] =	{	400	,	//	<RX_CALL_VOL>	400	0x190
 							11605	,	//		11605	0x2D55
 							256	};	//		256	0x100
 
-int get_nvm_data(void *data, unsigned int size)
+int32_t get_nvm_data(void *data, uint32_t size)
 {
-	int fd, retval;
+	int32_t fd, retval;
 	fd = open(nvmFile, O_RDONLY);
 
-	printf("KB: file %s open status = %d\n", nvmFile, fd);
+	DEBUG_I("file %s open status = %d\n", nvmFile, fd);
 	retval = read(fd, data, size);
-	printf("KB: file %s read status = %d\n", nvmFile, retval);
+	DEBUG_I("file %s read status = %d\n", nvmFile, retval);
 
 	if (fd > 0)
 		close(fd);
@@ -468,34 +468,34 @@ int get_nvm_data(void *data, unsigned int size)
 
 void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
 {
-	printf("KB: Inside modem_response_ipc\n");
-	int retval;
+	DEBUG_I("Inside modem_response_ipc\n");
+	int32_t retval;
 	struct ipcPacketHeader *rx_header;
 	struct ipcRequest tx_packet;
 
 	struct modem_io request;
-    unsigned char *frame;
-    unsigned char *payload;
-    int frame_length;
+    uint8_t *frame;
+    uint8_t *payload;
+    int32_t frame_length;
 
-	printf("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
+	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
 
 	hexdump(resp->data, resp->datasize);
 
     rx_header = (struct ipcPacketHeader *)(resp->data);
 
-	printf("KB: Packet type = 0x%x\n", rx_header->ipcPacketType);
+	DEBUG_I("Packet type = 0x%x\n", rx_header->ipcPacketType);
 
     switch (rx_header->ipcPacketType)
     {
 	case 0x01:
-		printf("KB: ReadNvBackup IPC packet received\n");
+		DEBUG_I("ReadNvBackup IPC packet received\n");
 
 		struct ipcNvPacket *rx_packet;
 
 		rx_packet = (struct ipcNvPacket *)(resp->data);
 
-		printf("KB: size = 0x%x\n", rx_packet->size);
+		DEBUG_I("size = 0x%x\n", rx_packet->size);
 
 		tx_packet.header.ipcPacketType = 0x03;
 		tx_packet.header.reserved = 0;
@@ -518,15 +518,15 @@ void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
 		break;
 
 	case 0x1C:
-		printf("KB: PMIC IPC packet received\n");
+		DEBUG_I("PMIC IPC packet received\n");
 
-		int retval;
-		unsigned char params[3];
+		int32_t retval;
+		uint8_t params[3];
 		struct ipcPMICPacket *pmic_packet;
 
 		pmic_packet = (struct ipcPMICPacket *)(resp->data);
 
-		printf("KB: PMIC value = 0x%x\n", pmic_packet->value);
+		DEBUG_I("PMIC value = 0x%x\n", pmic_packet->value);
 
 		params[0] = 1;
 		params[1] = 0x9B; //SIMLTTV;
@@ -537,20 +537,20 @@ void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
 
 		retval = ipc_client_modem_operations(client, params, IOCTL_MODEM_PMIC);
 
-		printf("KB: ioctl return value = 0x%x\n", retval);
+		DEBUG_I("ioctl return value = 0x%x\n", retval);
 
 		_ipc_client_send(client, resp);
 
 		break;
 
 	case 0x17:
-		printf("KB: SoundSetRequest IPC packet received\n");
+		DEBUG_I("SoundSetRequest IPC packet received\n");
 
 		struct ipcNvPacket *sndSetRequest_packet;
 
 		sndSetRequest_packet = (struct ipcNvPacket *)(resp->data);
 
-		printf("KB: size = 0x%x\n", sndSetRequest_packet->size);
+		DEBUG_I("size = 0x%x\n", sndSetRequest_packet->size);
 
 		tx_packet.header.ipcPacketType = 0x1B;
 		tx_packet.header.reserved = 0;
@@ -606,16 +606,16 @@ void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
 
 		_ipc_client_send(client, &request);
 
-		printf("KB: Sent all the sound packages\n");
+		DEBUG_I("Sent all the sound packages\n");
 
 		break;
 
 	default :
-    		printf("KB: IPC Packet type 0x%x is not yet handled\n", rx_header->ipcPacketType);
+    		DEBUG_I("IPC Packet type 0x%x is not yet handled\n", rx_header->ipcPacketType);
 
     		break;
     }
 
-    printf("KB: Inside modem_response_ipc leaving\n");
+    DEBUG_I("Inside modem_response_ipc leaving\n");
 
 }

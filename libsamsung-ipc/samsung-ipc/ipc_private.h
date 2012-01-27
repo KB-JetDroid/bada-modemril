@@ -30,10 +30,10 @@ struct ipc_client;
 void ipc_client_log(struct ipc_client *client, const char *message, ...);
 
 struct ipc_ops {
-    int (*bootstrap)(struct ipc_client *client);
-    int (*modem_operations)(struct ipc_client *client, void *data, unsigned int cmd);
-    int (*send)(struct ipc_client *client, struct modem_io *);
-    int (*recv)(struct ipc_client *client, struct modem_io *);
+    int32_t (*bootstrap)(struct ipc_client *client);
+    int32_t (*modem_operations)(struct ipc_client *client, void *data, uint32_t cmd);
+    int32_t (*send)(struct ipc_client *client, struct modem_io *);
+    int32_t (*recv)(struct ipc_client *client, struct modem_io *);
 };
 
 struct ipc_handlers {
@@ -55,7 +55,7 @@ struct ipc_handlers {
 };
 
 struct ipc_client {
-    int type;
+    int32_t type;
 
     ipc_client_log_handler_cb log_handler;
     void *log_data;

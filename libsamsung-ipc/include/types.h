@@ -46,6 +46,38 @@
 #include "device/wave/wave_modem_ctl.h"
 #endif
 
+#ifndef LOG_FILE
+#define LOG_FILE stderr
+#endif
+
+#ifdef DEBUG_ERROR
+#define DEBUG_E(x, args ...) fprintf(LOG_FILE, "[%s:%u]ERROR: " \
+x, __FUNCTION__ ,__LINE__, ## args)
+#define DEBUG_W(x, args ...)
+#define DEBUG_I(x, args ...)
+#else
+#ifdef DEBUG_WARNING
+#define DEBUG_E(x, args ...) fprintf(LOG_FILE, "[%s:%u]ERROR: " \
+x, __FUNCTION__ ,__LINE__, ## args)
+#define DEBUG_W(x, args ...) fprintf(LOG_FILE, "[%s:%u]WARNING: " \
+x, __FUNCTION__ ,__LINE__, ## args)
+#define DEBUG_I(x, args ...)
+#else
+#ifdef DEBUG_INFO
+#define DEBUG_E(x, args ...) fprintf(LOG_FILE, "[%s:%u]ERROR: " \
+x, __FUNCTION__ ,__LINE__, ## args)
+#define DEBUG_W(x, args ...) fprintf(LOG_FILE, "[%s:%u]WARNING: " \
+x, __FUNCTION__ ,__LINE__, ## args)
+#define DEBUG_I(x, args ...) fprintf(LOG_FILE, "[%s:%u]INFO: " \
+x, __FUNCTION__ ,__LINE__, ## args)
+#else
+#define DEBUG_E(x, args ...)
+#define DEBUG_W(x, args ...)
+#define DEBUG_I(x, args ...)
+#endif
+#endif
+#endif
+
 #define MAX_SIGNLE_FRAME_DATA 	0xFF4
 
 /* AP -> Baseband */

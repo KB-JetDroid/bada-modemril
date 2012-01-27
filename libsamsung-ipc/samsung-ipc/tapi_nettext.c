@@ -28,14 +28,14 @@
  *
  */
 
-void tapi_nettext_handler(unsigned short tapiNettextType, unsigned int tapiNettextLength, char *tapiNettextData)
+void tapi_nettext_handler(uint16_t tapiNettextType, uint32_t tapiNettextLength, uint8_t *tapiNettextData)
 {
 	struct tapiRequest tx_packet;
 
 	struct modem_io request;
-    unsigned char *frame;
-    unsigned char *payload;
-    int frame_length;
+    uint8_t *frame;
+    uint8_t *payload;
+    uint32_t frame_length;
 
     switch(tapiNettextType)
     {

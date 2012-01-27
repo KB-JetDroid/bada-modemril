@@ -41,16 +41,16 @@
 #define FRAME_END	0x7e
 
 struct hdlc_header {
-	unsigned short length;
-	unsigned char unknown;
+	uint16_t length;
+	uint8_t unknown;
 
 	struct ipc_header ipc;
 } __attribute__((__packed__));
 
 struct multiPacketHeader {
-	unsigned int command;
-	unsigned int packtLen;
-	unsigned int packetType;
+	uint32_t command;
+	uint32_t packtLen;
+	uint32_t packetType;
 };
 
 

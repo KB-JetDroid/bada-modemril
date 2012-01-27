@@ -28,14 +28,14 @@
  *
  */
 
-void tapi_ss_handler(unsigned short tapiSsType, unsigned int tapiSsLength, char *tapiSsData)
+void tapi_ss_handler(uint16_t tapiSsType, uint32_t tapiSsLength, uint8_t *tapiSsData)
 {
 	struct tapiRequest tx_packet;
 
 	struct modem_io request;
-    unsigned char *frame;
-    unsigned char *payload;
-    int frame_length;
+    uint8_t *frame;
+    uint8_t *payload;
+    uint32_t frame_length;
 
     switch(tapiSsType)
     {

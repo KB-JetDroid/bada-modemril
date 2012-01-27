@@ -37,14 +37,14 @@
  * FIXME: incorrect proto packet header
  */
 struct protoPacketHeader {
-	unsigned short type;
-	unsigned short subtype;
-	unsigned int buflen;
+	uint16_t type;
+	uint16_t subtype;
+	uint32_t buflen;
 } __attribute__((__packed__));
 
 struct protoRequest {
 	struct protoPacketHeader header;
-	unsigned char *respBuf;
+	uint8_t *respBuf;
 } __attribute__((__packed__));
 
 void modem_response_proto(struct ipc_client *client, struct modem_io *resp);

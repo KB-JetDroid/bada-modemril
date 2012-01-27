@@ -53,14 +53,14 @@ char sim_pin[8];
 
 void modem_response_boot(struct ipc_client *client, struct modem_io *resp)
 {
-	printf("KB: Inside modem_response_boot\n");
+	DEBUG_I("Inside modem_response_boot\n");
 	int retval, count;
 	struct ipcPacketHeader *rx_header;
 	struct ipcRequest tx_packet;
 
 	struct modem_io request;
     void *frame;
-    unsigned char *payload;
+    uint8_t *payload;
     int frame_length;
 
     struct fifoPacketHeader *ipc;
@@ -78,44 +78,44 @@ void modem_response_boot(struct ipc_client *client, struct modem_io *resp)
     		},
     };
 
-	printf("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
+	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
 
 	hexdump(resp->data, resp->datasize);
 
 	for(count = 0; count < 1; count++)
 	{
-		printf("KB: sending frame no. %d\n", count);
+		DEBUG_I("sending frame no. %d\n", count);
 		payload = malloc(sysDataToCP[count].datasize);
 
 		memcpy(payload, data[count], sysDataToCP[count].datasize);
-		printf("KB: Copying data %d\n", count);
+		DEBUG_I("Copying data %d\n", count);
 
 		request.magic = sysDataToCP[count].magic;
 		request.cmd = sysDataToCP[count].cmd;
 		request.datasize = sysDataToCP[count].datasize;
 
 		request.data = payload;
-		printf("KB: Before sending\n");
+		DEBUG_I("Before sending\n");
 
 		_ipc_client_send(client, &request);
-		printf("KB: sent frame no. %d\n", count);
+		DEBUG_I("sent frame no. %d\n", count);
 
 	}
-    printf("KB: Inside modem_response_boot leaving\n");
+    DEBUG_I("Inside modem_response_boot leaving\n");
 
 }
 
 void modem_response_dbg_level(struct ipc_client *client, struct modem_io *resp)
 {
-	printf("KB: Inside modem_response_dbg_level\n");
+	DEBUG_I("Inside modem_response_dbg_level\n");
 	int retval, count;
 	struct ipcPacketHeader *rx_header;
 	struct ipcRequest tx_packet;
 
 	struct modem_io request;
     void *frame;
-    unsigned char *payload;
-    int frame_length;
+    uint8_t *payload;
+    int32_t frame_length;
 
     struct fifoPacketHeader *ipc;
 
@@ -153,44 +153,44 @@ void modem_response_dbg_level(struct ipc_client *client, struct modem_io *resp)
     		},
     };
 
-	printf("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
+	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
 
 	hexdump(resp->data, resp->datasize);
 
 	for(count = 0; count < 4; count++)
 	{
-		printf("KB: sending frame no. %d\n", count);
+		DEBUG_I("sending frame no. %d\n", count);
 		payload = malloc(sysDataToCP[count].datasize);
 
 		memcpy(payload, data[count], sysDataToCP[count].datasize);
-		printf("KB: Copying data %d\n", count);
+		DEBUG_I("Copying data %d\n", count);
 
 		request.magic = sysDataToCP[count].magic;
 		request.cmd = sysDataToCP[count].cmd;
 		request.datasize = sysDataToCP[count].datasize;
 
 		request.data = payload;
-		printf("KB: Before sending\n");
+		DEBUG_I("Before sending\n");
 
 		_ipc_client_send(client, &request);
-		printf("KB: sent frame no. %d\n", count);
+		DEBUG_I("sent frame no. %d\n", count);
 
 	}
-    printf("KB: Inside modem_response_dbg_level leaving\n");
+    DEBUG_I("Inside modem_response_dbg_level leaving\n");
 
 }
 
 void modem_response_dbg(struct ipc_client *client, struct modem_io *resp)
 {
 
-	printf("Debug string - %s\n", (char *)(resp->data));
+	DEBUG_I("Debug string - %s\n", (char *)(resp->data));
 
 }
 
 void modem_response_handle(struct ipc_client *client, struct modem_io *resp)
 {
 
-	int ret;
+	int32_t ret;
 
 	switch(resp->cmd)
     {
@@ -215,20 +215,20 @@ void modem_response_handle(struct ipc_client *client, struct modem_io *resp)
         	modem_response_tapi(client, resp);
         break;
         default :
-        	printf("Packet type 0x%x not yet handled\n", resp->cmd);
-        	printf("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
+        	DEBUG_I("Packet type 0x%x not yet handled\n", resp->cmd);
+        	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
         	hexdump(resp->data, resp->datasize);
 
     }
 
 }
 
-int modem_read_loop(struct ipc_client *client)
+int32_t modem_read_loop(struct ipc_client *client)
 {
     struct modem_io resp;
-    int fd = client_fd;
-    printf("dpram fd = 0x%x\n", fd);
-    int rc;
+    int32_t fd = client_fd;
+    DEBUG_I("dpram fd = 0x%x\n", fd);
+    int32_t rc;
     fd_set fds;
 
     if(fd < 0) {
@@ -250,7 +250,7 @@ int modem_read_loop(struct ipc_client *client)
             rc = ipc_client_recv(client, &resp);
 
             if(rc > 0) {
-                printf("[E] Can't RECV from modem: please run this again\n");
+                DEBUG_E("Can't RECV from modem: please run this again\n");
                 break;
             }
 
@@ -266,7 +266,7 @@ int modem_read_loop(struct ipc_client *client)
 
 void modem_log_handler(char *message, void *user_data)
 {
-    int i, l;
+    int32_t i, l;
     l = strlen(message);
 
     if(l > 1) {
@@ -279,7 +279,7 @@ void modem_log_handler(char *message, void *user_data)
             }
         }
 
-        printf("[D] %s\n", message);
+        DEBUG_I("%s\n", message);
     }
 }
 
@@ -288,29 +288,29 @@ void modem_log_handler_quiet(const char *message, void *user_data)
     return;
 }
 
-int modem_start(struct ipc_client *client)
+int32_t modem_start(struct ipc_client *client)
 {
-    int rc = -1;
+    int32_t rc = -1;
 
     rc = ipc_client_set_all_handlers_data(client, &client_fd);
 
     if(rc < 0)
-        printf("[D] error in setting handlers_data\n");
+        DEBUG_I("error in setting handlers_data\n");
 
     ipc_client_bootstrap_modem(client);
 
     usleep(300);
 
-    printf("[D] Opening modem_ctl\n");
+    DEBUG_I("Opening modem_ctl\n");
 
     rc = ipc_client_open(client);
 
-    printf("[D] Addr of Client_fd = 0x%x, value of Client_fd = %d\n", &client_fd, client_fd);
+    DEBUG_I("Addr of Client_fd = 0x%x, value of Client_fd = %d\n", &client_fd, client_fd);
 
     if(rc < 0)
         return -1;
 
-    printf("[D] Power on modem\n");
+    DEBUG_I("Power on modem\n");
 
     rc = ipc_client_power_on(client);
     if(rc < 0)
@@ -319,7 +319,7 @@ int modem_start(struct ipc_client *client)
     return 0;
 }
 
-int modem_stop(struct ipc_client *client)
+int32_t modem_stop(struct ipc_client *client)
 {
     ipc_client_power_off(client);
     ipc_client_close(client);
@@ -373,14 +373,14 @@ int main(int argc, char *argv[])
             case 0:
                 if(strcmp(opt_l[opt_i].name, "debug") == 0) {
                     ipc_client_set_log_handler(client_fmt, modem_log_handler, NULL);
-                    printf("[I] Debug enabled\n");
+                    DEBUG_I("Debug enabled\n");
                 } else if(strcmp(opt_l[opt_i].name, "pin") == 0) {
                     if(optarg) {
                         if(strlen(optarg) < 8) {
-                            printf("[I] Got SIM PIN!\n");
+                            DEBUG_I("Got SIM PIN!\n");
                             memcpy(sim_pin, optarg, 8);
                         } else {
-                            printf("[E] SIM PIN is too long!\n");
+                            DEBUG_E("SIM PIN is too long!\n");
                             return 1;
                         }
                     }
@@ -397,15 +397,15 @@ int main(int argc, char *argv[])
                 ipc_client_power_off(client_fmt);
                 goto modem_quit;
             } else if(strncmp(argv[optind], "start", 5) == 0) {
-                printf("[0] Starting modem on FMT client\n");
+                DEBUG_I("Starting modem on FMT client\n");
                 rc = modem_start(client_fmt);
                 if(rc > 0) {
-                    printf("[E] Something went wrong\n");
+                    DEBUG_E("Something went wrong\n");
                     modem_stop(client_fmt);
                     return 1;
                 }
 
-                printf("[1] Starting modem_read_loop on FMT client\n");
+                DEBUG_I("Starting modem_read_loop on FMT client\n");
                 /*
                  * TODO: Create thread for modem_read_loop which will be used as readerLoop in RIL implementation
                  */
@@ -413,7 +413,7 @@ int main(int argc, char *argv[])
 
                 modem_stop(client_fmt);
             } else {
-                printf("[E] Unknown argument: '%s'\n", argv[optind]);
+                DEBUG_E("Unknown argument: '%s'\n", argv[optind]);
                 print_help();
                 return 1;
             }

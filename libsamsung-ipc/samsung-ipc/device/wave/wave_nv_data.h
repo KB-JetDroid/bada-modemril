@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef __CRESPO_NV_DATA_H__
-#define __CRESPO_NV_DATA__
+#ifndef __WAVE_NV_DATA_H__
+#define __WAVE_NV_DATA_H__
 
 #include <radio.h>
 

@@ -21,6 +21,7 @@
  */
 
 #include <termios.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -30,10 +31,10 @@
 #include "jet_ipc.h"
 
 #define isprint(c)	((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
-void hexdump(const char *buf, int len)
+void hexdump(const char *buf, int32_t len)
 {
 	char str[80], octet[10];
-	int ofs, i, l;
+	int32_t ofs, i, l;
 
 	for (ofs = 0; ofs < len; ofs += 16) {
 		sprintf( str, "0x%02x: ", ofs );
@@ -53,58 +54,58 @@ void hexdump(const char *buf, int len)
 			str[l++] = isprint( buf[ofs + i] ) ? buf[ofs + i] : '.';
 
 		str[l] = '\0';
-		printf( "%s\n", str );
+		DEBUG_I( "%s\n", str );
 	}
 }
 
-int jet_modem_bootstrap(struct ipc_client *client)
+int32_t jet_modem_bootstrap(struct ipc_client *client)
 {
 
-	int rc = 0;
+	int32_t rc = 0;
 
-    int dpram_fd = -1;
+    int32_t dpram_fd = -1;
 
 
-	int fd, retval;
+	int32_t fd, retval;
 
-    printf("jet_ipc_bootstrap: enter\n");
+    DEBUG_I("jet_ipc_bootstrap: enter\n");
 
-    printf("jet_ipc_bootstrap: open modem_ctl\n");
+    DEBUG_I("jet_ipc_bootstrap: open modem_ctl\n");
 
     dpram_fd = open(DPRAM_TTY, O_RDWR | O_NDELAY);
 
     if(dpram_fd < 0) {
-    	printf("jet_ipc_bootstrap: failed to open dev/dpram0\n");
+    	DEBUG_I("jet_ipc_bootstrap: failed to open dev/dpram0\n");
     	return 1;
     }
 
-    printf("jet_ipc_bootstrap: send amss_run_request\n");
+    DEBUG_I("jet_ipc_bootstrap: send amss_run_request\n");
 
     ioctl(dpram_fd, IOCTL_MODEM_AMSSRUNREQ);
 
-    printf("jet_ipc_bootstrap: closing dev/modem_ctl\n");
+    DEBUG_I("jet_ipc_bootstrap: closing dev/modem_ctl\n");
 
     close(dpram_fd);
 
-    printf("jet_ipc_bootstrap: exit\n");
+    DEBUG_I("jet_ipc_bootstrap: exit\n");
 
     return 0;
 }
 
-int jet_ipc_open(void *data, unsigned int size, void *io_data)
+int32_t jet_ipc_open(void *data, uint32_t size, void *io_data)
 {
     struct termios termios;
 
-    int fd = -1;
+    int32_t fd = -1;
 
     if(io_data == NULL)
         return -1;
 
-    fd = *((int *) io_data);
+    fd = *((int32_t *) io_data);
 
     fd = open(DPRAM_TTY, O_RDWR);
 
-    printf("dpram fd = 0x%x\n", fd);
+    DEBUG_I("dpram fd = 0x%x\n", fd);
 
     if(fd < 0) {
         return 1;
@@ -114,19 +115,19 @@ int jet_ipc_open(void *data, unsigned int size, void *io_data)
     cfmakeraw(&termios);
     tcsetattr(fd, TCSANOW, &termios);
 
-    memcpy(io_data, &fd, sizeof(int));
+    memcpy(io_data, &fd, sizeof(int32_t));
 
     return 0;
 }
 
-int jet_ipc_close(void *io_data)
+int32_t jet_ipc_close(void *data, uint32_t size, void *io_data)
 {
-    int fd = -1;
+    int32_t fd = -1;
 
     if(io_data == NULL)
         return -1;
 
-    fd = *((int *) io_data);
+    fd = *((int32_t *) io_data);
 
     if(fd) {
         return close(fd);
@@ -135,46 +136,46 @@ int jet_ipc_close(void *io_data)
     return 0;
 }
 
-int jet_ipc_power_on(void *data)
+int32_t jet_ipc_power_on(void *data)
 {
-    int fd = -1;
+    int32_t fd = -1;
 
     if(data == NULL)
         return -1;
 
-    fd = *((int *) data);
+    fd = *((int32_t *) data);
 
     ioctl(fd, IOCTL_PHONE_ON);
 
     return 0;
 }
 
-int jet_ipc_power_off(void *data)
+int32_t jet_ipc_power_off(void *data)
 {
-    int fd = -1;
+    int32_t fd = -1;
 
     if(data == NULL)
         return -1;
 
-    fd = *((int *) data);
+    fd = *((int32_t *) data);
 
     ioctl(fd, IOCTL_PHONE_OFF);
 
     return 0;
 }
 
-int send_packet(struct ipc_client *client, struct modem_io *request)
+int32_t send_packet(struct ipc_client *client, struct modem_io *request)
 {
-	int retval;
+	int32_t retval;
     struct fifoPacketHeader *ipc;
-    unsigned char *frame;
-    unsigned char *payload;
-    int frame_length;
+    uint8_t *frame;
+    uint8_t *payload;
+    int32_t frame_length;
 
     /* Frame length: FIFO header + payload length */
     frame_length = (sizeof(*ipc) + request->datasize);
 
-    frame = (unsigned char*)malloc(frame_length);
+    frame = (uint8_t*)malloc(frame_length);
 
     /* FIFO header */
     ipc = (struct fifoPacketHeader*)(frame);
@@ -194,15 +195,15 @@ int send_packet(struct ipc_client *client, struct modem_io *request)
     return 0;
 }
 
-int jet_ipc_send(struct ipc_client *client, struct modem_io *request)
+int32_t jet_ipc_send(struct ipc_client *client, struct modem_io *request)
 {
-	int left_data;
+	int32_t left_data;
 	struct modem_io multi_request;
 	struct multiPacketHeader *multiHeader;
 
 	if (request->datasize > MAX_SIGNLE_FRAME_DATA)
 	{
-		printf("KB: packet to send is larger than 0x1000\n");
+		DEBUG_I("packet to send is larger than 0x1000\n");
 
 		multi_request.magic = 0xCAFECAFE;
 		multi_request.cmd = FIFO_PKT_FIFO_INTERNAL;
@@ -214,7 +215,7 @@ int jet_ipc_send(struct ipc_client *client, struct modem_io *request)
 		multiHeader->packtLen = request->datasize;
 		multiHeader->packetType = request->cmd;
 
-		multi_request.data = multiHeader;
+		multi_request.data = (uint8_t *)multiHeader;
 
 		send_packet(client, &multi_request);
 
@@ -248,15 +249,15 @@ int jet_ipc_send(struct ipc_client *client, struct modem_io *request)
 	return 0;
 }
 
-int jet_ipc_recv(struct ipc_client *client, struct modem_io *response)
+int32_t jet_ipc_recv(struct ipc_client *client, struct modem_io *response)
 {
-    unsigned char buf[SIZ_PACKET_HEADER];
-    unsigned char *data;
-    unsigned short *frame_length;
+    uint8_t buf[SIZ_PACKET_HEADER];
+    uint8_t *data;
+    uint32_t frame_length;
     struct fifoPacketHeader *ipc;
     struct modem_io modem_packet;
-    int num_read;
-    int left;
+    uint32_t num_read;
+    uint32_t left;
 
     num_read = client->handlers->read((void*)buf, sizeof(buf), client->handlers->read_data);
 
@@ -267,7 +268,7 @@ int jet_ipc_recv(struct ipc_client *client, struct modem_io *response)
         frame_length = ipc->datasize;
         left = frame_length;
 
-        data = (unsigned char*)malloc(left);
+        data = (uint8_t*)malloc(left);
         num_read = client->handlers->read((void*)data, left, client->handlers->read_data);
 
         if(num_read == left) {
@@ -275,7 +276,7 @@ int jet_ipc_recv(struct ipc_client *client, struct modem_io *response)
             response->cmd = ipc->cmd;
             response->datasize = ipc->datasize;
 
-            response->data = (unsigned char*)malloc(left);
+            response->data = (uint8_t*)malloc(left);
             memcpy(response->data, data , response->datasize);
 
             return 0;
@@ -285,14 +286,14 @@ int jet_ipc_recv(struct ipc_client *client, struct modem_io *response)
     return 0;
 }
 
-int jet_ipc_read(void *data, unsigned int size, void *io_data)
+int32_t jet_ipc_read(void *data, uint32_t size, void *io_data)
 {
-    int fd = -1;
+    int32_t fd = -1;
 
     if(io_data == NULL)
         return -1;
 
-    fd = *((int *) io_data);
+    fd = *((int32_t *) io_data);
 
     if(fd < 0)
         return -1;
@@ -300,14 +301,14 @@ int jet_ipc_read(void *data, unsigned int size, void *io_data)
     return read(fd, data, size);
 }
 
-int jet_ipc_write(void *data, unsigned int size, void *io_data)
+int32_t jet_ipc_write(void *data, uint32_t size, void *io_data)
 {
-    int fd = -1;
+    int32_t fd = -1;
 
     if(io_data == NULL)
         return -1;
 
-    fd = *((int *) io_data);
+    fd = *((int32_t *) io_data);
 
     if(fd < 0)
         return -1;
@@ -315,15 +316,15 @@ int jet_ipc_write(void *data, unsigned int size, void *io_data)
     return write(fd, data, size);
 }
 
-int jet_modem_operations(struct ipc_client *client, void *data, unsigned int cmd)
+int32_t jet_modem_operations(struct ipc_client *client, void *data, uint32_t cmd)
 {
-    int fd = -1;
+    int32_t fd = -1;
 
-    fd = *((int *)client->handlers->write_data);
+    fd = *((int32_t *)client->handlers->write_data);
 
     if(fd < 0)
         return -1;
-    printf("KB: modem_operations ioctl cmd = 0x%x\n", cmd);
+    DEBUG_I("modem_operations ioctl cmd = 0x%x\n", cmd);
 
     return ioctl(fd, cmd, data);
 }

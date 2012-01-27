@@ -31,57 +31,40 @@
 #define FM_FILENAME_LEN_MAX						236
 #define FM_FILEPATH_LEN_MAX						256
 
-typedef unsigned char		UCHAR; /* SD_INT */
-typedef unsigned short		USHORT;
-typedef unsigned int		UINT;
-typedef unsigned long		ULONG;
-
-/* Machine independence */
-typedef signed   char		INT8;
-typedef unsigned char		UINT8;
-typedef signed short				INT16;
-typedef unsigned short		UINT16;
-
 #ifndef ADDR
 typedef unsigned int		ADDR;
 #endif // ADDR
 
-/* Machine independence */
-typedef  long int				INT32;
-typedef unsigned long		UINT32;
-typedef long	long			INT64;
-typedef unsigned long long	UINT64;
-
 //PACKETTYPE 0x6 FmPacket
 struct fmPacketHeader {
-	unsigned int fmPacketType; 	//(stored as type-0xEFFFFFFF, just take first byte substract 1 to get actual type)
-	unsigned int reserved1; 		//dummy, unused?
-	unsigned int packetLen; 		//equal to n, equal to packetLength-16 (headersize)
-	unsigned int reqCounter; 	// has to be the same in responsepacket, probably fm request counter
+	uint32_t fmPacketType; 	//(stored as type-0xEFFFFFFF, just take first byte substract 1 to get actual type)
+	uint32_t reserved1; 		//dummy, unused?
+	uint32_t packetLen; 		//equal to n, equal to packetLength-16 (headersize)
+	uint32_t reqCounter; 	// has to be the same in responsepacket, probably fm request counter
 };
 
 struct fmRequest {
 	struct fmPacketHeader *header; 	// has to be the same in responsepacket, probably fm request counter
-	unsigned char *reqBuf; 		//usually first comes unsigned int params, and then string containing name
+	uint8_t *reqBuf; 		//usually first comes unsigned int params, and then string containing name
 };
 
 struct fmResponse {
 	struct fmPacketHeader *header; 	// has to be the same in responsepacket, probably fm request counter
-	int funcRet; 		//called function return value
-	int errorVal; 		//0 if func_ret == 0, otherwise retvalue of platform LastError()
-	unsigned char *respBuf;
+	int32_t funcRet; 		//called function return value
+	int32_t errorVal; 		//0 if func_ret == 0, otherwise retvalue of platform LastError()
+	uint8_t *respBuf;
 };
 
 struct fmArgs {
-	unsigned int mode;
+	uint32_t mode;
 	char *fileName;
-	unsigned int fileHandle;
+	uint32_t fileHandle;
 	void *readBuf;
 	void *writeBuf;
-	unsigned int size;
-	unsigned int numRead;
-	unsigned int offset;
-	unsigned int origin;
+	uint32_t size;
+	uint32_t numRead;
+	uint32_t offset;
+	uint32_t origin;
 };
 
 /*
@@ -132,27 +115,27 @@ typedef enum
 
 typedef struct
 {
-	int		year; 	/**<Year (1900[1900_BASE] or 1970[1970_BASE] ~ 2030)*/
-	int		month;	/**<Month (1-12)*/
-	int		day;	/**<Day (1-31)*/
-	int		hour;	/**<Hour (1-12)*/
-	int		minute; 	/**<Minute (1-60)*/
-	int		second;	/**<Second (1-60)*/
+	int32_t		year; 	/**<Year (1900[1900_BASE] or 1970[1970_BASE] ~ 2030)*/
+	int32_t		month;	/**<Month (1-12)*/
+	int32_t		day;	/**<Day (1-31)*/
+	int32_t		hour;	/**<Hour (1-12)*/
+	int32_t		minute; 	/**<Minute (1-60)*/
+	int32_t		second;	/**<Second (1-60)*/
 } TmDateTime;
 
 typedef struct
 {
-	unsigned long		oldFileSize;		// for backward compatibilty with previous PC tools
-	unsigned long*		startAddr;			/** Only used at LFS*/
-	unsigned long		attribute;			/** file attribute like directory or file, hidden, readonly, system, ...	*/
-	int			iVol;				/** positioned volume*/
+	uint32_t		oldFileSize;		// for backward compatibilty with previous PC tools
+	uint32_t*		startAddr;			/** Only used at LFS*/
+	uint32_t		attribute;			/** file attribute like directory or file, hidden, readonly, system, ...	*/
+	int32_t			iVol;				/** positioned volume*/
 	TmDateTime	dt;					/** Creation date/time*/
-	unsigned long		oldAllocatedSize;	// for backward compatibilty with previous PC tools
+	uint32_t		oldAllocatedSize;	// for backward compatibilty with previous PC tools
 	TmDateTime	stModifiedDataTime;	/** DON NOT USE THIS FIELD YET!!!*/
-	unsigned long long		u64EntryUniqID;		/** uniq ID for file or directory, data cluster number + ctime mtime*/
-	unsigned long		uReservedField;		/** DON NOT USE THIS FIELD YET!!!*/
-	unsigned long long/*UINT64*/	fileSize;			/** File Size in bytes */
-	unsigned long long/*UINT64*/	allocatedSize;	/** real allocated size of file & directory in sub System
+	uint64_t		u64EntryUniqID;		/** uniq ID for file or directory, data cluster number + ctimeuint32_tigned long		uReservedField;		/** DON NOT USE THIS FIELD YET!!!*/
+	uint32_t		uReservedField;		/** DON NOT USE THIS FIELD YET!!!*/
+	uint64_t/*UINT64*/	fileSize;			/** File Size in bytes */
+	uint64_t/*UINT64*/	allocatedSize;	/** real allocated size of file & directory in sub System
 									*Note: allocated size for sub directories & sub files are not included
 										only allocation size for directory itself!!!
 									*/
@@ -164,19 +147,19 @@ typedef struct
 typedef struct
 {
 	FmEntryType	type;					/** File or Directory*/
-	ULONG		oldFileSize;			// for backward compatibilty with previous PC tools
-	ULONG		attribute;				/** Attribute*/
+	uint32_t		oldFileSize;			// for backward compatibilty with previous PC tools
+	uint32_t		attribute;				/** Attribute*/
 	TmDateTime	dt;						/** Creation date/time*/
 	char		szDummy[FM_FILEPATH_LEN_MAX];	// for backward compatibility with previous PC tools
-	ULONG		oldAllocatedSize;		// for backward compatibilty with previous PC tools
+	uint32_t		oldAllocatedSize;		// for backward compatibilty with previous PC tools
 	TmDateTime	stModifiedDataTime;	/** DON NOT USE THIS FIELD YET!!!*/
-	UINT64		u64EntryUniqID;		/** uniq ID for file or directory, data cluster number + ctime mtime*/
-	ULONG /*UINT64*/fileSize;			/** File size if entry is file. meaningless for directory entry */
-	ULONG /*UINT64*/allocatedSize;		/** real allocated size of file or directory in Sub System
+	uint64_t		u64EntryUniqID;		/** uniq ID for file or directory, data cluster number + ctime mtime*/
+	uint32_t /*UINT64*/fileSize;			/** File size if entry is file. meaningless for directory entry */
+	uint32_t /*UINT64*/allocatedSize;		/** real allocated size of file or directory in Sub System
 										 *Note: allocated size for sub directories & sub files are not included
 										  only allocation size for directory itself!!!*/
 	char		szName[FM_FILENAME_LEN_MAX];	/** File name*/
-	ULONG		uReservedField;		/** DON NOT USE THIS FIELD YET!!!*/
+	uint32_t		uReservedField;		/** DON NOT USE THIS FIELD YET!!!*/
 
 } FmDirEntry;
 
@@ -185,11 +168,11 @@ typedef struct
   */
 typedef struct
 {
-	ULONG		availableSizeDummy;	/** Dummy for compatibility with  legacy facotry softwrare*/
-	ULONG		allocatedSizeDummy;	/** Dummy for compatibility with  legacy facotry softwrare*/
+	uint32_t		availableSizeDummy;	/** Dummy for compatibility with  legacy facotry softwrare*/
+	uint32_t		allocatedSizeDummy;	/** Dummy for compatibility with  legacy facotry softwrare*/
 	FmFsType	fsType;					/** volume type such as FM_FSTYPE_FIXED, FM_FSTYPE_REMOVABLE...*/
-	UINT64		availableSize;			/** available size */
-	UINT64		allocatedSize;			/** actual usage in File Syste*/
+	uint64_t		availableSize;			/** available size */
+	uint64_t		allocatedSize;			/** actual usage in File Syste*/
 } FmVolumeStat;
 
 /**
@@ -197,15 +180,15 @@ typedef struct
   */
 typedef struct
 {
-	ULONG			availableSizeDummy;	/**  Dummy for compatibility with  legacy facotry softwrare*/
-	ULONG			allocatedSizeDummy;	/** Dummy for compatibility with  legacy facotry softwrare	*/
-	ULONG			reservedSizeDummy;	/** Dummy for compatibility with  legacy facotry softwrare		*/
-	ULONG			diskSizeDummy;			/** Dummy for compatibility with  legacy facotry softwrare	 */
-	UINT64			availableSize;			/** available size means Reserved area plus remaining Shared area*/
-	UINT64			allocatedSize;			/** actual usage in File System for registered Quota entry*/
-	UINT64			reservedSize;			/** if requested path is not registered. it will be 0*/
-	UINT64			diskSize;				/** fixed size of Quota Area in TFS. This value is a practical meaning as disk size to user. */
-	UINT32			clusterSize;				/** disk Cluster Size. */
+	uint32_t			availableSizeDummy;	/**  Dummy for compatibility with  legacy facotry softwrare*/
+	uint32_t			allocatedSizeDummy;	/** Dummy for compatibility with  legacy facotry softwrare	*/
+	uint32_t			reservedSizeDummy;	/** Dummy for compatibility with  legacy facotry softwrare		*/
+	uint32_t			diskSizeDummy;			/** Dummy for compatibility with  legacy facotry softwrare	 */
+	uint64_t			availableSize;			/** available size means Reserved area plus remaining Shared area*/
+	uint64_t			allocatedSize;			/** actual usage in File System for registered Quota entry*/
+	uint64_t			reservedSize;			/** if requested path is not registered. it will be 0*/
+	uint64_t			diskSize;				/** fixed size of Quota Area in TFS. This value is a practical meaning as disk size to user. */
+	uint64_t			clusterSize;				/** disk Cluster Size. */
 } FmQuotaStat;
 
 typedef struct
@@ -242,28 +225,28 @@ typedef struct
 
 #define MAX_FILE_OPS 		20
 
-int FmOpenFile(struct fmRequest *, struct fmResponse *);
-int FmCloseFile(struct fmRequest *, struct fmResponse *);
-int FmCreateFile(struct fmRequest *, struct fmResponse *);
-int FmReadFile(struct fmRequest *, struct fmResponse *);
-int FmWriteFile(struct fmRequest *, struct fmResponse *);
-int FmFlushFile(struct fmRequest *, struct fmResponse *);
-int FmSeekFile(struct fmRequest *, struct fmResponse *);
-int FmTellFile(struct fmRequest *, struct fmResponse *);
-int FmRemoveFile(struct fmRequest *, struct fmResponse *);
-int FmMoveFile(struct fmRequest *, struct fmResponse *);
-int FmGetFileAttrFile(struct fmRequest *, struct fmResponse *);
-int FmFGetFileAttrFile(struct fmRequest *, struct fmResponse *);
-int FmSetFileAttrFile(struct fmRequest *, struct fmResponse *);
-int FmTruncateFile(struct fmRequest *, struct fmResponse *);
-int FmOpenDirFile(struct fmRequest *, struct fmResponse *);
-int FmCloseDirFile(struct fmRequest *, struct fmResponse *);
-int FmReadDirFile(struct fmRequest *, struct fmResponse *);
-int FmCreateDirFile(struct fmRequest *, struct fmResponse *);
-int FmRemoveDirFile(struct fmRequest *, struct fmResponse *);
-int FmGetQuotaSpaceFile(struct fmRequest *, struct fmResponse *);
-//int FmInvalidFile(unsigned int mode, const char *fileName);
+int32_t FmOpenFile(struct fmRequest *, struct fmResponse *);
+int32_t FmCloseFile(struct fmRequest *, struct fmResponse *);
+int32_t FmCreateFile(struct fmRequest *, struct fmResponse *);
+int32_t FmReadFile(struct fmRequest *, struct fmResponse *);
+int32_t FmWriteFile(struct fmRequest *, struct fmResponse *);
+int32_t FmFlushFile(struct fmRequest *, struct fmResponse *);
+int32_t FmSeekFile(struct fmRequest *, struct fmResponse *);
+int32_t FmTellFile(struct fmRequest *, struct fmResponse *);
+int32_t FmRemoveFile(struct fmRequest *, struct fmResponse *);
+int32_t FmMoveFile(struct fmRequest *, struct fmResponse *);
+int32_t FmGetFileAttrFile(struct fmRequest *, struct fmResponse *);
+int32_t FmFGetFileAttrFile(struct fmRequest *, struct fmResponse *);
+int32_t FmSetFileAttrFile(struct fmRequest *, struct fmResponse *);
+int32_t FmTruncateFile(struct fmRequest *, struct fmResponse *);
+int32_t FmOpenDirFile(struct fmRequest *, struct fmResponse *);
+int32_t FmCloseDirFile(struct fmRequest *, struct fmResponse *);
+int32_t FmReadDirFile(struct fmRequest *, struct fmResponse *);
+int32_t FmCreateDirFile(struct fmRequest *, struct fmResponse *);
+int32_t FmRemoveDirFile(struct fmRequest *, struct fmResponse *);
+int32_t FmGetQuotaSpaceFile(struct fmRequest *, struct fmResponse *);
+//int32_t FmInvalidFile(unsigned int mode, const char *fileName);
 
-int modem_response_fm(struct ipc_client *client, struct modem_io *resp);
+int32_t modem_response_fm(struct ipc_client *client, struct modem_io *resp);
 
 #endif

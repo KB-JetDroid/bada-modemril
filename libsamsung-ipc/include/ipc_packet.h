@@ -24,25 +24,25 @@
 #define __IPC_H__
 
 struct ipcPacketHeader {
-	unsigned char reserved; //probably dummy
-	unsigned char ipcPacketType;
+	uint8_t reserved; //probably dummy
+	uint8_t ipcPacketType;
 } __attribute__((__packed__));
 
 struct ipcNvPacket {
 	struct ipcPacketHeader header;
-	unsigned int size;
+	uint32_t size;
 } __attribute__((__packed__));
 
 struct ipcPMICPacket {
 	struct ipcPacketHeader header;
-	unsigned int unk1;
-	unsigned int unk2;
-	unsigned int value;
+	uint32_t unk1;
+	uint32_t unk2;
+	uint32_t value;
 } __attribute__((__packed__));
 
 struct ipcRequest {
 	struct ipcPacketHeader header;
-	unsigned char *respBuf;
+	uint8_t *respBuf;
 } __attribute__((__packed__));
 
 void modem_response_ipc(struct ipc_client *client, struct modem_io *resp);

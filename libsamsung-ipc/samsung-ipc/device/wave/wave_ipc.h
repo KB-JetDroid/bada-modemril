@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef __CRESPO_IPC_H__
-#define __CRESPO_IPC_H__
+#ifndef __WAVE_IPC_H__
+#define __WAVE_IPC_H__
 
 #define BOOTCORE_VERSION        0xf0
 #define PSI_MAGIC               0x30
