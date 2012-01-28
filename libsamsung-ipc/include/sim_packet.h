@@ -27,7 +27,7 @@
 #define SIM_SESSION_START_ID 0
 #define SIM_SESSION_END_ID (SIM_SESSION_START_ID+(SIM_SESSION_COUNT-1))
 
-#define SIM_VALIDATE_SID(hSim) (if(hSim) {DEBUG_E("SIM_VALIDATE_SID failure!"); return -1})
+#define SIM_VALIDATE_SID(hSim) {if(hSim) {DEBUG_E("SIM_VALIDATE_SID failure!"); return -1;}}
 struct simPacketHeader {
 	uint32_t type;
 	uint32_t subType;
@@ -54,7 +54,7 @@ void modem_response_sim(struct ipc_client *client, struct modem_io *resp);
 void sim_parse_session_event(uint8_t* buf, uint32_t bufLen);
 
 int sim_send_oem_req(struct ipc_client *client, uint8_t* simBuf, uint8_t simBufLen);
-int sim_send_oem_data(struct ipc_client *client, uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint8_t oemBufLen);
+int sim_send_oem_data(struct ipc_client *client, uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32_t oemBufLen);
 
-int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, char* pin)
+int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, char* pin);
 #endif
