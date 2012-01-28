@@ -45,8 +45,9 @@ void modem_response_sim(struct ipc_client *client, struct modem_io *resp)
 {
 	DEBUG_I("Entering\n");
 	int32_t retval, count;
-	struct simPacketHeader *rx_header;
-	struct simRequest sim_packet;
+	uint32_t sid;
+	struct simPacketHeader *simHeader;
+	struct simPacket sim_packet;
 
 	struct modem_io request;
     void *frame;
@@ -59,31 +60,123 @@ void modem_response_sim(struct ipc_client *client, struct modem_io *resp)
 
 	hexdump(resp->data, resp->datasize);
 
-    rx_header = (struct simPacketHeader *)(resp->data);
-    sim_packet.respBuf = (uint8_t *)(resp->data + sizeof(struct simPacketHeader));
+    simHeader = (struct simPacketHeader *)(resp->data);
+    sim_packet.simBuf = (uint8_t *)(resp->data + sizeof(struct simPacketHeader));
 
-	DEBUG_I("Sim Packet type = 0x%x\n Sim Packet sub-type = 0x%x\n Sim Packet length = 0x%x\n", rx_header->type, rx_header->subtype, rx_header->buflen);
+	DEBUG_I("Sim Packet type = 0x%x\n Sim Packet sub-type = 0x%x\n Sim Packet length = 0x%x\n", simHeader->type, simHeader->subType, simHeader->bufLen);
 
-    switch (rx_header->type)
-    {
-	case 0x00:
-		DEBUG_I("SIM_PACKET type 0x00 received\n");
-		struct oemSimPacketHeader *oem_header;
-		struct oemSimRequest oem_packet;
+	if(simHeader->type != 0)
+	{
+		switch (simHeader->subType)
+		{
+		case 0x00:
+			DEBUG_I("SIM_PACKET OemSimAtkInjectDisplayTextInd rcvd\n");
+			
+			/*struct oemSimPacketHeader *oem_header;
+			struct oemSimPacket oem_packet;
 
-		oem_header = (struct oemSimPacketHeader *)(sim_packet.respBuf);
-		oem_packet.oemBuf = (uint8_t *)(sim_packet.respBuf + sizeof(struct oemSimPacketHeader));
+			oem_header = (struct oemSimPacketHeader *)(sim_packet.respBuf);
+			oem_packet.oemBuf = (uint8_t *)(sim_packet.respBuf + sizeof(struct oemSimPacketHeader));
 
-		DEBUG_I("Sim oem type = 0x%x\n Sim Packet sub-type = 0x%x\n Oem length = 0x%x\n", oem_header->oemType, oem_header->packetSubType, oem_header->oemBufLen);
+			DEBUG_I("Sim oem type = 0x%x\n Sim Packet sub-type = 0x%x\n Oem length = 0x%x\n", oem_header->oemType, oem_header->packetSubType, oem_header->oemBufLen);
 
-		hexdump(oem_packet.oemBuf, oem_header->oemBufLen);
-
-		break;
-	default :
-    	DEBUG_I("Unknown SIM Packet\n");
-    	break;
-    }
+			hexdump(oem_packet.oemBuf, oem_header->oemBufLen);
+*/
+			break;
+		default :
+			DEBUG_I("Unknown SIM subType %d\n", simHeader->subType);
+			break;
+		}
+	}
+	else
+	{
+		if(simHeader->subType >= 0x1D)
+		{
+			sid = simHeader->subType-0x1D;
+			switch(sid)
+			{
+				case 0x1C:
+					//do nothing
+					break;
+				case 0x1E:
+				case 0x1F:
+					//TODO: these 2 sids are somewhat special - apps does switch some bool if they are used, not sure what way they are special.
+					sim_parse_session_event(sim_packet.simBuf, simHeader->bufLen); //sid is stored in buf too
+					break;
+				default:
+					sim_parse_session_event(sim_packet.simBuf, simHeader->bufLen); //sid is stored in buf too
+					break;
+			}
+		}
+		else
+		{
+			sim_send_oem_req(client, sim_packet.simBuf, simHeader->bufLen); //bounceback packet
+		}
+	}
 
     DEBUG_I("leaving\n");
 
+}
+
+void sim_parse_session_event(uint8_t* buf, uint32_t bufLen)
+{
+
+}
+
+int sim_send_oem_req(struct ipc_client *client, uint8_t* simBuf, uint8_t simBufLen)
+{	
+	//simBuf is expected to contain full oemPacket structure
+	struct simPacket sim_packet;	
+	sim_packet.header.type = 0;
+	sim_packet.header.subType = (struct oemSimPacketHeader *)(simBuf)->type;
+	sim_packet.header.bufLen = bufLen;
+	sim_packet.simBuf = simBuf;
+	
+	int bufLen = sim_packet.header.bufLen + sizeof(struct simPacketHeader);
+	char* fifobuf = malloc(bufLen);
+	memcpy(fifobuf, &(sim_packet.header), sizeof(struct simPacketHeader));
+	memcpy(fifobuf + sizeof(struct simPacketHeader), sim_packet.simBuf, sim_packet.header.bufLen);
+	free(sim_packet.simBuf);
+	//TODO: send fifo frame of type 0x2 here with fifobuf and length = bufLen, should modem_io be used for that?
+	free(fifobuf);
+	//TODO: return nonzero in case of failure
+	return 0;
+}
+
+int sim_send_oem_data(struct ipc_client *client, uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint8_t oemBufLen)
+{	
+	SIM_VALIDATE_SID(hSim);
+	
+	struct oemSimPacketHeader oem_header;	
+	oem_header.type = packetType;
+	oem_header.hSim = hSim; //session id
+	oem_header.oemBufLen = oemBufLen;
+	
+
+	uint32_t simBufLen = oemBufLen + sizeof(struct oemSimPacketHeader);
+	uint8_t* simBuf = malloc(simBufLen);
+	memcpy(simBuf, &(oem_header), sizeof(struct oemSimPacketHeader));
+	memcpy(simBuf + sizeof(struct oemSimPacketHeader), dataBuf, oemBufLen);
+	
+	return sim_send_oem_req(client, simBuf, simBufLen);
+	free(simBuf);
+
+}
+
+int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, char* pin)
+{	
+	SIM_VALIDATE_SID(hSim);
+	//TODO: obtain session context, check if session is busy, print exception if it is busy and return failure
+	//TODO: if session is not busy, mark it busy
+	uint8_t* packetBuf = malloc(10);	
+	memset(packetBuf, 0x00, 10);
+	packetBuf[0] = pinType;
+	memcpy(packetBuf+1, pin, strlen(pin)); //max pin len is 9 digits
+	if(sim_send_oem_data(client, hSim, 0xB, &packetBuf, 10) != 0)
+	{
+		//TODO: mark session non-busy
+		return -1;
+	}
+	free(packetBuf);
+	return 0;
 }

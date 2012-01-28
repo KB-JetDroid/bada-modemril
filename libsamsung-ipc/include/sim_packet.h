@@ -23,45 +23,38 @@
 #ifndef __SIM_H__
 #define __SIM_H__
 
-#define PROTO_PACKET_ID_STARTUP 			1
-#define PROTO_PACKET_ID_CLEANUP 			2
-#define PROTO_PACKET_ID_STARTNETWORK 		3
-#define PROTO_PACKET_ID_STOPNETWORK 		4
-#define PROTO_PACKET_ID_STARTINGNETWORKIND 	5
-#define PROTO_PACKET_ID_STARTNETWORKCNF 	6
-#define PROTO_PACKET_ID_STARTNETWORKIND 	7
-#define PROTO_PACKET_ID_STOPNETWORKCNF 		8
-#define PROTO_PACKET_ID_STOPNETWORKIND 		9
-#define PROTO_PACKET_ID_SUSPENDNETWORKIND 	10
-#define PROTO_PACKET_ID_RESUMENETWORKIND 	11
+#define SIM_SESSION_COUNT 0x20
+#define SIM_SESSION_START_ID 0
+#define SIM_SESSION_END_ID (SIM_SESSION_START_ID+(SIM_SESSION_COUNT-1))
 
-/*
- * FIXME: incorrect proto packet header
- */
+#define SIM_VALIDATE_SID(hSim) (if(hSim) {DEBUG_E("SIM_VALIDATE_SID failure!"); return -1})
 struct simPacketHeader {
 	uint32_t type;
-	uint32_t subtype;
-	uint32_t buflen;
+	uint32_t subType;
+	uint32_t bufLen;
 } __attribute__((__packed__));
 
-struct simRequest {
+struct simPacket {
 	struct simPacketHeader header;
-	uint8_t *respBuf;
+	uint8_t *simBuf;
 } __attribute__((__packed__));
 
-struct oemSimPacketHeader
-{
-	uint32_t oemType;
-	uint8_t packetSubType;
+struct oemSimPacketHeader{
+	uint32_t hSim; //not sure if its really session_id
+	uint8_t type; //equal to parent packet subtype
 	uint32_t oemBufLen;
 } __attribute__((__packed__));
 
-struct oemSimRequest
-{
+struct oemSimPacket{
 	struct oemSimPacketHeader header;
 	uint8_t *oemBuf;
 } __attribute__((__packed__));
 
 void modem_response_sim(struct ipc_client *client, struct modem_io *resp);
+void sim_parse_session_event(uint8_t* buf, uint32_t bufLen);
 
+int sim_send_oem_req(struct ipc_client *client, uint8_t* simBuf, uint8_t simBufLen);
+int sim_send_oem_data(struct ipc_client *client, uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint8_t oemBufLen);
+
+int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, char* pin)
 #endif
