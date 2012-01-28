@@ -23,6 +23,12 @@
 #ifndef __SIM_H__
 #define __SIM_H__
 
+#if defined(DEVICE_JET)
+#define SESSION_SUBTYPE_DIFF 0x18
+#elif defined(DEVICE_WAVE)
+#define SESSION_SUBTYPE_DIFF 0x1D
+#endif
+
 #define SIM_SESSION_COUNT 0x20
 #define SIM_SESSION_START_ID 0
 #define SIM_SESSION_END_ID (SIM_SESSION_START_ID+(SIM_SESSION_COUNT-1))
@@ -57,4 +63,5 @@ int sim_send_oem_req(struct ipc_client *client, uint8_t* simBuf, uint8_t simBufL
 int sim_send_oem_data(struct ipc_client *client, uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32_t oemBufLen);
 
 int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, char* pin);
+int sim_atk_open(struct ipc_client *client, uint32_t sid);
 #endif

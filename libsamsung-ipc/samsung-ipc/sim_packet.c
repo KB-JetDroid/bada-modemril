@@ -90,22 +90,22 @@ void modem_response_sim(struct ipc_client *client, struct modem_io *resp)
 	}
 	else
 	{
-		if(simHeader->subType >= 0x1D)
+		if(simHeader->subType >= SESSION_SUBTYPE_DIFF)
 		{
-			sid = simHeader->subType-0x1D;
-			switch(sid)
+			sid = simHeader->subType-SESSION_SUBTYPE_DIFF;
+			if(sid < SIM_SESSION_COUNT)
 			{
-				case 0x1C:
-					//do nothing
-					break;
-				case 0x1E:
-				case 0x1F:
-					//TODO: these 2 sids are somewhat special - apps does switch some bool if they are used, not sure what way they are special.
-					sim_parse_session_event(sim_packet.simBuf, simHeader->bufLen); //sid is stored in buf too
-					break;
-				default:
-					sim_parse_session_event(sim_packet.simBuf, simHeader->bufLen); //sid is stored in buf too
-					break;
+				switch(sid)
+				{
+					case 1:
+					case 2: //in this session first packet with sim info is being send
+						//TODO: these 2 sids are somewhat special - apps does switch some bool if they are used, not sure what way they are special.
+						sim_parse_session_event(sim_packet.simBuf, simHeader->bufLen); //sid is stored in buf too
+						break;
+					default:
+						sim_parse_session_event(sim_packet.simBuf, simHeader->bufLen); //sid is stored in buf too
+						break;
+				}
 			}
 		}
 		else
@@ -164,7 +164,8 @@ int sim_send_oem_data(struct ipc_client *client, uint8_t hSim, uint8_t packetTyp
 	uint32_t simBufLen = oemBufLen + sizeof(struct oemSimPacketHeader);
 	uint8_t* simBuf = malloc(simBufLen);
 	memcpy(simBuf, &(oem_header), sizeof(struct oemSimPacketHeader));
-	memcpy(simBuf + sizeof(struct oemSimPacketHeader), dataBuf, oemBufLen);
+	if(oemBufLen)
+		memcpy(simBuf + sizeof(struct oemSimPacketHeader), dataBuf, oemBufLen);
 	
 	return sim_send_oem_req(client, simBuf, simBufLen);
 	free(simBuf);
@@ -187,5 +188,21 @@ int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, cha
 		return -1;
 	}
 	free(packetBuf);
+	return 0;
+}
+
+int sim_atk_open(struct ipc_client *client, uint32_t sid)
+{
+	//TODO: verify ATK session and create/open it and return handler to it?!
+	if(sim_send_oem_data(client, 0xA, 0x1B, NULL, 0) != 0) //0xA hSim is hardcoded in bada
+		return -1;
+	return 0;
+}
+
+int sim_open_to_modem(struct ipc_client *client, uint8_t hSim)
+{
+	//TODO: verify, create and initialize session, send real hSim
+	if(sim_send_oem_data(client, 0x4, 0x1, NULL, 0) != 0) //why it starts from 4? hell knows 
+		return -1;
 	return 0;
 }
