@@ -136,7 +136,6 @@ int sim_send_oem_req(struct ipc_client *client, uint8_t* simBuf, uint8_t simBufL
 	char* fifobuf = malloc(bufLen);
 	memcpy(fifobuf, &(sim_packet.header), sizeof(struct simPacketHeader));
 	memcpy(fifobuf + sizeof(struct simPacketHeader), sim_packet.simBuf, sim_packet.header.bufLen);
-	free(sim_packet.simBuf);
 	//TODO: send fifo frame of type 0x2 here with fifobuf and length = bufLen, should modem_io be used for that?
 	free(fifobuf);
 	//TODO: return nonzero in case of failure
@@ -170,8 +169,8 @@ int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, cha
 	//TODO: if session is not busy, mark it busy
 	uint8_t* packetBuf = malloc(10);	
 	memset(packetBuf, 0x00, 10);
-	packetBuf[0] = pinType;
-	memcpy(packetBuf+1, pin, strlen(pin)); //max pin len is 9 digits
+	packetBuf[0] = pinType; //pinType = 0 is PIN1, pinType = 1 is PIN2
+	memcpy(packetBuf+1, pin, strlen(pin)); //max pin len is 8 digits
 	if(sim_send_oem_data(client, hSim, 0xB, &packetBuf, 10) != 0)
 	{
 		//TODO: mark session non-busy
