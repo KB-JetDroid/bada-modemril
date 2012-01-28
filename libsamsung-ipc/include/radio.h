@@ -24,6 +24,7 @@
 #define __RADIO_H__
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "types.h"
 #include "util.h"
@@ -63,7 +64,7 @@ struct modem_io {
 	uint32_t magic; //filled by modemctl
 	uint32_t cmd;
 	uint32_t datasize;
-	void *data;
+	uint8_t *data;
 };
 
 struct ipc_packet {

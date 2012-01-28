@@ -1,7 +1,9 @@
 /**
  * This file is part of libsamsung-ipc.
  *
- * Copyright (C) 2011 KB <kbjetdroid@gmail.com>
+ * Copyright (C) 2012 KB <kbjetdroid@gmail.com>
+ *
+ * Implemented as per the Mocha AP-CP protocol analysis done by Dominik Marszk
  *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +20,8 @@
  *
  */
 
-#ifndef __PROTO_H__
-#define __PROTO_H__
+#ifndef __SIM_H__
+#define __SIM_H__
 
 #define PROTO_PACKET_ID_STARTUP 			1
 #define PROTO_PACKET_ID_CLEANUP 			2
@@ -36,17 +38,30 @@
 /*
  * FIXME: incorrect proto packet header
  */
-struct protoPacketHeader {
-	uint16_t type;
-	uint16_t subtype;
+struct simPacketHeader {
+	uint32_t type;
+	uint32_t subtype;
 	uint32_t buflen;
 } __attribute__((__packed__));
 
-struct protoRequest {
-	struct protoPacketHeader header;
+struct simRequest {
+	struct simPacketHeader header;
 	uint8_t *respBuf;
 } __attribute__((__packed__));
 
-void modem_response_proto(struct ipc_client *client, struct modem_io *resp);
+struct oemSimPacketHeader
+{
+	uint32_t oemType;
+	uint8_t packetSubType;
+	uint32_t oemBufLen;
+} __attribute__((__packed__));
+
+struct oemSimRequest
+{
+	struct oemSimPacketHeader header;
+	uint8_t *oemBuf;
+} __attribute__((__packed__));
+
+void modem_response_sim(struct ipc_client *client, struct modem_io *resp);
 
 #endif

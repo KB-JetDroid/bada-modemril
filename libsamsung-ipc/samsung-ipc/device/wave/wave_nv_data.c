@@ -29,8 +29,8 @@
 #include <openssl/md5.h>
 
 #include <radio.h>
-#include "crespo_nv_data.h"
-#include "crespo_ipc.h"
+#include "wave_nv_data.h"
+#include "wave_ipc.h"
 
 void md5hash2string(char *out, uint8_t *in)
 {

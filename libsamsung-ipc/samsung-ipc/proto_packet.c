@@ -42,19 +42,19 @@
 
 void modem_response_proto(struct ipc_client *client, struct modem_io *resp)
 {
-	printf("KB: Inside modem_response_proto - TBD\n");
-	int retval, count;
+	DEBUG_I("Inside modem_response_proto - TBD\n");
+	int32_t retval, count;
 	struct protoPacketHeader *rx_header;
 	struct protoRequest tx_packet;
 
 	struct modem_io request;
     void *frame;
-    unsigned char *payload;
-    int frame_length;
+    uint8_t *payload;
+    uint32_t frame_length;
 
     struct fifoPacketHeader *fifoHeader;
 
-	printf("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
+	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
 
 	hexdump(resp->data, resp->datasize);
 
@@ -63,43 +63,43 @@ void modem_response_proto(struct ipc_client *client, struct modem_io *resp)
     switch (rx_header->type)
     {
 	case PROTO_PACKET_ID_STARTUP:
-		printf("KB: PROTO_PACKET_ID_STARTUP packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STARTUP packet received\n");
 		break;
 	case PROTO_PACKET_ID_CLEANUP:
-		printf("KB: PROTO_PACKET_ID_CLEANUP packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_CLEANUP packet received\n");
 		break;
 	case PROTO_PACKET_ID_STARTNETWORK:
-		printf("KB: PROTO_PACKET_ID_STARTNETWORK packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STARTNETWORK packet received\n");
 		break;
 	case PROTO_PACKET_ID_STOPNETWORK:
-		printf("KB: PROTO_PACKET_ID_STOPNETWORK packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STOPNETWORK packet received\n");
 		break;
 	case PROTO_PACKET_ID_STARTINGNETWORKIND:
-		printf("KB: PROTO_PACKET_ID_STARTINGNETWORKIND packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STARTINGNETWORKIND packet received\n");
 		break;
 	case PROTO_PACKET_ID_STARTNETWORKCNF:
-		printf("KB: PROTO_PACKET_ID_STARTNETWORKCNF packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STARTNETWORKCNF packet received\n");
 		break;
 	case PROTO_PACKET_ID_STARTNETWORKIND:
-		printf("KB: PROTO_PACKET_ID_STARTNETWORKIND packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STARTNETWORKIND packet received\n");
 		break;
 	case PROTO_PACKET_ID_STOPNETWORKCNF:
-		printf("KB: PROTO_PACKET_ID_STOPNETWORKCNF packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STOPNETWORKCNF packet received\n");
 		break;
 	case PROTO_PACKET_ID_STOPNETWORKIND:
-		printf("KB: PROTO_PACKET_ID_STOPNETWORKIND packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STOPNETWORKIND packet received\n");
 		break;
 	case PROTO_PACKET_ID_SUSPENDNETWORKIND:
-		printf("KB: PROTO_PACKET_ID_SUSPENDNETWORKIND packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_SUSPENDNETWORKIND packet received\n");
 		break;
 	case PROTO_PACKET_ID_RESUMENETWORKIND:
-		printf("KB: PROTO_PACKET_ID_RESUMENETWORKIND packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_RESUMENETWORKIND packet received\n");
 		break;
 	default :
-    	printf("KB: Unknown Proto Packet\n");
+    	DEBUG_I("Unknown Proto Packet\n");
     	break;
     }
 
-    printf("KB: Inside modem_response_proto leaving\n");
+    DEBUG_I("Inside modem_response_proto leaving\n");
 
 }

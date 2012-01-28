@@ -53,15 +53,15 @@
 
 #define MAX_OPEN_DIRS 	10
 
-unsigned int dirArray[MAX_OPEN_DIRS];
-unsigned int dirIndex = 1;
+uint32_t dirArray[MAX_OPEN_DIRS];
+uint32_t dirIndex = 1;
 
 char *mochaRoot = "/KFAT0";
 
-int lastOpen = 0;
-int lastFile = 0;
+int32_t lastOpen = 0;
+int32_t lastFile = 0;
 
-int (*fileOps[MAX_FILE_OPS])(struct fmRequest *, struct fmResponse *) =
+int32_t (*fileOps[MAX_FILE_OPS])(struct fmRequest *, struct fmResponse *) =
 {
 	&FmOpenFile,
 	&FmCloseFile,
@@ -85,19 +85,19 @@ int (*fileOps[MAX_FILE_OPS])(struct fmRequest *, struct fmResponse *) =
 	&FmGetQuotaSpaceFile
 };
 
-int FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmOpenFile\n");
-	int retval = 0;
+	DEBUG_I("Inside FmOpenFile\n");
+	int32_t retval = 0;
 	char *fName;
-	int mode;
-	unsigned int flags = O_RDONLY;
+	int32_t mode;
+	uint32_t flags = O_RDONLY;
 
-	mode = *(int *)(rx_packet->reqBuf);
-	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((rx_packet->reqBuf) + sizeof(mode)));
+	mode = *(int32_t *)(rx_packet->reqBuf);
+	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)(rx_packet->reqBuf) + sizeof(mode)));
 	strcpy(fName, mochaRoot);
 	strcat(fName, (const char *)(rx_packet->reqBuf + sizeof(mode)));
-	printf("KB: fName %s, mode = 0x%x\n", fName, mode);
+	DEBUG_I("fName %s, mode = 0x%x\n", fName, mode);
 
 	if (!strcmp(fName, "/KFAT0/nvm/num/87_19"))
 		lastOpen = 1;
@@ -128,17 +128,17 @@ int FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-//	printf("KB: Leaving FmOpenFile fd = %d\n", retval);
+//	DEBUG_I("Leaving FmOpenFile fd = %d\n", retval);
 	return 0;
 }
 
-int FmCloseFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmCloseFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmCloseFile\n");
-	int retval = 0;
-	int fd;
+	DEBUG_I("Inside FmCloseFile\n");
+	int32_t retval = 0;
+	int32_t fd;
 
-	fd = *(int *)(rx_packet->reqBuf);
+	fd = *(int32_t *)(rx_packet->reqBuf);
 
 	retval = close(fd);
 
@@ -148,7 +148,7 @@ int FmCloseFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
 	tx_packet->respBuf = NULL;
 
-//	printf("KB: Leaving FmCloseFile fd = %d\n", fd);
+//	DEBUG_I("Leaving FmCloseFile fd = %d\n", fd);
 	if (lastOpen)
 	{
 		lastFile = 1;
@@ -160,17 +160,17 @@ int FmCloseFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	return 0;
 }
 
-int FmCreateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmCreateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmCreateFile\n");
-	int retval = 0;
+	DEBUG_I("Inside FmCreateFile\n");
+	int32_t retval = 0;
 	struct stat sb;
 	char *fName;
 
-	fName = (char *)malloc(sizeof(*mochaRoot) + strlen(rx_packet->reqBuf));
+	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)rx_packet->reqBuf));
 	strcpy(fName, mochaRoot);
 	strcat(fName, (const char *)(rx_packet->reqBuf));
-	printf("KB: fName %s\n", fName);
+	DEBUG_I("fName %s\n", fName);
 
 	retval = creat(fName, 0777);
 
@@ -180,69 +180,69 @@ int FmCreateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-	printf("KB: Leaving FmCreateFile\n");
+	DEBUG_I("Leaving FmCreateFile\n");
 	return 0;
 }
 
-int FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmReadFile\n");
-	int retval = 0;
-	int fd;
-	unsigned int size, numRead;
-	char *readBuf;
+	DEBUG_I("Inside FmReadFile\n");
+	int32_t retval = 0;
+	int32_t fd;
+	uint32_t size, numRead;
+	uint8_t *readBuf;
 
-	fd = *(int *)(rx_packet->reqBuf);
-	size = *(int *)((rx_packet->reqBuf) + sizeof(fd));
+	fd = *(int32_t *)(rx_packet->reqBuf);
+	size = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd));
 
-	readBuf = (char *)malloc(size + sizeof(numRead));
+	readBuf = (uint8_t *)malloc(size + sizeof(numRead));
 
 	numRead = read(fd, (readBuf+ sizeof(numRead)), size);
 
 	memcpy(readBuf, &numRead, sizeof(numRead));
 
-	tx_packet->errorVal = ((int)numRead < 0 ? errno : 0); //0; //retval;
+	tx_packet->errorVal = ((int32_t)numRead < 0 ? errno : 0); //0; //retval;
 	tx_packet->funcRet = numRead; //0; //retval;
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + numRead; //0x08; //0x100;
 	tx_packet->respBuf = readBuf;
 
-//	printf("KB: Leaving FmReadFile\n");
+//	DEBUG_I("Leaving FmReadFile\n");
 	return 0;
 }
 
-int FmWriteFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmWriteFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmWriteFile\n");
-	int retval = 0;
-	int fd;
-	unsigned int size, numWrite;
-	char *writeBuf;
+	DEBUG_I("Inside FmWriteFile\n");
+	int32_t retval = 0;
+	int32_t fd;
+	uint32_t size, numWrite;
+	uint8_t *writeBuf;
 
-	fd = *(int *)(rx_packet->reqBuf);
-	size = *(int *)((rx_packet->reqBuf) + sizeof(fd));
+	fd = *(int32_t *)(rx_packet->reqBuf);
+	size = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd));
 
-	writeBuf = (char *)((rx_packet->reqBuf) + sizeof(fd) + sizeof(size));
+	writeBuf = (uint8_t *)((rx_packet->reqBuf) + sizeof(fd) + sizeof(size));
 
 	numWrite = write(fd, writeBuf, size);
 
-	tx_packet->errorVal = ((int) numWrite < 0 ? errno : 0); //0; //retval;
+	tx_packet->errorVal = ((int32_t) numWrite < 0 ? errno : 0); //0; //retval;
 	tx_packet->funcRet = numWrite; //0; //retval;
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-//	printf("KB: Leaving FmWriteFile\n");
+//	DEBUG_I("Leaving FmWriteFile\n");
 	return 0;
 }
 
-int FmFlushFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmFlushFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmFlushFile\n");
-	int retval = 0;
-	int fd;
+	DEBUG_I("Inside FmFlushFile\n");
+	int32_t retval = 0;
+	int32_t fd;
 
-	fd = *(int *)(rx_packet->reqBuf);
+	fd = *(int32_t *)(rx_packet->reqBuf);
 
 	retval = fsync(fd);
 
@@ -252,22 +252,22 @@ int FmFlushFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
 	tx_packet->respBuf = NULL;
 
-	printf("KB: Leaving FmFlushFile\n");
+	DEBUG_I("Leaving FmFlushFile\n");
 	return 0;
 }
 
-int FmSeekFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmSeekFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmSeekFile\n");
-	int retval = 0;
-	int fd;
-	unsigned int offset, origin;
+	DEBUG_I("Inside FmSeekFile\n");
+	int32_t retval = 0;
+	int32_t fd;
+	uint32_t offset, origin;
 
-	fd = *(int *)(rx_packet->reqBuf);
-	offset = *(int *)((rx_packet->reqBuf) + sizeof(fd));
-	origin = *(int *)((rx_packet->reqBuf) + sizeof(fd) + sizeof(offset));
+	fd = *(int32_t *)(rx_packet->reqBuf);
+	offset = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd));
+	origin = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd) + sizeof(offset));
 
-	printf("KB: Inside FmSeekFile fd = %d, offset = 0x%x, origin = 0x%x\n", fd, offset, origin);
+	DEBUG_I("Inside FmSeekFile fd = %d, offset = 0x%x, origin = 0x%x\n", fd, offset, origin);
 
 	retval = lseek(fd, offset, origin);
 
@@ -277,17 +277,17 @@ int FmSeekFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-	printf("KB: Leaving FmSeekFile fd = %d\n", fd);
+	DEBUG_I("Leaving FmSeekFile fd = %d\n", fd);
 	return 0;
 }
 
-int FmTellFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmTellFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmTellFile\n");
-	int retval = 0;
-	int fd;
+	DEBUG_I("Inside FmTellFile\n");
+	int32_t retval = 0;
+	int32_t fd;
 
-	fd = *(int *)(rx_packet->reqBuf);
+	fd = *(int32_t *)(rx_packet->reqBuf);
 
 	retval = lseek(fd, 0, SEEK_CUR); //ftell(fd);
 
@@ -297,20 +297,20 @@ int FmTellFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
 	tx_packet->respBuf = NULL;
 
-	printf("KB: Leaving FmTellFile fd = %d\n", fd);
+	DEBUG_I("Leaving FmTellFile fd = %d\n", fd);
 	return 0;
 }
 
-int FmRemoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmRemoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	//printf("KB: Inside FmRemoveFile\n");
-	int retval = 0;
+	//DEBUG_I("Inside FmRemoveFile\n");
+	int32_t retval = 0;
 	char *fName;
 
-	fName = (char *)malloc(sizeof(*mochaRoot) + strlen(rx_packet->reqBuf));
+	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)rx_packet->reqBuf));
 	strcpy(fName, mochaRoot);
 	strcat(fName, (const char *)(rx_packet->reqBuf));
-	printf("KB: fName %s\n", fName);
+	DEBUG_I("fName %s\n", fName);
 
 	retval = remove(fName);
 
@@ -320,16 +320,16 @@ int FmRemoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-	printf("KB: Leaving FmRemoveFile\n");
+	DEBUG_I("Leaving FmRemoveFile\n");
 	return retval;
 
 }
 
-int FmMoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmMoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmMoveFile\n");
+	DEBUG_I("Inside FmMoveFile\n");
 
-	printf("KB: Leaving FmMoveFile\n");
+	DEBUG_I("Leaving FmMoveFile\n");
 	return 0;
 }
 
@@ -346,17 +346,17 @@ TmDateTime fmTime = {
 		.second = 45,
 };
 
-int FmGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-//	printf("KB: Inside FmGetFileAttrFile\n");
-	int retval = 0;
+//	DEBUG_I("Inside FmGetFileAttrFile\n");
+	int32_t retval = 0;
 	struct stat sb;
 	char *fName;
 
-	fName = (char *)malloc(sizeof(*mochaRoot) + strlen(rx_packet->reqBuf));
+	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)rx_packet->reqBuf));
 	strcpy(fName, mochaRoot);
 	strcat(fName, (const char *)(rx_packet->reqBuf));
-//	printf("KB: fName %s\n", fName);
+//	DEBUG_I("fName %s\n", fName);
 
 	retval = stat(fName, &sb);
 
@@ -422,20 +422,20 @@ int FmGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 #endif
 
 	//memcpy(tx_packet->respBuf, &fAttr, sizeof(FmFileAttribute));
-	tx_packet->respBuf = fAttr;
+	tx_packet->respBuf = (uint8_t *)fAttr;
 
-//	printf("KB: Leaving FmGetFileAttrFile\n");
+//	DEBUG_I("Leaving FmGetFileAttrFile\n");
 	return 0;
 }
 
-int FmFGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmFGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmFGetFileAttrFile\n");
-	int retval = 0;
+	DEBUG_I("Inside FmFGetFileAttrFile\n");
+	int32_t retval = 0;
 	struct stat sb;
-	int fd;
+	int32_t fd;
 
-	fd = *(int *)(rx_packet->reqBuf);
+	fd = *(int32_t *)(rx_packet->reqBuf);
 
 	retval = fstat(fd, &sb);
 
@@ -495,39 +495,39 @@ int FmFGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet
 	}
 
 	//memcpy(tx_packet->respBuf, &fAttr, sizeof(FmFileAttribute));
-	tx_packet->respBuf = fAttr;
+	tx_packet->respBuf = (uint8_t *)fAttr;
 
 	return retval;
 }
 
-int FmSetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmSetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmSetFileAttrFile - TBD\n");
+	DEBUG_I("Inside FmSetFileAttrFile - TBD\n");
 
-	printf("KB: Leaving FmSetFileAttrFile\n");
+	DEBUG_I("Leaving FmSetFileAttrFile\n");
 	return 0;
 }
 
-int FmTruncateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmTruncateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmTruncateFile - TBD\n");
+	DEBUG_I("Inside FmTruncateFile - TBD\n");
 
-	printf("KB: Leaving FmTruncateFile\n");
+	DEBUG_I("Leaving FmTruncateFile\n");
 	return 0;
 }
 
-int FmOpenDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmOpenDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmOpenDirFile\n");
-	int retval = 0;
+	DEBUG_I("Inside FmOpenDirFile\n");
+	int32_t retval = 0;
 	DIR * dir;
-	char *payload;
+	uint8_t *payload;
 	char *fName;
 
-	fName = (char *)malloc(sizeof(*mochaRoot) + strlen(rx_packet->reqBuf));
+	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)rx_packet->reqBuf));
 	strcpy(fName, mochaRoot);
 	strcat(fName, (const char *)(rx_packet->reqBuf));
-	printf("KB: fName %s\n", fName);
+	DEBUG_I("fName %s\n", fName);
 	dir = opendir(fName);
 
 	dirArray[dirIndex++] = dir;
@@ -538,20 +538,20 @@ int FmOpenDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-	printf("KB: Leaving FmOpenDirFile\n");
+	DEBUG_I("Leaving FmOpenDirFile\n");
 	return 0;
 }
 
-int FmCloseDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmCloseDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmCloseDirFile\n");
+	DEBUG_I("Inside FmCloseDirFile\n");
 
-	int retval = 0;
+	int32_t retval = 0;
 	struct dirent * dir;
-	char *payload;
-	int fd;
+	uint8_t *payload;
+	int32_t fd;
 
-	fd = *(int *)(rx_packet->reqBuf);
+	fd = *(int32_t *)(rx_packet->reqBuf);
 //	dir = closedir((DIR *)dirArray[fd]);
 
 	tx_packet->errorVal = 0;
@@ -560,18 +560,18 @@ int FmCloseDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-	printf("KB: Leaving FmCloseDirFile\n");
+	DEBUG_I("Leaving FmCloseDirFile\n");
 	return 0;
 }
 
-int FmReadDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmReadDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmReadDirFile\n");
-	int retval = 0;
+	DEBUG_I("Inside FmReadDirFile\n");
+	int32_t retval = 0;
 	struct dirent * dir;
-	int fd;
+	int32_t fd;
 
-	fd = *(int *)(rx_packet->reqBuf);
+	fd = *(int32_t *)(rx_packet->reqBuf);
 	//dir = readdir((DIR *)dirArray[fd]);
 
 	// TODO :
@@ -583,80 +583,80 @@ int FmReadDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-	printf("KB: Leaving FmReadDirFile\n");
+	DEBUG_I("Leaving FmReadDirFile\n");
 	return 0;
 }
 
-int FmCreateDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmCreateDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmCreateDirFile\n");
-	int retval = 0;
+	DEBUG_I("Inside FmCreateDirFile\n");
+	int32_t retval = 0;
 	char *fName;
 
-	fName = (char *)malloc(sizeof(*mochaRoot) + strlen(rx_packet->reqBuf));
+	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)rx_packet->reqBuf));
 	strcpy(fName, mochaRoot);
 	strcat(fName, (const char *)(rx_packet->reqBuf));
-	printf("KB: fName %s\n", fName);
+	DEBUG_I("fName %s\n", fName);
 
 	retval = mkdir(fName, 0777);
 
 	if(!retval)
-		printf("KB: error creating directory %s\n", fName);
+		DEBUG_I("error creating directory %s\n", fName);
 	tx_packet->errorVal = 0;
 	tx_packet->funcRet = 0;
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-	printf("KB: Leaving FmCreateDirFile\n");
+	DEBUG_I("Leaving FmCreateDirFile\n");
 	return retval;
 }
 
-int FmRemoveDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmRemoveDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmRemoveDirFile\n");
+	DEBUG_I("Inside FmRemoveDirFile\n");
 
-	printf("KB: Leaving FmRemoveDirFile\n");
+	DEBUG_I("Leaving FmRemoveDirFile\n");
 	return 0;
 }
 
-int FmGetQuotaSpaceFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmGetQuotaSpaceFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	printf("KB: Inside FmGetQuotaSpaceFile\n");
+	DEBUG_I("Inside FmGetQuotaSpaceFile\n");
 
-	printf("KB: Leaving FmGetQuotaSpaceFile\n");
+	DEBUG_I("Leaving FmGetQuotaSpaceFile\n");
 	return 0;
 }
 
-int get_request_packet(void *data, struct fmRequest *rx_packet)
+int32_t get_request_packet(void *data, struct fmRequest *rx_packet)
 {
 	struct fmPacketHeader *header;
 
 	header = (struct fmPacketHeader *)data;
 	rx_packet->header = header;
-	rx_packet->reqBuf = (char *)(data + sizeof(struct fmPacketHeader));
+	rx_packet->reqBuf = (uint8_t *)((uint8_t *)data + sizeof(struct fmPacketHeader));
 
-//	printf("Packet type = 0x%x\n", header->fmPacketType);
-//	printf("Packet Length = 0x%x\n", header->packetLen);
-	printf("Packet counter = 0x%x\n", header->reqCounter);
-//	printf("File name = %s\n", (char *)(rx_packet->reqBuf));
+//	DEBUG_I("Packet type = 0x%x\n", header->fmPacketType);
+//	DEBUG_I("Packet Length = 0x%x\n", header->packetLen);
+	DEBUG_I("Packet counter = 0x%x\n", header->reqCounter);
+//	DEBUG_I("File name = %s\n", (char *)(rx_packet->reqBuf));
 
 	return 0;
 
 }
 
-int modem_response_fm(struct ipc_client *client, struct modem_io *resp)
+int32_t modem_response_fm(struct ipc_client *client, struct modem_io *resp)
 {
-	//printf("Entering modem_response_fm\n");
+	//DEBUG_I("Entering modem_response_fm\n");
 
-	int retval;
+	int32_t retval;
 	struct fmRequest rx_packet;
 	struct fmResponse tx_packet;
 	struct fmArgs args;
 	struct modem_io request;
-    unsigned char *frame;
-    unsigned char *payload;
-    int frame_length;
+    uint8_t *frame;
+    uint8_t *payload;
+    int32_t frame_length;
 
     get_request_packet(resp->data, &rx_packet);
 
@@ -670,7 +670,7 @@ int modem_response_fm(struct ipc_client *client, struct modem_io *resp)
 	request.datasize = frame_length;
 
 
-    frame = (unsigned char*)malloc(frame_length);
+    frame = (uint8_t*)malloc(frame_length);
 
     memcpy(frame, tx_packet.header, sizeof(struct fmPacketHeader));
 

@@ -30,14 +30,14 @@
 #define TAPI_TYPE_CONFIG 	6 //n subtypes, called API_IDs (must be nonzero)
 
 struct tapiPacketHeader {
-	unsigned short type;
-	unsigned short subtype;
-	unsigned int buflen;
+	uint16_t tapiService;
+	uint16_t tapiServiceFunction;
+	uint32_t len;
 } __attribute__((__packed__));
 
 struct tapiRequest {
 	struct tapiPacketHeader header;
-	unsigned char *respBuf;
+	uint8_t *respBuf;
 } __attribute__((__packed__));
 
 void modem_response_tapi(struct ipc_client *client, struct modem_io *resp);

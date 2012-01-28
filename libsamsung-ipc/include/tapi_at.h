@@ -33,6 +33,6 @@
  * All the TAPI AT context structures generic to all Mocha devices will be defined here
  */
 
-void tapi_at_handler(unsigned short tapiAtType, unsigned int tapiAtLength, char *tapiAtData);
+void tapi_at_handler(uint16_t tapiAtType, uint32_t tapiAtLength, uint8_t *tapiAtData);
 
 #endif

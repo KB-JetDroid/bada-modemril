@@ -52,7 +52,7 @@ void ipc_client_log(struct ipc_client *client, const char *message, ...)
     va_end(args);
 }
 
-struct ipc_client* ipc_client_new(int client_type)
+struct ipc_client* ipc_client_new(int32_t client_type)
 {
     struct ipc_client *client;
     struct ipc_ops *ops = NULL;
@@ -76,7 +76,7 @@ memcpy(client->handlers, &ipc_default_handlers, sizeof(struct ipc_handlers));
     return client;
 }
 
-int ipc_client_free(struct ipc_client *client)
+int32_t ipc_client_free(struct ipc_client *client)
 {
     free(client->handlers);
     free(client);
@@ -84,7 +84,7 @@ int ipc_client_free(struct ipc_client *client)
     return 0;
 }
 
-int ipc_client_set_log_handler(struct ipc_client *client, ipc_client_log_handler_cb log_handler_cb, void *user_data)
+int32_t ipc_client_set_log_handler(struct ipc_client *client, ipc_client_log_handler_cb log_handler_cb, void *user_data)
 {
     if(client == NULL)
         return -1;
@@ -95,7 +95,7 @@ int ipc_client_set_log_handler(struct ipc_client *client, ipc_client_log_handler
     return 0;
 }
 
-int ipc_client_set_handlers(struct ipc_client *client, struct ipc_handlers *handlers)
+int32_t ipc_client_set_handlers(struct ipc_client *client, struct ipc_handlers *handlers)
 {
     if(client == NULL)
         return -1;
@@ -107,7 +107,7 @@ int ipc_client_set_handlers(struct ipc_client *client, struct ipc_handlers *hand
     return 0;
 }
 
-int ipc_client_set_io_handlers(struct ipc_client *client, 
+int32_t ipc_client_set_io_handlers(struct ipc_client *client,
                                ipc_io_handler_cb read, void *read_data,
                                ipc_io_handler_cb write, void *write_data)
 {
@@ -126,7 +126,7 @@ int ipc_client_set_io_handlers(struct ipc_client *client,
     return 0;
 }
 
-int ipc_client_set_all_handlers_data(struct ipc_client *client, void *data)
+int32_t ipc_client_set_all_handlers_data(struct ipc_client *client, void *data)
 {
     if(client == NULL)
         return -1;
@@ -143,7 +143,7 @@ int ipc_client_set_all_handlers_data(struct ipc_client *client, void *data)
     return 0;
 }
 
-int ipc_client_bootstrap_modem(struct ipc_client *client)
+int32_t ipc_client_bootstrap_modem(struct ipc_client *client)
 {
     if (client == NULL ||
         client->ops == NULL ||
@@ -153,7 +153,7 @@ int ipc_client_bootstrap_modem(struct ipc_client *client)
     return client->ops->bootstrap(client);
 }
 
-int ipc_client_modem_operations(struct ipc_client *client, void *data, unsigned int cmd)
+int32_t ipc_client_modem_operations(struct ipc_client *client, void *data, uint32_t cmd)
 {
     if (client == NULL ||
         client->ops == NULL ||
@@ -163,10 +163,10 @@ int ipc_client_modem_operations(struct ipc_client *client, void *data, unsigned 
     return client->ops->modem_operations(client, data, cmd);
 }
 
-int ipc_client_open(struct ipc_client *client)
+int32_t ipc_client_open(struct ipc_client *client)
 {
-    int type;
-    int fd;
+    int32_t type;
+    int32_t fd;
 
     if (client == NULL ||
         client->handlers == NULL ||
@@ -178,7 +178,7 @@ int ipc_client_open(struct ipc_client *client)
     return client->handlers->open(&type, 0, client->handlers->open_data);
 }
 
-int ipc_client_close(struct ipc_client *client)
+int32_t ipc_client_close(struct ipc_client *client)
 {
     if (client == NULL ||
         client->handlers == NULL ||
@@ -188,7 +188,7 @@ int ipc_client_close(struct ipc_client *client)
     return client->handlers->close(NULL, 0, client->handlers->close_data);
 }
 
-int ipc_client_power_on(struct ipc_client *client)
+int32_t ipc_client_power_on(struct ipc_client *client)
 {
 	return 0; //for jet
     if (client == NULL ||
@@ -199,7 +199,7 @@ int ipc_client_power_on(struct ipc_client *client)
     return client->handlers->power_on(client->handlers->power_on_data);
 }
 
-int ipc_client_power_off(struct ipc_client *client)
+int32_t ipc_client_power_off(struct ipc_client *client)
 {
 	return 0; //for jet
 	if (client == NULL ||
@@ -210,7 +210,7 @@ int ipc_client_power_off(struct ipc_client *client)
     return client->handlers->power_off(client->handlers->power_off_data);
 }
 
-int _ipc_client_send(struct ipc_client *client, struct modem_io *request)
+int32_t _ipc_client_send(struct ipc_client *client, struct modem_io *request)
 {
     if (client == NULL ||
         client->ops == NULL ||
@@ -232,7 +232,7 @@ inline void ipc_client_send_exec(struct ipc_client *client, const unsigned short
 }
 
 /* Wrapper for ipc_send */
-void ipc_client_send(struct ipc_client *client, const unsigned short command, const char type, unsigned char *data, const int length, unsigned char mseq)
+void ipc_client_send(struct ipc_client *client, const unsigned short command, const char type, unsigned char *data, const int32_t length, unsigned char mseq)
 {
     struct ipc_message_info request;
 
@@ -247,7 +247,7 @@ void ipc_client_send(struct ipc_client *client, const unsigned short command, co
     _ipc_client_send(client, &request);
 }
 
-int ipc_client_recv(struct ipc_client *client, struct modem_io *response)
+int32_t ipc_client_recv(struct ipc_client *client, struct modem_io *response)
 {
     if (client == NULL ||
         client->ops == NULL ||

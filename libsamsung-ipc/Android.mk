@@ -20,6 +20,7 @@ samsung-ipc_files := \
 	samsung-ipc/sec.c \
 	samsung-ipc/fm_packet.c \
 	samsung-ipc/proto_packet.c \
+	samsung-ipc/sim_packet.c \
 	samsung-ipc/ipc_packet.c \
 	samsung-ipc/tapi_packet.c \
 	samsung-ipc/tapi_call.c \
@@ -38,6 +39,13 @@ ifeq ($(TARGET_DEVICE),crespo)
 	LOCAL_CFLAGS += -DDEVICE_CRESPO
 endif
 
+ifeq ($(TARGET_DEVICE),wave)
+	device_files := samsung-ipc/device/$(TARGET_DEVICE)/$(TARGET_DEVICE)_nv_data.c
+	LOCAL_CFLAGS += -Iexternal/openssl/include
+	LOCAL_LDFLAGS += -lcrypto
+	LOCAL_CFLAGS += -DDEVICE_CRESPO
+endif
+
 ifeq ($(TARGET_DEVICE),h1)
 	LOCAL_CFLAGS += -DDEVICE_H1
 endif
@@ -50,6 +58,7 @@ endif
 
 ifeq ($(DEBUG),true)
 	LOCAL_CFLAGS += -DDEBUG
+	LOCAL_CFLAGS += -DDEBUG_INFO
 	LOCAL_CFLAGS += -DLOG_STDOUT
 endif
 
@@ -83,6 +92,11 @@ ifeq ($(TARGET_DEVICE),jet)
 endif
 ifeq ($(TARGET_DEVICE),wave)
 	LOCAL_CFLAGS += -DDEVICE_WAVE
+endif
+ifeq ($(DEBUG),true)
+	LOCAL_CFLAGS += -DDEBUG
+	LOCAL_CFLAGS += -DDEBUG_INFO
+	LOCAL_CFLAGS += -DLOG_STDOUT
 endif
 
 LOCAL_SRC_FILES := $(modemctrl_files)

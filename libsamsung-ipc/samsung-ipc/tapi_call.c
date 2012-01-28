@@ -28,14 +28,14 @@
  *
  */
 
-void tapi_call_handler(unsigned short tapiCallType, unsigned int tapiCallLength, char *tapiCallData)
+void tapi_call_handler(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *tapiCallData)
 {
 	struct tapiRequest tx_packet;
 
 	struct modem_io request;
-    unsigned char *frame;
-    unsigned char *payload;
-    int frame_length;
+    uint8_t *frame;
+    uint8_t *payload;
+    uint32_t frame_length;
 
     switch(tapiCallType)
     {

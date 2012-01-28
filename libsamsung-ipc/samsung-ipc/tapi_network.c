@@ -1,7 +1,8 @@
 /**
  * This file is part of libsamsung-ipc.
  *
- * Copyright (C) 2012 KB <kbjetdroid@gmail.com>
+ * Copyright (C) 2012 Dominik Marszk <dmarszk@gmail.com>
+ *                    KB <kbjetdroid@gmail.com>
  *
  * Implemented as per the Mocha AP-CP protocol analysis done by Dominik Marszk
  *
@@ -19,6 +20,10 @@
  * along with libsamsung-ipc.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
 #include <radio.h>
 #include <tapi_packet.h>
 #include <tapi_network.h>
@@ -28,20 +33,20 @@
  *
  */
 
-void tapi_network_handler(unsigned short tapiNetType, unsigned int tapiNetLength, char *tapiNetData)
+void tapi_network_handler(uint16_t tapiNetType, uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
 	struct tapiRequest tx_packet;
 
 	struct modem_io request;
-    unsigned char *frame;
-    unsigned char *payload;
-    int frame_length;
+    uint8_t *frame;
+    uint8_t *payload;
+    uint32_t frame_length;
 
     switch(tapiNetType)
     {
-	case TAPI_NETWORK_APIREQ:		
-		tapi_network_apiRequest(tapiNetLength, tapiNetData);
-		break;
+//	case TAPI_NETWORK_APIREQ:
+//		tapi_network_apiRequest(tapiNetLength, tapiNetData);
+//		break;
 	case TAPI_NETWORK_STARTUP:	
 		tapi_network_startup(tapiNetLength, tapiNetData);
 		break;
@@ -65,55 +70,55 @@ void tapi_network_handler(unsigned short tapiNetType, unsigned int tapiNetLength
     }
 }
 
-void tapi_network_apiRequest(unsigned int tapiNetLength, char *tapiNetData)
+void tapi_network_apiRequest(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {	
-	printf("%s\n", __FUNCTION__);
+	DEBUG_I("\n");
 	//call handler here
 }
 
-void tapi_network_startup(unsigned int tapiNetLength, char *tapiNetData)
+void tapi_network_startup(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
-	struct tapiStartupInfo* startInfo = (struct tapiStartupInfo*)(tapiNetData);	
-	printf("%s: \bAuto:%d,bAttach:%d,mode=%d,networkOrder:%d,serviceDomain:%d,subs:%d,bFlight=%d\n", __FUNCTION__, startInfo->bAuto, starInfo->bAttach, startInfo->mode, startInfo->networkOrder, startInfo->serviceDomain, startInfo->subs, startInfo->bFlight);	
+	struct tapiStartupNetworkInfo* startInfo = (struct tapiStartupNetworkInfo*)(tapiNetData);
+	DEBUG_I("Auto:%d,bAttach:%d,mode=%d,networkOrder:%d,serviceDomain:%d,subs:%d,bFlight=%d\n", startInfo->bAuto, startInfo->bAttach, startInfo->mode, startInfo->networkOrder, startInfo->serviceDomain, startInfo->subs, startInfo->bFlight);
 	//maybe memcpy info and call handler here	
 }
 
-void tapi_network_setSubscriptionMode(unsigned int tapiNetLength, char *tapiNetData)
+void tapi_network_setSubscriptionMode(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
 	uint8_t subscriptionMode = (uint8_t)tapiNetData[0];	
-	printf("%s: mode:%d\n", __FUNCTION__, subscriptionMode);
+	DEBUG_I("mode:%d\n", subscriptionMode);
 	//TODO: bounce-back packet to CP, with the same type, subtype and mode
 }
-void tapi_network_networkSelect(unsigned int tapiNetLength, char *tapiNetData)
+void tapi_network_networkSelect(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {	
 	struct tapiNetworkInfo* netInfo = (struct tapiNetworkInfo*)(tapiNetData);	
 	
-	printf("%s: serviceLevel=%d, serviceType=%d, psServiceType=%d, systemId.systemType=%d,bRoaming=%d,name=%s, spn =%s,registrationFail.state = %d, registrationFail.cause = %d, bDisplayPplmn = %d, bDisplaySpn = %d\n", __FUNCTION__, netInfo->serviceLevel, netInfo->serviceType, netInfo->psServiceType, netInfo->systemType, netInfo->bRoaming, &netInfo->name, &netInfo->spn, netInfo->registrationFail.state, netInfo->registrationFail.cause, netInfo->bDisplayPplmn, netInfo->bDisplaySpn);
+	DEBUG_I("serviceLevel=%d, serviceType=%d, psServiceType=%d, systemId.systemType=%d,bRoaming=%d,name=%s, spn =%s,registrationFail.state = %d, registrationFail.cause = %d, bDisplayPplmn = %d, bDisplaySpn = %d\n", netInfo->serviceLevel, netInfo->serviceType, netInfo->psServiceType, netInfo->systemType, netInfo->bRoaming, netInfo->name, netInfo->spn, netInfo->registrationFail.state, netInfo->registrationFail.cause, netInfo->bDisplayPplmn, netInfo->bDisplaySpn);
 	//maybe memcpy info and call handler here	
 }
 
-void tapi_network_radioInfo(unsigned int tapiNetLength, char *tapiNetData)
+void tapi_network_radioInfo(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
 
-	printf("%s\n", __FUNCTION__);
-	char* radioInfo = malloc(tapiNetLength);
+	DEBUG_I("\n");
+	uint8_t* radioInfo = malloc(tapiNetLength);
 	memcpy(radioInfo, tapiNetData, tapiNetLength);
 	//call handler here
 	free(radioInfo);
 }
 
-void tapi_network_commonError(unsigned int tapiNetLength, char *tapiNetData)
+void tapi_network_commonError(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {	
 	uint8_t networkOptError = (uint8_t)tapiNetData[0];
-	printf("%s networkOptError: %d\n", __FUNCTION__, networkOptError);
+	DEBUG_I("networkOptError: %d\n", networkOptError);
 	//call handler here
 }
 
-void tapi_network_cellInfo(unsigned int tapiNetLength, char *tapiNetData)
+void tapi_network_cellInfo(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {	
 	struct tapiCellInfo* cellInfo = (struct tapiCellInfo*)(tapiNetData);	
-	printf("%s - cbchStatus:%d, bCellChanged:%d, bRACChanged:%d, bLACChanged:%d, bPLMNChanged:%d\n", __FUNCTION__, cellInfo->cbchStatus, cellInfo->bCellChanged, cellInfo->bRACChanged, cellInfo->bLacChanged, cellInfo->bPLMNChanged);
-	printf("%s - cellId:%x %x %x %x, racId:%x, ladId:%x %x, plmnId:%x %x %x)\n", __FUNCTION__, cellInfo->cellId[0], cellInfo->cellId[1], cellInfo->cellId[2], cellInfo->cellId[3], cellInfo->racId, cellInfo->ladId[0], cellInfo->ladId[1], cellInfo->plmnId[0], cellInfo->plmnId[1], cellInfo->plmnId[2]);
+	DEBUG_I("cbchStatus:%d, bCellChanged:%d, bRACChanged:%d, bLACChanged:%d, bPLMNChanged:%d\n", cellInfo->cbchStatus, cellInfo->bCellChanged, cellInfo->bRACChanged, cellInfo->bLACChanged, cellInfo->bPLMNChanged);
+	DEBUG_I("cellId:%x %x %x %x, racId:%x, ladId:%x %x, plmnId:%x %x %x)\n", cellInfo->cellId[0], cellInfo->cellId[1], cellInfo->cellId[2], cellInfo->cellId[3], cellInfo->racId, cellInfo->ladId[0], cellInfo->ladId[1], cellInfo->plnmId[0], cellInfo->plnmId[1], cellInfo->plnmId[2]);
 	
 	//call handler here
 }
