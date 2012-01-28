@@ -126,27 +126,35 @@ void sim_parse_session_event(uint8_t* buf, uint32_t bufLen)
 int sim_send_oem_req(struct ipc_client *client, uint8_t* simBuf, uint8_t simBufLen)
 {	
 	//simBuf is expected to contain full oemPacket structure
+	struct modem_io request;
 	struct simPacket sim_packet;	
 	sim_packet.header.type = 0;
-	sim_packet.header.subType = (struct oemSimPacketHeader *)(simBuf)->type;
-	sim_packet.header.bufLen = bufLen;
+	sim_packet.header.subType = ((struct oemSimPacketHeader *)(simBuf))->type;
+	sim_packet.header.bufLen = simBufLen;
 	sim_packet.simBuf = simBuf;
 	
-	int bufLen = sim_packet.header.bufLen + sizeof(struct simPacketHeader);
-	char* fifobuf = malloc(bufLen);
-	memcpy(fifobuf, &(sim_packet.header), sizeof(struct simPacketHeader));
+	uint32_t bufLen = sim_packet.header.bufLen + sizeof(struct simPacketHeader);
+	uint8_t* fifobuf = malloc(bufLen);
+	memcpy(fifobuf, &sim_packet.header, sizeof(struct simPacketHeader));
 	memcpy(fifobuf + sizeof(struct simPacketHeader), sim_packet.simBuf, sim_packet.header.bufLen);
-	free(sim_packet.simBuf);
-	//TODO: send fifo frame of type 0x2 here with fifobuf and length = bufLen, should modem_io be used for that?
+
+	request.magic = 0xCAFECAFE;
+	request.cmd = FIFO_PKT_SIM;
+	request.datasize = bufLen;
+
+	request.data = fifobuf;
+
+	_ipc_client_send(client, &request);
+
 	free(fifobuf);
 	//TODO: return nonzero in case of failure
 	return 0;
 }
 
-int sim_send_oem_data(struct ipc_client *client, uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint8_t oemBufLen)
+int sim_send_oem_data(struct ipc_client *client, uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32_t oemBufLen)
 {	
 	SIM_VALIDATE_SID(hSim);
-	
+
 	struct oemSimPacketHeader oem_header;	
 	oem_header.type = packetType;
 	oem_header.hSim = hSim; //session id
@@ -172,7 +180,7 @@ int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, cha
 	memset(packetBuf, 0x00, 10);
 	packetBuf[0] = pinType;
 	memcpy(packetBuf+1, pin, strlen(pin)); //max pin len is 9 digits
-	if(sim_send_oem_data(client, hSim, 0xB, &packetBuf, 10) != 0)
+	if(sim_send_oem_data(client, hSim, 0xB, packetBuf, 10) != 0)
 	{
 		//TODO: mark session non-busy
 		return -1;
