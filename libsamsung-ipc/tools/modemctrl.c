@@ -39,6 +39,8 @@
 #include <fm_packet.h>
 #include <ipc_packet.h>
 #include <tapi_packet.h>
+#include <proto_packet.h>
+#include <sim_packet.h>
 
 #include <dlfcn.h>
 
@@ -197,7 +199,11 @@ void modem_response_handle(struct ipc_client *client, struct modem_io *resp)
         case FIFO_PKT_FILE:
         	ret = modem_response_fm(client, resp);
         	if (ret)
+        	{
         		modem_response_tapi_init(client, resp);
+        		sim_atk_open(client, NULL);
+        		sim_open_to_modem(client, NULL);
+        	}
         break;
         case FIFO_PKT_DVB_H_DebugLevel:
             //modem_response_dbg_level(client, resp);

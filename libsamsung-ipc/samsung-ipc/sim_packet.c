@@ -194,6 +194,7 @@ int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, cha
 int sim_atk_open(struct ipc_client *client, uint32_t sid)
 {
 	//TODO: verify ATK session and create/open it and return handler to it?!
+	DEBUG_I("Sending\n");
 	if(sim_send_oem_data(client, 0xA, 0x1B, NULL, 0) != 0) //0xA hSim is hardcoded in bada
 		return -1;
 	return 0;
@@ -202,6 +203,7 @@ int sim_atk_open(struct ipc_client *client, uint32_t sid)
 int sim_open_to_modem(struct ipc_client *client, uint8_t hSim)
 {
 	//TODO: verify, create and initialize session, send real hSim
+	DEBUG_I("Sending\n");
 	if(sim_send_oem_data(client, 0x4, 0x1, NULL, 0) != 0) //why it starts from 4? hell knows 
 		return -1;
 	return 0;
