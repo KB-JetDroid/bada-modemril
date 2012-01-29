@@ -119,7 +119,7 @@ int proto_send_packet(struct ipc_client *client, struct protoPacket* protoReq)
 
 	request.data = fifobuf;
 
-	_ipc_client_send(client, &request);
+	ipc_client_send(client, &request);
 
 	free(fifobuf);
 	//TODO: return nonzero in case of failure

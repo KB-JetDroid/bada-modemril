@@ -144,7 +144,7 @@ int sim_send_oem_req(struct ipc_client *client, uint8_t* simBuf, uint8_t simBufL
 
 	request.data = fifobuf;
 
-	_ipc_client_send(client, &request);
+	ipc_client_send(client, &request);
 
 	free(fifobuf);
 	//TODO: return nonzero in case of failure

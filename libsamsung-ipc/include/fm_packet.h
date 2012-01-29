@@ -132,7 +132,7 @@ typedef struct
 	TmDateTime	dt;					/** Creation date/time*/
 	uint32_t		oldAllocatedSize;	// for backward compatibilty with previous PC tools
 	TmDateTime	stModifiedDataTime;	/** DON NOT USE THIS FIELD YET!!!*/
-	uint64_t		u64EntryUniqID;		/** uniq ID for file or directory, data cluster number + ctimeuint32_tigned long		uReservedField;		/** DON NOT USE THIS FIELD YET!!!*/
+	uint64_t		u64EntryUniqID;		/** uniq ID for file or directory, data cluster number + ctimeuint32_tigned long		uReservedField;		DON NOT USE THIS FIELD YET!!!*/
 	uint32_t		uReservedField;		/** DON NOT USE THIS FIELD YET!!!*/
 	uint64_t/*UINT64*/	fileSize;			/** File Size in bytes */
 	uint64_t/*UINT64*/	allocatedSize;	/** real allocated size of file & directory in sub System

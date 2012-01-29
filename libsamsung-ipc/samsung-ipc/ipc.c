@@ -210,7 +210,7 @@ int32_t ipc_client_power_off(struct ipc_client *client)
     return client->handlers->power_off(client->handlers->power_off_data);
 }
 
-int32_t _ipc_client_send(struct ipc_client *client, struct modem_io *request)
+int32_t ipc_client_send(struct ipc_client *client, struct modem_io *request)
 {
     if (client == NULL ||
         client->ops == NULL ||
@@ -218,33 +218,6 @@ int32_t _ipc_client_send(struct ipc_client *client, struct modem_io *request)
         return -1;
 
     return client->ops->send(client, request);
-}
-
-/* Convenience functions for ipc_send */
-inline void ipc_client_send_get(struct ipc_client *client, const unsigned short command, unsigned char mseq)
-{
-    ipc_client_send(client, command, IPC_TYPE_GET, 0, 0, mseq);
-}
-
-inline void ipc_client_send_exec(struct ipc_client *client, const unsigned short command, unsigned char mseq)
-{
-    ipc_client_send(client, command, IPC_TYPE_EXEC, 0, 0, mseq);
-}
-
-/* Wrapper for ipc_send */
-void ipc_client_send(struct ipc_client *client, const unsigned short command, const char type, unsigned char *data, const int32_t length, unsigned char mseq)
-{
-    struct ipc_message_info request;
-
-    request.mseq = mseq;
-    request.aseq = 0xff;
-    request.group = IPC_GROUP(command);
-    request.index = IPC_INDEX(command);
-    request.type = type;
-    request.length = length;
-    request.data = data;
-
-    _ipc_client_send(client, &request);
 }
 
 int32_t ipc_client_recv(struct ipc_client *client, struct modem_io *response)
@@ -256,6 +229,3 @@ int32_t ipc_client_recv(struct ipc_client *client, struct modem_io *response)
 
     return client->ops->recv(client, response);
 }
-
-// vim:ts=4:sw=4:expandtab
-

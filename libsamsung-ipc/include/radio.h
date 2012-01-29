@@ -108,9 +108,7 @@ int ipc_client_power_off(struct ipc_client *client);
 int ipc_client_recv(struct ipc_client *client, struct modem_io *response);
 
 /* Convenience functions for ipc_send */
-void ipc_client_send(struct ipc_client *client, const unsigned short command, const char type, unsigned char *data,
-                     const int length, unsigned char mseq);
-int _ipc_client_send(struct ipc_client *client, struct modem_io *request);
+int ipc_client_send(struct ipc_client *client, struct modem_io *request);
 void ipc_client_send_get(struct ipc_client *client, const unsigned short command, unsigned char mseq);
 void ipc_client_send_exec(struct ipc_client *client, const unsigned short command, unsigned char mseq);
 

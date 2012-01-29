@@ -144,7 +144,7 @@ void modem_response_tapi_init(struct ipc_client *client, struct modem_io *resp)
 		request.data = payload;
 		DEBUG_I("Before sending\n");
 
-		_ipc_client_send(client, &request);
+		ipc_client_send(client, &request);
 		DEBUG_I("sent frame no. %d\n", count);
 
 	}
@@ -226,7 +226,7 @@ int tapi_send_packet(struct ipc_client *client, struct tapiPacket* tapiReq)
 
 	request.data = fifobuf;
 
-	_ipc_client_send(client, &request);
+	ipc_client_send(client, &request);
 
 	free(fifobuf);
 	//TODO: return nonzero in case of failure

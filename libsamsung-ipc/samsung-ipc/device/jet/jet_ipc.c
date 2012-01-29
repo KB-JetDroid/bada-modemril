@@ -30,34 +30,6 @@
 #include "ipc_private.h"
 #include "jet_ipc.h"
 
-#define isprint(c)	((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
-void hexdump(const char *buf, int32_t len)
-{
-	char str[80], octet[10];
-	int32_t ofs, i, l;
-
-	for (ofs = 0; ofs < len; ofs += 16) {
-		sprintf( str, "0x%02x: ", ofs );
-
-		for (i = 0; i < 16; i++) {
-			if ((i + ofs) < len)
-				sprintf( octet, "%02x ", buf[ofs + i] );
-			else
-				strcpy( octet, "   " );
-
-			strcat( str, octet );
-		}
-			strcat( str, "  " );
-			l = strlen( str );
-
-		for (i = 0; (i < 16) && ((i + ofs) < len); i++)
-			str[l++] = isprint( buf[ofs + i] ) ? buf[ofs + i] : '.';
-
-		str[l] = '\0';
-		DEBUG_I( "%s\n", str );
-	}
-}
-
 int32_t jet_modem_bootstrap(struct ipc_client *client)
 {
 
