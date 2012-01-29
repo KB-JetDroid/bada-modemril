@@ -23,16 +23,6 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
-#include "call.h"
-#include "disp.h"
-#include "gen.h"
-#include "misc.h"
-#include "net.h"
-#include "sec.h"
-#include "sms.h"
-#include "pwr.h"
-#include "gprs.h"
-
 #if defined(DEVICE_JET)
 #include "device/jet/jet_modem_ctl.h"
 #elif defined(DEVICE_WAVE)
