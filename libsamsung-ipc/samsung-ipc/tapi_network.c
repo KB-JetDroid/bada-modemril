@@ -122,3 +122,14 @@ void tapi_network_cellInfo(uint32_t tapiNetLength, uint8_t *tapiNetData)
 	
 	//call handler here
 }
+
+int tapi_network_init(struct ipc_client *client)
+{
+	tapiPacket pkt;
+	pkt.header.len = 0;
+	pkt.header.tapiService = TAPI_TYPE_NETWORK;	
+	pkt.header.tapiServiceFunction = TAPI_NETWORK_INIT;
+	pkt->buf = NULL;	
+	
+	return tapi_send_packet(client, &pkt);
+}

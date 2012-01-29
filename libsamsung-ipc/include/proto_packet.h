@@ -33,20 +33,20 @@
 #define PROTO_PACKET_ID_SUSPENDNETWORKIND 	10
 #define PROTO_PACKET_ID_RESUMENETWORKIND 	11
 
-/*
- * FIXME: incorrect proto packet header
- */
 struct protoPacketHeader {
 	uint16_t type;
-	uint16_t subtype;
-	uint32_t buflen;
+	uint16_t apiId;
 } __attribute__((__packed__));
 
-struct protoRequest {
+struct protoPacket {
 	struct protoPacketHeader header;
-	uint8_t *respBuf;
+	uint8_t *buf;
+	uint32_t bufLen;
 } __attribute__((__packed__));
 
 void modem_response_proto(struct ipc_client *client, struct modem_io *resp);
+
+int proto_send_packet(struct ipc_client *client, protoPacket* protoReq);
+int proto_startup(struct ipc_client *client);
 
 #endif

@@ -35,13 +35,15 @@ struct tapiPacketHeader {
 	uint32_t len;
 } __attribute__((__packed__));
 
-struct tapiRequest {
+struct tapiPacket {
 	struct tapiPacketHeader header;
-	uint8_t *respBuf;
+	uint8_t *buf;
 } __attribute__((__packed__));
 
 void modem_response_tapi(struct ipc_client *client, struct modem_io *resp);
 
 void modem_response_tapi_init(struct ipc_client *client, struct modem_io *resp);
+
+int tapi_send_packet(struct ipc_client *client, tapiPacket* tapiReq);
 
 #endif

@@ -45,7 +45,6 @@ void modem_response_proto(struct ipc_client *client, struct modem_io *resp)
 	DEBUG_I("Inside modem_response_proto - TBD\n");
 	int32_t retval, count;
 	struct protoPacketHeader *rx_header;
-	struct protoRequest tx_packet;
 
 	struct modem_io request;
     void *frame;
@@ -102,4 +101,37 @@ void modem_response_proto(struct ipc_client *client, struct modem_io *resp)
 
     DEBUG_I("Inside modem_response_proto leaving\n");
 
+}
+
+int proto_send_packet(struct ipc_client *client, protoPacket* protoReq)
+{
+	struct modem_io request;
+	
+	uint32_t bufLen = protoReq->bufLen + sizeof(struct protoPacketHeader);
+	uint8_t* fifobuf = malloc(bufLen);
+	memcpy(fifobuf, protoReq, sizeof(struct protoPacketHeader));
+	if(protoReq->bufLen)
+		memcpy(fifobuf + sizeof(struct protoPacketHeader), protoReq->buf, protoReq->bufLen);
+
+	request.magic = 0xCAFECAFE;
+	request.cmd = FIFO_PKT_PROTO;
+	request.datasize = bufLen;
+
+	request.data = fifobuf;
+
+	_ipc_client_send(client, &request);
+
+	free(fifobuf);
+	//TODO: return nonzero in case of failure
+	return 0;
+}
+
+int proto_startup(struct ipc_client *client)
+{
+	protoPacket pkt;
+	pkt.header.type = PROTO_PACKET_ID_STARTUP;
+	pkt.header.apiId = 0;
+	pkt.buf = NULL;
+	pkt.bufLen = 0;
+	proto_send_packet(client, &pkt);
 }

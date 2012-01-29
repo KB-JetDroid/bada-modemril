@@ -45,3 +45,15 @@ void tapi_at_handler(uint16_t tapiAtType, uint32_t tapiAtLength, uint8_t *tapiAt
     	break;
     }
 }
+
+int tapi_at_init(struct ipc_client *client)
+{
+	tapiPacket pkt;
+	pkt.header.len = 0;
+	pkt.header.tapiService = TAPI_TYPE_AT;	
+	pkt.header.tapiServiceFunction = TAPI_AT_INIT;
+	pkt->buf = NULL;	
+	
+	return tapi_send_packet(client, &pkt);
+}
+

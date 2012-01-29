@@ -35,4 +35,5 @@
 
 void tapi_nettext_handler(uint16_t tapiNettextType, uint32_t tapiNettextLength, uint8_t *tapiNettextData);
 
+int tapi_nettext_set_mem_available(struct ipc_client *client, uint32_t bMemAvail);
 #endif

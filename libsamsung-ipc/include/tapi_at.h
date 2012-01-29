@@ -35,4 +35,5 @@
 
 void tapi_at_handler(uint16_t tapiAtType, uint32_t tapiAtLength, uint8_t *tapiAtData);
 
+int tapi_at_init(struct ipc_client *client);
 #endif
