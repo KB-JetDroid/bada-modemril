@@ -100,4 +100,6 @@ void tapi_network_networkSelect(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_commonError(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_cellInfo(uint32_t tapiNetLength, uint8_t *tapiNetData);
 
+int tapi_network_init(struct ipc_client *client);
+
 #endif

@@ -157,7 +157,7 @@ void modem_response_tapi(struct ipc_client *client, struct modem_io *resp)
 	DEBUG_I("Entering modem_response_tapi\n");
 
 	struct tapiPacketHeader *rx_header;
-	struct tapiRequest tx_packet;
+	struct tapiPacket tx_packet;
 
 	struct modem_io request;
     uint8_t *frame;
@@ -210,4 +210,25 @@ void modem_response_tapi(struct ipc_client *client, struct modem_io *resp)
 
 }
 
+int tapi_send_packet(struct ipc_client *client, tapiPacket* tapiReq)
+{
+	struct modem_io request;
+	
+	uint32_t bufLen = tapiReq->header.len + sizeof(struct tapiPacketHeader);
+	uint8_t* fifobuf = malloc(bufLen);
+	memcpy(fifobuf, tapiReq, sizeof(struct tapiPacketHeader));
+	if(tapiReq->header.len)
+		memcpy(fifobuf + sizeof(struct tapiPacketHeader), tapiReq->buf, tapiReq->header.len);
 
+	request.magic = 0xCAFECAFE;
+	request.cmd = FIFO_PKT_TAPI;
+	request.datasize = bufLen;
+
+	request.data = fifobuf;
+
+	_ipc_client_send(client, &request);
+
+	free(fifobuf);
+	//TODO: return nonzero in case of failure
+	return 0;
+}

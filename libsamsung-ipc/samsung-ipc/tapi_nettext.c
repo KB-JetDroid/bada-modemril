@@ -45,3 +45,18 @@ void tapi_nettext_handler(uint16_t tapiNettextType, uint32_t tapiNettextLength, 
     	break;
     }
 }
+
+int tapi_nettext_set_mem_available(struct ipc_client *client, uint32_t bMemAvail)
+{
+	int ret;
+	tapiPacket pkt;
+	pkt.header.len = 4;
+	pkt.header.tapiService = TAPI_TYPE_NETTEXT;	
+	pkt.header.tapiServiceFunction = TAPI_NETTEXT_SETMEMAVAIL;
+	pkt->buf = malloc(4);
+	(*(uint32_t*)pkt->buf) = bMemAvail;
+	
+	ret = tapi_send_packet(client, &pkt);
+	free(pkt->buf);
+	return ret;
+}
