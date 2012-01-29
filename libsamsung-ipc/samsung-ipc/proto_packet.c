@@ -103,7 +103,7 @@ void modem_response_proto(struct ipc_client *client, struct modem_io *resp)
 
 }
 
-int proto_send_packet(struct ipc_client *client, protoPacket* protoReq)
+int proto_send_packet(struct ipc_client *client, struct protoPacket* protoReq)
 {
 	struct modem_io request;
 	
@@ -128,10 +128,10 @@ int proto_send_packet(struct ipc_client *client, protoPacket* protoReq)
 
 int proto_startup(struct ipc_client *client)
 {
-	protoPacket pkt;
+	struct protoPacket pkt;
 	pkt.header.type = PROTO_PACKET_ID_STARTUP;
 	pkt.header.apiId = 0;
 	pkt.buf = NULL;
 	pkt.bufLen = 0;
-	proto_send_packet(client, &pkt);
+	return proto_send_packet(client, &pkt);
 }

@@ -19,18 +19,20 @@
  * along with libsamsung-ipc.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+
 #include <radio.h>
 #include <tapi_packet.h>
-#include <tapi_network.h>
+#include <tapi_nettext.h>
 
 /*
  * All the TAPI Nettext handling will be done here
  *
  */
 
-void tapi_nettext_handler(uint16_t tapiNettextType, uint32_t tapiNettextLength, uint8_t *tapiNettextData)
+void tapi_nettext_handler(struct ipc_client *client, uint16_t tapiNettextType, uint32_t tapiNettextLength, uint8_t *tapiNettextData)
 {
-	struct tapiRequest tx_packet;
+	struct tapiPacket tx_packet;
 
 	struct modem_io request;
     uint8_t *frame;
@@ -49,14 +51,14 @@ void tapi_nettext_handler(uint16_t tapiNettextType, uint32_t tapiNettextLength, 
 int tapi_nettext_set_mem_available(struct ipc_client *client, uint32_t bMemAvail)
 {
 	int ret;
-	tapiPacket pkt;
+	struct tapiPacket pkt;
 	pkt.header.len = 4;
 	pkt.header.tapiService = TAPI_TYPE_NETTEXT;	
 	pkt.header.tapiServiceFunction = TAPI_NETTEXT_SETMEMAVAIL;
-	pkt->buf = malloc(4);
-	(*(uint32_t*)pkt->buf) = bMemAvail;
+	pkt.buf = malloc(4);
+	(*(uint32_t*)pkt.buf) = bMemAvail;
 	
 	ret = tapi_send_packet(client, &pkt);
-	free(pkt->buf);
+	free(pkt.buf);
 	return ret;
 }

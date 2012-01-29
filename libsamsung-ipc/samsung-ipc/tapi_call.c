@@ -19,6 +19,8 @@
  * along with libsamsung-ipc.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+
 #include <radio.h>
 #include <tapi_packet.h>
 #include <tapi_call.h>
@@ -28,9 +30,9 @@
  *
  */
 
-void tapi_call_handler(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *tapiCallData)
+void tapi_call_handler(struct ipc_client *client, uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *tapiCallData)
 {
-	struct tapiRequest tx_packet;
+	struct tapiPacket tx_packet;
 
 	struct modem_io request;
     uint8_t *frame;

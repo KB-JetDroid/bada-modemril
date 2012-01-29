@@ -32,13 +32,6 @@
 #include "sms.h"
 #include "pwr.h"
 #include "gprs.h"
-#include "tapi_call.h"
-#include "tapi_nettext.h"
-#include "tapi_network.h"
-#include "tapi_ss.h"
-#include "tapi_at.h"
-#include "tapi_dmh.h"
-#include "tapi_config.h"
 
 #if defined(DEVICE_JET)
 #include "device/jet/jet_modem_ctl.h"
@@ -51,24 +44,24 @@
 #endif
 
 #ifdef DEBUG_ERROR
-#define DEBUG_E(x, args ...) fprintf(LOG_FILE, "[%s:%u]ERROR: " \
+#define DEBUG_E(x, args ...) fprintf(LOG_FILE, "[%s:%u] ERROR: " \
 x, __FUNCTION__ ,__LINE__, ## args)
 #define DEBUG_W(x, args ...)
 #define DEBUG_I(x, args ...)
 #else
 #ifdef DEBUG_WARNING
-#define DEBUG_E(x, args ...) fprintf(LOG_FILE, "[%s:%u]ERROR: " \
+#define DEBUG_E(x, args ...) fprintf(LOG_FILE, "[%s:%u] ERROR: " \
 x, __FUNCTION__ ,__LINE__, ## args)
-#define DEBUG_W(x, args ...) fprintf(LOG_FILE, "[%s:%u]WARNING: " \
+#define DEBUG_W(x, args ...) fprintf(LOG_FILE, "[%s:%u] WARNING: " \
 x, __FUNCTION__ ,__LINE__, ## args)
 #define DEBUG_I(x, args ...)
 #else
 #ifdef DEBUG_INFO
-#define DEBUG_E(x, args ...) fprintf(LOG_FILE, "[%s:%u]ERROR: " \
+#define DEBUG_E(x, args ...) fprintf(LOG_FILE, "[%s:%u] ERROR: " \
 x, __FUNCTION__ ,__LINE__, ## args)
-#define DEBUG_W(x, args ...) fprintf(LOG_FILE, "[%s:%u]WARNING: " \
+#define DEBUG_W(x, args ...) fprintf(LOG_FILE, "[%s:%u] WARNING: " \
 x, __FUNCTION__ ,__LINE__, ## args)
-#define DEBUG_I(x, args ...) fprintf(LOG_FILE, "[%s:%u]INFO: " \
+#define DEBUG_I(x, args ...) fprintf(LOG_FILE, "[%s:%u] INFO: " \
 x, __FUNCTION__ ,__LINE__, ## args)
 #else
 #define DEBUG_E(x, args ...)

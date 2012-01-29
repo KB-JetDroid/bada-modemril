@@ -26,5 +26,12 @@
 /**
  * All the TAPI AT context structures specific to Jet will be defined here
  */
+enum TAPI_AT_TYPE
+{
+	TAPI_AT_SETPHONEFUNC	= 0x9F,
+	TAPI_AT_INIT 			= 0xA3,
+	TAPI_AT_PB_INITINFO		= 0xA4,
+	TAPI_AT_CALLSETUP_RSP	= 0xA5,
+};
 
 #endif

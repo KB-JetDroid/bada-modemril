@@ -28,9 +28,9 @@
  *
  */
 
-void tapi_ss_handler(uint16_t tapiSsType, uint32_t tapiSsLength, uint8_t *tapiSsData)
+void tapi_ss_handler(struct ipc_client *client, uint16_t tapiSsType, uint32_t tapiSsLength, uint8_t *tapiSsData)
 {
-	struct tapiRequest tx_packet;
+	struct tapiPacket tx_packet;
 
 	struct modem_io request;
     uint8_t *frame;

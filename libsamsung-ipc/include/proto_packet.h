@@ -46,7 +46,7 @@ struct protoPacket {
 
 void modem_response_proto(struct ipc_client *client, struct modem_io *resp);
 
-int proto_send_packet(struct ipc_client *client, protoPacket* protoReq);
+int proto_send_packet(struct ipc_client *client, struct protoPacket* protoReq);
 int proto_startup(struct ipc_client *client);
 
 #endif
