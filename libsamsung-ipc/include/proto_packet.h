@@ -41,7 +41,7 @@ struct protoPacketHeader {
 struct protoPacket {
 	struct protoPacketHeader header;
 	uint8_t *buf;
-	uint32_t bufLen;
+	uint32_t bufLen; //this can't be in header because framebuffer shouldn't contain it
 } __attribute__((__packed__));
 
 void modem_response_proto(struct ipc_client *client, struct modem_io *resp);
