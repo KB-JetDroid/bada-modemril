@@ -33,6 +33,6 @@
  * All the TAPI call context structures generic to all Mocha devices will be defined here
  */
 
-void tapi_call_handler(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *tapiCallData);
+void tapi_call_handler(struct ipc_client *client, uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *tapiCallData);
 
 #endif

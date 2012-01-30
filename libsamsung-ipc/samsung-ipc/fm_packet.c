@@ -87,7 +87,7 @@ int32_t (*fileOps[MAX_FILE_OPS])(struct fmRequest *, struct fmResponse *) =
 
 int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	DEBUG_I("Inside FmOpenFile\n");
+//	DEBUG_I("Inside FmOpenFile\n");
 	int32_t retval = 0;
 	char *fName;
 	int32_t mode;
@@ -97,7 +97,7 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)(rx_packet->reqBuf) + sizeof(mode)));
 	strcpy(fName, mochaRoot);
 	strcat(fName, (const char *)(rx_packet->reqBuf + sizeof(mode)));
-	DEBUG_I("fName %s, mode = 0x%x\n", fName, mode);
+//	DEBUG_I("fName %s, mode = 0x%x\n", fName, mode);
 
 	if (!strcmp(fName, "/KFAT0/nvm/num/87_19"))
 		lastOpen = 1;
@@ -134,7 +134,7 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 int32_t FmCloseFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	DEBUG_I("Inside FmCloseFile\n");
+//	DEBUG_I("Inside FmCloseFile\n");
 	int32_t retval = 0;
 	int32_t fd;
 
@@ -186,7 +186,7 @@ int32_t FmCreateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	DEBUG_I("Inside FmReadFile\n");
+//	DEBUG_I("Inside FmReadFile\n");
 	int32_t retval = 0;
 	int32_t fd;
 	uint32_t size, numRead;
@@ -213,7 +213,7 @@ int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 int32_t FmWriteFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	DEBUG_I("Inside FmWriteFile\n");
+//	DEBUG_I("Inside FmWriteFile\n");
 	int32_t retval = 0;
 	int32_t fd;
 	uint32_t size, numWrite;
@@ -310,7 +310,7 @@ int32_t FmRemoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)rx_packet->reqBuf));
 	strcpy(fName, mochaRoot);
 	strcat(fName, (const char *)(rx_packet->reqBuf));
-	DEBUG_I("fName %s\n", fName);
+//	DEBUG_I("fName %s\n", fName);
 
 	retval = remove(fName);
 
@@ -320,7 +320,7 @@ int32_t FmRemoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-	DEBUG_I("Leaving FmRemoveFile\n");
+//	DEBUG_I("Leaving FmRemoveFile\n");
 	return retval;
 
 }
@@ -688,7 +688,7 @@ int32_t modem_response_fm(struct ipc_client *client, struct modem_io *resp)
 
 	request.data = frame;
 
-	_ipc_client_send(client, &request);
+	ipc_client_send(client, &request);
 
 	if(tx_packet.respBuf != NULL)
         free(tx_packet.respBuf);

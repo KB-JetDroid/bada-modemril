@@ -33,9 +33,9 @@
  *
  */
 
-void tapi_network_handler(uint16_t tapiNetType, uint32_t tapiNetLength, uint8_t *tapiNetData)
+void tapi_network_handler(struct ipc_client *client, uint16_t tapiNetType, uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
-	struct tapiRequest tx_packet;
+	struct tapiPacket tx_packet;
 
 	struct modem_io request;
     uint8_t *frame;
@@ -125,11 +125,11 @@ void tapi_network_cellInfo(uint32_t tapiNetLength, uint8_t *tapiNetData)
 
 int tapi_network_init(struct ipc_client *client)
 {
-	tapiPacket pkt;
+	struct tapiPacket pkt;
 	pkt.header.len = 0;
 	pkt.header.tapiService = TAPI_TYPE_NETWORK;	
 	pkt.header.tapiServiceFunction = TAPI_NETWORK_INIT;
-	pkt->buf = NULL;	
+	pkt.buf = NULL;
 	
 	return tapi_send_packet(client, &pkt);
 }

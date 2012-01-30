@@ -33,7 +33,7 @@
 #define SIM_SESSION_START_ID 0
 #define SIM_SESSION_END_ID (SIM_SESSION_START_ID+(SIM_SESSION_COUNT-1))
 
-#define SIM_VALIDATE_SID(hSim) {if(hSim) {DEBUG_E("SIM_VALIDATE_SID failure!"); return -1;}}
+#define SIM_VALIDATE_SID(hSim) {if(!hSim) {DEBUG_E("SIM_VALIDATE_SID failure!\n"); return -1;}}
 struct simPacketHeader {
 	uint32_t type;
 	uint32_t subType;
@@ -64,4 +64,5 @@ int sim_send_oem_data(struct ipc_client *client, uint8_t hSim, uint8_t packetTyp
 
 int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, char* pin);
 int sim_atk_open(struct ipc_client *client, uint32_t sid);
+int sim_open_to_modem(struct ipc_client *client, uint8_t hSim);
 #endif

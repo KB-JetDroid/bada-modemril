@@ -12,12 +12,7 @@ LOCAL_MODULE_TAGS := optional
 
 samsung-ipc_files := \
 	samsung-ipc/ipc.c \
-	samsung-ipc/ipc_util.c \
 	samsung-ipc/util.c \
-	samsung-ipc/gprs.c \
-	samsung-ipc/misc.c \
-	samsung-ipc/net.c \
-	samsung-ipc/sec.c \
 	samsung-ipc/fm_packet.c \
 	samsung-ipc/proto_packet.c \
 	samsung-ipc/sim_packet.c \

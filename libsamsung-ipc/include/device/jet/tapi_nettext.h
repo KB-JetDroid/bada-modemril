@@ -26,5 +26,12 @@
 /**
  * All the TAPI Nettext (sms) context structures specific to Jet will be defined here
  */
+enum TAPI_NETTEXT_TYPE
+{
+	TAPI_NETTEXT_SETMEMAVAIL 		= 0x3A, //uint8_t bMemAvail = bool probably
+	TAPI_NETTEXT_SETPREFERREDMEM 	= 0x3B, //uint8_t memType = sim/phone probably, stored in TapiSmsConfig.ini as variable called "DEF_STORAGE"
+	TAPI_NETTEXT_SETNETBURST		= 0x3D, //uint32_t bEnable = 0/1, depending on NvInt id=469 and on some SmsSvc state
+	TAPI_NETTEXT_SETCBSETTING 		= 0x3E, //size of buf is 0x64
+};
 
 #endif

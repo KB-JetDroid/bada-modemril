@@ -18,12 +18,13 @@
  *
  */
 
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
-const char *plmn_lookup(const char *plmn);
-char *plmn_string(const char *plmn);
+void hexdump(const uint8_t *buf, int32_t len);
 
 #endif
-
-// vim:ts=4:sw=4:expandtab

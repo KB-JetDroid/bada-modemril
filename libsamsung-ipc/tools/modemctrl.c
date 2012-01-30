@@ -39,6 +39,8 @@
 #include <fm_packet.h>
 #include <ipc_packet.h>
 #include <tapi_packet.h>
+#include <proto_packet.h>
+#include <sim_packet.h>
 
 #include <dlfcn.h>
 
@@ -97,7 +99,7 @@ void modem_response_boot(struct ipc_client *client, struct modem_io *resp)
 		request.data = payload;
 		DEBUG_I("Before sending\n");
 
-		_ipc_client_send(client, &request);
+		ipc_client_send(client, &request);
 		DEBUG_I("sent frame no. %d\n", count);
 
 	}
@@ -172,7 +174,7 @@ void modem_response_dbg_level(struct ipc_client *client, struct modem_io *resp)
 		request.data = payload;
 		DEBUG_I("Before sending\n");
 
-		_ipc_client_send(client, &request);
+		ipc_client_send(client, &request);
 		DEBUG_I("sent frame no. %d\n", count);
 
 	}
@@ -197,7 +199,11 @@ void modem_response_handle(struct ipc_client *client, struct modem_io *resp)
         case FIFO_PKT_FILE:
         	ret = modem_response_fm(client, resp);
         	if (ret)
+        	{
         		modem_response_tapi_init(client, resp);
+        		sim_atk_open(client, 0);
+        		sim_open_to_modem(client, 0);
+        	}
         break;
         case FIFO_PKT_DVB_H_DebugLevel:
             //modem_response_dbg_level(client, resp);
@@ -308,8 +314,6 @@ int32_t modem_start(struct ipc_client *client)
 
     rc = ipc_client_open(client);
 
-    DEBUG_I("Addr of Client_fd = 0x%x, value of Client_fd = %d\n", &client_fd, client_fd);
-
     if(rc < 0)
         return -1;
 
@@ -375,7 +379,6 @@ int main(int argc, char *argv[])
         switch(c) {
             case 0:
                 if(strcmp(opt_l[opt_i].name, "debug") == 0) {
-                    ipc_client_set_log_handler(client_fmt, modem_log_handler, NULL);
                     DEBUG_I("Debug enabled\n");
                 } else if(strcmp(opt_l[opt_i].name, "pin") == 0) {
                     if(optarg) {

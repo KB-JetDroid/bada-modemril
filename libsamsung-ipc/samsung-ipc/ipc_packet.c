@@ -513,7 +513,7 @@ void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
 
 		request.data = payload;
 
-		_ipc_client_send(client, &request);
+		ipc_client_send(client, &request);
 
 		break;
 
@@ -539,7 +539,7 @@ void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
 
 		DEBUG_I("ioctl return value = 0x%x\n", retval);
 
-		_ipc_client_send(client, resp);
+		ipc_client_send(client, resp);
 
 		break;
 
@@ -568,25 +568,25 @@ void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
 
 		request.data = payload;
 
-		_ipc_client_send(client, &request);
+		ipc_client_send(client, &request);
 
 		memcpy(payload + sizeof(struct ipcPacketHeader), EAR_MSM_Data, sizeof(EAR_MSM_Data));
 
 		request.data = payload;
 
-		_ipc_client_send(client, &request);
+		ipc_client_send(client, &request);
 
 		memcpy(payload + sizeof(struct ipcPacketHeader), SPK_MSM_Data, sizeof(SPK_MSM_Data));
 
 		request.data = payload;
 
-		_ipc_client_send(client, &request);
+		ipc_client_send(client, &request);
 
 		memcpy(payload + sizeof(struct ipcPacketHeader), BTH_MSM_Data, sizeof(BTH_MSM_Data));
 
 		request.data = payload;
 
-		_ipc_client_send(client, &request);
+		ipc_client_send(client, &request);
 
 		tx_packet.header.ipcPacketType = 0x39;
 		tx_packet.header.reserved = 0;
@@ -604,7 +604,7 @@ void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
 
 		request.data = payload;
 
-		_ipc_client_send(client, &request);
+		ipc_client_send(client, &request);
 
 		DEBUG_I("Sent all the sound packages\n");
 
