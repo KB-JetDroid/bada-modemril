@@ -41,6 +41,9 @@
 #include <tapi_dmh.h>
 #include <tapi_config.h>
 
+#define LOG_TAG "RIL-TAPI"
+#include <utils/Log.h>
+
 /*
  * TODO: Implement handling of all the TAPI packets
  *
@@ -49,7 +52,7 @@
 /*
  * Dummy code to send TAPI packets as per wave's log
  */
-void modem_response_tapi_init(struct ipc_client *client, struct modem_io *resp)
+void modem_response_tapi_init(struct modem_io *resp)
 {
 	DEBUG_I("Inside modem_response_tapi_init\n");
 	int32_t retval, count;
@@ -144,7 +147,7 @@ void modem_response_tapi_init(struct ipc_client *client, struct modem_io *resp)
 		request.data = payload;
 		DEBUG_I("Before sending\n");
 
-		ipc_client_send(client, &request);
+		ipc_fmt_send(&request);
 		DEBUG_I("sent frame no. %d\n", count);
 
 	}
@@ -152,7 +155,7 @@ void modem_response_tapi_init(struct ipc_client *client, struct modem_io *resp)
 
 }
 
-void modem_response_tapi(struct ipc_client *client, struct modem_io *resp)
+void modem_response_tapi(struct modem_io *resp)
 {
 	DEBUG_I("Entering modem_response_tapi\n");
 
@@ -175,31 +178,31 @@ void modem_response_tapi(struct ipc_client *client, struct modem_io *resp)
     {
 	case TAPI_TYPE_CALL:
 		DEBUG_I("Tapi Call packet received\n");
-		tapi_call_handler(client, rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_call_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
 	case TAPI_TYPE_NETTEXT:
 		DEBUG_I("Tapi nettext packet received\n");
-		tapi_nettext_handler(client, rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_nettext_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
 	case TAPI_TYPE_NETWORK:
 		DEBUG_I("Tapi network packet received\n");
-		tapi_network_handler(client, rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_network_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
 	case TAPI_TYPE_SS:
 		DEBUG_I("Tapi SS packet received\n");
-		tapi_ss_handler(client, rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_ss_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
 	case TAPI_TYPE_AT:
 		DEBUG_I("Tapi AT packet received\n");
-		tapi_at_handler(client, rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_at_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
 	case TAPI_TYPE_DMH:
 		DEBUG_I("Tapi DMH packet received\n");
-		tapi_dmh_handler(client, rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_dmh_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
 	case TAPI_TYPE_CONFIG:
 		DEBUG_I("Tapi Config packet received\n");
-		tapi_config_handler(client, rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_config_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
     default :
     		DEBUG_I("Undefined TAPI Service 0x%x received\n", rx_header->tapiService);
@@ -210,7 +213,7 @@ void modem_response_tapi(struct ipc_client *client, struct modem_io *resp)
 
 }
 
-int tapi_send_packet(struct ipc_client *client, struct tapiPacket* tapiReq)
+int tapi_send_packet(struct tapiPacket* tapiReq)
 {
 	struct modem_io request;
 	
@@ -226,7 +229,7 @@ int tapi_send_packet(struct ipc_client *client, struct tapiPacket* tapiReq)
 
 	request.data = fifobuf;
 
-	ipc_client_send(client, &request);
+	ipc_fmt_send(&request);
 
 	free(fifobuf);
 	//TODO: return nonzero in case of failure

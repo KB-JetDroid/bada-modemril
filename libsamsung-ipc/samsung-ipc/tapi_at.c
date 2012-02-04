@@ -25,12 +25,15 @@
 #include <tapi_packet.h>
 #include <tapi_at.h>
 
+#define LOG_TAG "RIL-TAPI-AT"
+#include <utils/Log.h>
+
 /*
  * All the TAPI AT handling will be done here
  *
  */
 
-void tapi_at_handler(struct ipc_client *client, uint16_t tapiAtType, uint32_t tapiAtLength, uint8_t *tapiAtData)
+void tapi_at_handler(uint16_t tapiAtType, uint32_t tapiAtLength, uint8_t *tapiAtData)
 {
 	struct tapiPacket tx_packet;
 
@@ -48,7 +51,7 @@ void tapi_at_handler(struct ipc_client *client, uint16_t tapiAtType, uint32_t ta
     }
 }
 
-int tapi_at_init(struct ipc_client *client)
+int tapi_at_init(void)
 {
 	struct tapiPacket pkt;
 	pkt.header.len = 0;
@@ -56,6 +59,6 @@ int tapi_at_init(struct ipc_client *client)
 	pkt.header.tapiServiceFunction = TAPI_AT_INIT;
 	pkt.buf = NULL;
 	
-	return tapi_send_packet(client, &pkt);
+	return tapi_send_packet(&pkt);
 }
 

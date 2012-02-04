@@ -23,12 +23,15 @@
 #include <tapi_packet.h>
 #include <tapi_ss.h>
 
+#define LOG_TAG "RIL-TAPI-SS"
+#include <utils/Log.h>
+
 /*
  * All the TAPI SS handling will be done here
  *
  */
 
-void tapi_ss_handler(struct ipc_client *client, uint16_t tapiSsType, uint32_t tapiSsLength, uint8_t *tapiSsData)
+void tapi_ss_handler(uint16_t tapiSsType, uint32_t tapiSsLength, uint8_t *tapiSsData)
 {
 	struct tapiPacket tx_packet;
 

@@ -89,7 +89,7 @@ struct tapiCellInfo {
 } __attribute__((__packed__));
 
 
-void tapi_network_handler(struct ipc_client *client, uint16_t tapiNetworkType, uint32_t tapiNetworkLength, uint8_t *tapiNetworkData);
+void tapi_network_handler(uint16_t tapiNetworkType, uint32_t tapiNetworkLength, uint8_t *tapiNetworkData);
 
 
 //void tapi_network_apiRequest(uint32_t tapiNetLength, uint8_t *tapiNetData);
@@ -100,6 +100,6 @@ void tapi_network_networkSelect(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_commonError(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_cellInfo(uint32_t tapiNetLength, uint8_t *tapiNetData);
 
-int tapi_network_init(struct ipc_client *client);
+int tapi_network_init(void);
 
 #endif

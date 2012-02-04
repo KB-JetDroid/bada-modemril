@@ -182,7 +182,7 @@ void modem_response_dbg_level(struct ipc_client *client, struct modem_io *resp)
 
 }
 
-void modem_response_dbg(struct ipc_client *client, struct modem_io *resp)
+void modem_response_dbg(struct modem_io *resp)
 {
 
 	DEBUG_I("Debug string - %s\n", (char *)(resp->data));
@@ -197,12 +197,12 @@ void modem_response_handle(struct ipc_client *client, struct modem_io *resp)
 	switch(resp->cmd)
     {
         case FIFO_PKT_FILE:
-        	ret = modem_response_fm(client, resp);
+        	ret = modem_response_fm(resp);
         	if (ret)
         	{
-        		modem_response_tapi_init(client, resp);
-        		sim_atk_open(client, 0);
-        		sim_open_to_modem(client, 0);
+        		modem_response_tapi_init(resp);
+        		sim_atk_open(0);
+        		sim_open_to_modem(0);
         	}
         break;
         case FIFO_PKT_DVB_H_DebugLevel:
@@ -212,16 +212,16 @@ void modem_response_handle(struct ipc_client *client, struct modem_io *resp)
             //modem_response_boot(client, resp);
         break;
         case FIFO_PKT_DRV:
-        	modem_response_ipc(client, resp);
+        	modem_response_ipc(resp);
         break;
         case FIFO_PKT_DEBUG:
-        	modem_response_dbg(client, resp);
+        	modem_response_dbg(resp);
         break;
         case FIFO_PKT_TAPI:
-        	modem_response_tapi(client, resp);
+        	modem_response_tapi(resp);
         break;
         case FIFO_PKT_SIM:
-        	modem_response_sim(client, resp);
+        	modem_response_sim(resp);
         break;
         default :
         	DEBUG_I("Packet type 0x%x not yet handled\n", resp->cmd);
@@ -353,7 +353,6 @@ void print_help()
  */
 int main(int argc, char *argv[])
 {
-    struct ipc_client *client_fmt;
     int c = 0;
     int opt_i = 0;
     int rc = -1;
@@ -370,9 +369,6 @@ int main(int argc, char *argv[])
         print_help();
         exit(1);
     }
-
-    client_fmt = ipc_client_new(IPC_CLIENT_TYPE_FMT);
-    ipc_client_set_log_handler(client_fmt, modem_log_handler_quiet, NULL);
 
     while(c >= 0) {
         c = getopt_long(argc, argv, "", opt_l, &opt_i);

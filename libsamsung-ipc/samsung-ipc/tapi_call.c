@@ -25,12 +25,15 @@
 #include <tapi_packet.h>
 #include <tapi_call.h>
 
+#define LOG_TAG "RIL-TAPI-CALL"
+#include <utils/Log.h>
+
 /*
  * All the TAPI call handling will be done here
  *
  */
 
-void tapi_call_handler(struct ipc_client *client, uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *tapiCallData)
+void tapi_call_handler(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *tapiCallData)
 {
 	struct tapiPacket tx_packet;
 

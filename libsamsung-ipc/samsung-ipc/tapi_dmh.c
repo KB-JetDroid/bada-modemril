@@ -25,12 +25,15 @@
 #include <tapi_packet.h>
 #include <tapi_dmh.h>
 
+#define LOG_TAG "RIL-TAPI-DMH"
+#include <utils/Log.h>
+
 /*
  * All the TAPI dmh handling will be done here
  *
  */
 
-void tapi_dmh_handler(struct ipc_client *client, uint16_t tapiDmhType, uint32_t tapiDmhLength, uint8_t *tapiDmhData)
+void tapi_dmh_handler(uint16_t tapiDmhType, uint32_t tapiDmhLength, uint8_t *tapiDmhData)
 {
 	struct tapiPacket tx_packet;
 

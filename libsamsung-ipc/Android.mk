@@ -112,3 +112,56 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 include $(BUILD_EXECUTABLE)
 
 endif
+
+include $(CLEAR_VARS)
+
+samsung-ril_files := \
+	samsung-ril/samsung-ril.c \
+	samsung-ril/client.c \
+	samsung-ril/ipc.c \
+	samsung-ril/srs.c \
+	samsung-ril/util.c \
+
+LOCAL_SHARED_LIBRARIES := \
+	libcutils libutils libril
+
+#LOCAL_STATIC_LIBRARIES := libsamsung-ipc
+
+# for asprinf
+LOCAL_CFLAGS := -D_GNU_SOURCE
+
+ifeq ($(TARGET_DEVICE),crespo)
+	LOCAL_CFLAGS += -DDEVICE_CRESPO
+endif
+ifeq ($(TARGET_DEVICE),h1)
+	LOCAL_CFLAGS += -DDEVICE_H1
+endif
+ifeq ($(TARGET_DEVICE),jet)
+	LOCAL_CFLAGS += -DDEVICE_JET
+endif
+
+LOCAL_C_INCLUDES := external/libsamsung-ipc/include
+LOCAL_C_INCLUDES += hardware/ril/libsamsung-ipc/include
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/samsung-ipc
+LOCAL_MODULE_TAGS := optional
+
+LOCAL_PRELINK_MODULE := false
+
+LOCAL_SRC_FILES := $(samsung-ipc_files) $(samsung-ril_files)
+
+ifeq (foo,foo)
+	# build shared library
+	LOCAL_SHARED_LIBRARIES += \
+		libcutils libnetutils libutils
+	LOCAL_LDLIBS += -lpthread
+	LOCAL_CFLAGS += -DRIL_SHLIB
+	LOCAL_MODULE:= libsamsung-ril
+	include $(BUILD_SHARED_LIBRARY)
+else
+	# build executable
+	LOCAL_SHARED_LIBRARIES += \
+		libril
+	LOCAL_MODULE:= samsung-ril
+	include $(BUILD_EXECUTABLE)
+endif

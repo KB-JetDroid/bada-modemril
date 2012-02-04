@@ -51,6 +51,9 @@
 #include <dirent.h>
 #include <errno.h>
 
+#define LOG_TAG "RIL_FM"
+#include <utils/Log.h>
+
 #define MAX_OPEN_DIRS 	10
 
 uint32_t dirArray[MAX_OPEN_DIRS];
@@ -645,7 +648,7 @@ int32_t get_request_packet(void *data, struct fmRequest *rx_packet)
 
 }
 
-int32_t modem_response_fm(struct ipc_client *client, struct modem_io *resp)
+int32_t modem_response_fm(struct modem_io *resp)
 {
 	//DEBUG_I("Entering modem_response_fm\n");
 
@@ -688,7 +691,7 @@ int32_t modem_response_fm(struct ipc_client *client, struct modem_io *resp)
 
 	request.data = frame;
 
-	ipc_client_send(client, &request);
+	ipc_fmt_send(&request);
 
 	if(tx_packet.respBuf != NULL)
         free(tx_packet.respBuf);

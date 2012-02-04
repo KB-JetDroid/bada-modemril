@@ -33,6 +33,12 @@
 #define LOG_FILE stderr
 #endif
 
+#ifdef RIL_SHLIB
+#define DEBUG_E(...) LOGE(__VA_ARGS__)
+#define DEBUG_W(...) LOGW(__VA_ARGS__)
+#define DEBUG_I(...) LOGI(__VA_ARGS__)
+#else
+
 #ifdef DEBUG_ERROR
 #define DEBUG_E(x, args ...) fprintf(LOG_FILE, "[%s:%u] ERROR: " \
 x, __FUNCTION__ ,__LINE__, ## args)
@@ -60,6 +66,8 @@ x, __FUNCTION__ ,__LINE__, ## args)
 #endif
 #endif
 #endif
+
+#endif //RIL_SHLIB
 
 #define MAX_SIGNLE_FRAME_DATA 	0xFF4
 

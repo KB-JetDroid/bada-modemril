@@ -33,14 +33,16 @@
 
 #include <radio.h>
 #include <proto_packet.h>
-#include "./device/jet/jet_modem_ctl.h"
+
+#define LOG_TAG "RIL-PRO"
+#include <utils/Log.h>
 
 /*
  * TODO: Implement handling of all the Proto packets
  *
  */
 
-void modem_response_proto(struct ipc_client *client, struct modem_io *resp)
+void modem_response_proto(struct modem_io *resp)
 {
 	DEBUG_I("Inside modem_response_proto - TBD\n");
 	int32_t retval, count;
@@ -103,7 +105,7 @@ void modem_response_proto(struct ipc_client *client, struct modem_io *resp)
 
 }
 
-int proto_send_packet(struct ipc_client *client, struct protoPacket* protoReq)
+int proto_send_packet(struct protoPacket* protoReq)
 {
 	struct modem_io request;
 	
@@ -119,19 +121,19 @@ int proto_send_packet(struct ipc_client *client, struct protoPacket* protoReq)
 
 	request.data = fifobuf;
 
-	ipc_client_send(client, &request);
+	ipc_fmt_send(&request);
 
 	free(fifobuf);
 	//TODO: return nonzero in case of failure
 	return 0;
 }
 
-int proto_startup(struct ipc_client *client)
+int proto_startup(void)
 {
 	struct protoPacket pkt;
 	pkt.header.type = PROTO_PACKET_ID_STARTUP;
 	pkt.header.apiId = 0;
 	pkt.buf = NULL;
 	pkt.bufLen = 0;
-	return proto_send_packet(client, &pkt);
+	return proto_send_packet(&pkt);
 }

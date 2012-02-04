@@ -40,10 +40,10 @@ struct tapiPacket {
 	uint8_t *buf;
 } __attribute__((__packed__));
 
-void modem_response_tapi(struct ipc_client *client, struct modem_io *resp);
+void modem_response_tapi(struct modem_io *resp);
 
-void modem_response_tapi_init(struct ipc_client *client, struct modem_io *resp);
+void modem_response_tapi_init(struct modem_io *resp);
 
-int tapi_send_packet(struct ipc_client *client, struct tapiPacket* tapiReq);
+int tapi_send_packet(struct tapiPacket* tapiReq);
 
 #endif

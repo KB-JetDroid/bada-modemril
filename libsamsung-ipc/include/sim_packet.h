@@ -56,13 +56,13 @@ struct oemSimPacket{
 	uint8_t *oemBuf;
 } __attribute__((__packed__));
 
-void modem_response_sim(struct ipc_client *client, struct modem_io *resp);
+void modem_response_sim(struct modem_io *resp);
 void sim_parse_session_event(uint8_t* buf, uint32_t bufLen);
 
-int sim_send_oem_req(struct ipc_client *client, uint8_t* simBuf, uint8_t simBufLen);
-int sim_send_oem_data(struct ipc_client *client, uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32_t oemBufLen);
+int sim_send_oem_req(uint8_t* simBuf, uint8_t simBufLen);
+int sim_send_oem_data(uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32_t oemBufLen);
 
-int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, char* pin);
-int sim_atk_open(struct ipc_client *client, uint32_t sid);
-int sim_open_to_modem(struct ipc_client *client, uint8_t hSim);
+int sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin);
+int sim_atk_open(uint32_t sid);
+int sim_open_to_modem(uint8_t hSim);
 #endif

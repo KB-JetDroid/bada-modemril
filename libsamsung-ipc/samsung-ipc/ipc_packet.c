@@ -34,6 +34,9 @@
 #include <radio.h>
 #include <ipc_packet.h>
 
+#define LOG_TAG "RIL-IP"
+#include <utils/Log.h>
+
 /*
  * TODO: Implement handling of all the IPC packets
  *
@@ -466,7 +469,7 @@ int32_t get_nvm_data(void *data, uint32_t size)
 	return 0;
 }
 
-void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
+void modem_response_ipc(struct modem_io *resp)
 {
 	DEBUG_I("Inside modem_response_ipc\n");
 	int32_t retval;
@@ -513,7 +516,7 @@ void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
 
 		request.data = payload;
 
-		ipc_client_send(client, &request);
+		ipc_fmt_send(&request);
 
 		break;
 
@@ -535,11 +538,11 @@ void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
 		else
 			params[2] = 0x15;
 
-		retval = ipc_client_modem_operations(client, params, IOCTL_MODEM_PMIC);
+		retval = ipc_fmt_modem_io(params, IOCTL_MODEM_PMIC);
 
 		DEBUG_I("ioctl return value = 0x%x\n", retval);
 
-		ipc_client_send(client, resp);
+		ipc_fmt_send(resp);
 
 		break;
 
@@ -568,25 +571,25 @@ void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
 
 		request.data = payload;
 
-		ipc_client_send(client, &request);
+		ipc_fmt_send(&request);
 
 		memcpy(payload + sizeof(struct ipcPacketHeader), EAR_MSM_Data, sizeof(EAR_MSM_Data));
 
 		request.data = payload;
 
-		ipc_client_send(client, &request);
+		ipc_fmt_send(&request);
 
 		memcpy(payload + sizeof(struct ipcPacketHeader), SPK_MSM_Data, sizeof(SPK_MSM_Data));
 
 		request.data = payload;
 
-		ipc_client_send(client, &request);
+		ipc_fmt_send(&request);
 
 		memcpy(payload + sizeof(struct ipcPacketHeader), BTH_MSM_Data, sizeof(BTH_MSM_Data));
 
 		request.data = payload;
 
-		ipc_client_send(client, &request);
+		ipc_fmt_send(&request);
 
 		tx_packet.header.ipcPacketType = 0x39;
 		tx_packet.header.reserved = 0;
@@ -604,7 +607,7 @@ void modem_response_ipc(struct ipc_client *client, struct modem_io *resp)
 
 		request.data = payload;
 
-		ipc_client_send(client, &request);
+		ipc_fmt_send(&request);
 
 		DEBUG_I("Sent all the sound packages\n");
 

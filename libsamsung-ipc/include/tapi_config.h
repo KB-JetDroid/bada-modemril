@@ -33,6 +33,6 @@
  * All the TAPI Config context structures generic to all Mocha devices will be defined here
  */
 
-void tapi_config_handler(struct ipc_client *client, uint16_t tapiConfigType, uint32_t tapiConfigLength, uint8_t *tapiConfigData);
+void tapi_config_handler(uint16_t tapiConfigType, uint32_t tapiConfigLength, uint8_t *tapiConfigData);
 
 #endif

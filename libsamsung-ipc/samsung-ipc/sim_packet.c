@@ -36,12 +36,15 @@
 #include <radio.h>
 #include <sim_packet.h>
 
+#define LOG_TAG "RIL-SIM"
+#include <utils/Log.h>
+
 /*
  * TODO: Implement handling of all the SIM packets
  *
  */
 
-void modem_response_sim(struct ipc_client *client, struct modem_io *resp)
+void modem_response_sim(struct modem_io *resp)
 {
 	DEBUG_I("Entering\n");
 	int32_t retval, count;
@@ -110,7 +113,7 @@ void modem_response_sim(struct ipc_client *client, struct modem_io *resp)
 		}
 		else
 		{
-			sim_send_oem_req(client, sim_packet.simBuf, simHeader->bufLen); //bounceback packet
+			sim_send_oem_req(sim_packet.simBuf, simHeader->bufLen); //bounceback packet
 		}
 	}
 
@@ -123,7 +126,7 @@ void sim_parse_session_event(uint8_t* buf, uint32_t bufLen)
 
 }
 
-int sim_send_oem_req(struct ipc_client *client, uint8_t* simBuf, uint8_t simBufLen)
+int sim_send_oem_req(uint8_t* simBuf, uint8_t simBufLen)
 {	
 	//simBuf is expected to contain full oemPacket structure
 	struct modem_io request;
@@ -144,14 +147,14 @@ int sim_send_oem_req(struct ipc_client *client, uint8_t* simBuf, uint8_t simBufL
 
 	request.data = fifobuf;
 
-	ipc_client_send(client, &request);
+	ipc_fmt_send(&request);
 
 	free(fifobuf);
 	//TODO: return nonzero in case of failure
 	return 0;
 }
 
-int sim_send_oem_data(struct ipc_client *client, uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32_t oemBufLen)
+int sim_send_oem_data(uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32_t oemBufLen)
 {	
 	SIM_VALIDATE_SID(hSim);
 
@@ -167,12 +170,12 @@ int sim_send_oem_data(struct ipc_client *client, uint8_t hSim, uint8_t packetTyp
 	if(oemBufLen)
 		memcpy(simBuf + sizeof(struct oemSimPacketHeader), dataBuf, oemBufLen);
 	
-	return sim_send_oem_req(client, simBuf, simBufLen);
+	return sim_send_oem_req(simBuf, simBufLen);
 	free(simBuf);
 
 }
 
-int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, char* pin)
+int sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin)
 {	
 	SIM_VALIDATE_SID(hSim);
 	//TODO: obtain session context, check if session is busy, print exception if it is busy and return failure
@@ -182,7 +185,7 @@ int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, cha
 
 	packetBuf[0] = pinType;
 	memcpy(packetBuf+1, pin, strlen(pin)); //max pin len is 9 digits
-	if(sim_send_oem_data(client, hSim, 0xB, packetBuf, 10) != 0)
+	if(sim_send_oem_data(hSim, 0xB, packetBuf, 10) != 0)
 	{
 		//TODO: mark session non-busy
 		return -1;
@@ -191,20 +194,20 @@ int sim_verify_chv(struct ipc_client *client, uint8_t hSim, uint8_t pinType, cha
 	return 0;
 }
 
-int sim_atk_open(struct ipc_client *client, uint32_t sid)
+int sim_atk_open(uint32_t sid)
 {
 	//TODO: verify ATK session and create/open it and return handler to it?!
 	DEBUG_I("Sending\n");
-	if(sim_send_oem_data(client, 0xA, 0x1B, NULL, 0) != 0) //0xA hSim is hardcoded in bada
+	if(sim_send_oem_data(0xA, 0x1B, NULL, 0) != 0) //0xA hSim is hardcoded in bada
 		return -1;
 	return 0;
 }
 
-int sim_open_to_modem(struct ipc_client *client, uint8_t hSim)
+int sim_open_to_modem(uint8_t hSim)
 {
 	//TODO: verify, create and initialize session, send real hSim
 	DEBUG_I("Sending\n");
-	if(sim_send_oem_data(client, 0x4, 0x1, NULL, 0) != 0) //why it starts from 4? hell knows 
+	if(sim_send_oem_data(0x4, 0x1, NULL, 0) != 0) //why it starts from 4? hell knows
 		return -1;
 	return 0;
 }

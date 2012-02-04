@@ -33,6 +33,6 @@
  * All the TAPI DMH context structures generic to all Mocha devices will be defined here
  */
 
-void tapi_dmh_handler(struct ipc_client *client, uint16_t tapiDmhType, uint32_t tapiDmhLength, uint8_t *tapiDmhData);
+void tapi_dmh_handler(uint16_t tapiDmhType, uint32_t tapiDmhLength, uint8_t *tapiDmhData);
 
 #endif

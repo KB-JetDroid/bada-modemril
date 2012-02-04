@@ -28,12 +28,15 @@
 #include <tapi_packet.h>
 #include <tapi_network.h>
 
+#define LOG_TAG "RIL-TAPI-NET"
+#include <utils/Log.h>
+
 /*
  * All the TAPI Network handling will be done here
  *
  */
 
-void tapi_network_handler(struct ipc_client *client, uint16_t tapiNetType, uint32_t tapiNetLength, uint8_t *tapiNetData)
+void tapi_network_handler(uint16_t tapiNetType, uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
 	struct tapiPacket tx_packet;
 
@@ -123,7 +126,7 @@ void tapi_network_cellInfo(uint32_t tapiNetLength, uint8_t *tapiNetData)
 	//call handler here
 }
 
-int tapi_network_init(struct ipc_client *client)
+int tapi_network_init(void)
 {
 	struct tapiPacket pkt;
 	pkt.header.len = 0;
@@ -131,5 +134,5 @@ int tapi_network_init(struct ipc_client *client)
 	pkt.header.tapiServiceFunction = TAPI_NETWORK_INIT;
 	pkt.buf = NULL;
 	
-	return tapi_send_packet(client, &pkt);
+	return tapi_send_packet(&pkt);
 }

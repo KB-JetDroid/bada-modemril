@@ -136,6 +136,26 @@ void ipc_hex_dump(struct ipc_client *client, void *data, int size);
 void *ipc_mtd_read(struct ipc_client *client, char *mtd_name, int size, int block_size);
 void *ipc_file_read(struct ipc_client *client, char *file_name, int size, int block_size);
 
+#ifndef RIL_SHLIB
+
+struct ipc_client *client_fmt;
+
+static inline void ipc_fmt_send(struct modem_io *request)
+{
+	ipc_client_send(client_fmt, request);
+}
+
+static inline int ipc_fmt_modem_io(void *data, uint32_t cmd)
+{
+	return ipc_client_modem_operations(client_fmt, data, cmd);
+}
+
+#else
+	extern void ipc_fmt_send(struct modem_io *request);
+	extern int ipc_fmt_modem_io(void *data, uint32_t cmd);
+
+#endif //RIL_SHLIB
+
 #endif
 
 // vim:ts=4:sw=4:expandtab

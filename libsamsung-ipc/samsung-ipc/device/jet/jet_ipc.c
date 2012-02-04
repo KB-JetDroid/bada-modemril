@@ -32,6 +32,9 @@
 #include "ipc_private.h"
 #include "jet_ipc.h"
 
+#define LOG_TAG "RIL_JetIPC"
+#include <utils/Log.h>
+
 int32_t jet_modem_bootstrap(struct ipc_client *client)
 {
 
