@@ -1,7 +1,9 @@
 /**
  * This file is part of libsamsung-ipc.
  *
- * Copyright (C) 2010-2011 Joerie de Gram <j.de.gram@gmail.com>
+ * Copyright (C) 2011 Paul Kocialkowski <contact@paulk.fr>
+ *                    Joerie de Gram <j.de.gram@gmail.com>
+ *                    Simon Busch <morphis@gravedo.de>
  *
  * Modified for Jet - KB <kbjetdroid@gmail.com>
  *
@@ -36,7 +38,6 @@ int32_t jet_modem_bootstrap(struct ipc_client *client)
 	int32_t rc = 0;
 
     int32_t dpram_fd = -1;
-
 
 	int32_t fd, retval;
 
@@ -301,18 +302,81 @@ int32_t jet_modem_operations(struct ipc_client *client, void *data, uint32_t cmd
     return ioctl(fd, cmd, data);
 }
 
-struct ipc_handlers ipc_default_handlers = {
+void *jet_ipc_common_data_create(void)
+{
+    void *io_data;
+    int io_data_len;
+
+    io_data_len = sizeof(int);
+    io_data = malloc(io_data_len);
+
+    if(io_data == NULL)
+        return NULL;
+
+    memset(io_data, 0, io_data_len);
+
+    return io_data;
+}
+
+int jet_ipc_common_data_destroy(void *io_data)
+{
+    // This was already done, not an error but we need to return
+    if(io_data == NULL)
+        return 0;
+
+    free(io_data);
+
+    return 0;
+}
+
+int jet_ipc_common_data_set_fd(void *io_data, int fd)
+{
+    int *common_data;
+
+    if(io_data == NULL)
+        return -1;
+
+    common_data = (int *) io_data;
+    common_data = &fd;
+
+    return 0;
+}
+
+int jet_ipc_common_data_get_fd(void *io_data)
+{
+    int *common_data;
+
+    if(io_data == NULL)
+        return -1;
+
+    common_data = (int *) io_data;
+
+    return (int) *(common_data);
+}
+
+struct ipc_handlers jet_default_handlers = {
     .open = jet_ipc_open,
     .close = jet_ipc_close,
     .power_on = jet_ipc_power_on,
     .power_off = jet_ipc_power_off,
     .read = jet_ipc_read,
     .write = jet_ipc_write,
+    .common_data = NULL,
+    .common_data_create = jet_ipc_common_data_create,
+    .common_data_destroy = jet_ipc_common_data_destroy,
+    .common_data_set_fd = jet_ipc_common_data_set_fd,
+    .common_data_get_fd = jet_ipc_common_data_get_fd,
 };
 
-struct ipc_ops ipc_ops = {
+struct ipc_ops jet_fmt_ops = {
     .send = jet_ipc_send,
     .recv = jet_ipc_recv,
     .bootstrap = jet_modem_bootstrap,
     .modem_operations = jet_modem_operations,
 };
+
+void jet_ipc_register(void)
+{
+    ipc_register_device_client_handlers(IPC_DEVICE_JET, &jet_fmt_ops,
+                                        NULL, &jet_default_handlers);
+}

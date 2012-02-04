@@ -42,51 +42,21 @@
 int wake_lock_fd =      -1;
 int wake_unlock_fd =    -1;
 
-#define isprint(c)	((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
-void hexdump(const char *buf, int32_t len)
-{
-	char str[80], octet[10];
-	int32_t ofs, i, l;
-
-	for (ofs = 0; ofs < len; ofs += 16) {
-		sprintf( str, "0x%02x: ", ofs );
-
-		for (i = 0; i < 16; i++) {
-			if ((i + ofs) < len)
-				sprintf( octet, "%02x ", buf[ofs + i] );
-			else
-				strcpy( octet, "   " );
-
-			strcat( str, octet );
-		}
-			strcat( str, "  " );
-			l = strlen( str );
-
-		for (i = 0; (i < 16) && ((i + ofs) < len); i++)
-			str[l++] = isprint( buf[ofs + i] ) ? buf[ofs + i] : '.';
-
-		str[l] = '\0';
-		DEBUG_I( "%s\n", str );
-	}
-}
-
 int wave_modem_bootstrap(struct ipc_client *client)
 {
-
-	int rc=0;
-
-    int s3c2410_serial3_fd= -1;
-    int modem_ctl_fd=   -1;
+    int s3c2410_serial3_fd = -1;
+    int modem_ctl_fd = -1;
 
     /* Control variables. */
-    int boot_tries_count=0;
+    int boot_tries_count = 0;
+    int rc = 0;
 
     /* Boot variables */
-    uint8_t *radio_img_p=NULL;
-    uint8_t bootcore_version=0;
-    uint8_t info_size=0;
-    uint8_t crc_byte=0;
-    int block_size=0;
+    uint8_t *radio_img_p = NULL;
+    uint8_t bootcore_version = 0;
+    uint8_t info_size = 0;
+    uint8_t crc_byte = 0;
+    int block_size = 0;
 
     /* s3c2410 serial setup variables. */
     struct termios termios;
@@ -147,13 +117,6 @@ boot_loop_start:
     cfsetospeed(&termios, B115200);
 
     tcsetattr(s3c2410_serial3_fd, TCSANOW, &termios);
-/*
-    ioctl(s3c2410_serial3_fd, TIOCMGET, &serial); //FIXME
-    ioctl(s3c2410_serial3_fd, TIOCMSET, &serial); //FIXME
-
-    tcgetattr(s3c2410_serial3_fd, &termios); //FIXME
-    tcsetattr(s3c2410_serial3_fd, TCSANOW, &termios); //FIXME
-*/
 
     /* Send 'AT' in ASCII. */
     ipc_client_log(client, "wave_ipc_bootstrap: sending AT in ASCII");
@@ -317,10 +280,9 @@ error_loop:
 
 error:
     ipc_client_log(client, "%s: something went wrong", __func__);
-    rc = 1;
+    rc = -1;
 exit:
     ipc_client_log(client, "wave_ipc_bootstrap: exit");
-
     return rc;
 }
 
@@ -590,19 +552,82 @@ int wave_ipc_power_off(void *data)
     return 0;
 }
 
-struct ipc_handlers ipc_default_handlers = {
+void *wave_ipc_common_data_create(void)
+{
+    void *io_data;
+    int io_data_len;
+
+    io_data_len = sizeof(int);
+    io_data = malloc(io_data_len);
+
+    if(io_data == NULL)
+        return NULL;
+
+    memset(io_data, 0, io_data_len);
+
+    return io_data;
+}
+
+int wave_ipc_common_data_destroy(void *io_data)
+{
+    // This was already done, not an error but we need to return
+    if(io_data == NULL)
+        return 0;
+
+    free(io_data);
+
+    return 0;
+}
+
+int wave_ipc_common_data_set_fd(void *io_data, int fd)
+{
+    int *common_data;
+
+    if(io_data == NULL)
+        return -1;
+
+    common_data = (int *) io_data;
+    common_data = &fd;
+
+    return 0;
+}
+
+int wave_ipc_common_data_get_fd(void *io_data)
+{
+    int *common_data;
+
+    if(io_data == NULL)
+        return -1;
+
+    common_data = (int *) io_data;
+
+    return (int) *(common_data);
+}
+
+struct ipc_handlers wave_default_handlers = {
     .read = wave_ipc_read,
     .write = wave_ipc_write,
     .open = wave_ipc_open,
     .close = wave_ipc_close,
     .power_on = wave_ipc_power_on,
     .power_off = wave_ipc_power_off,
+    .common_data = NULL,
+    .common_data_create = wave_ipc_common_data_create,
+    .common_data_destroy = wave_ipc_common_data_destroy,
+    .common_data_set_fd = wave_ipc_common_data_set_fd,
+    .common_data_get_fd = wave_ipc_common_data_get_fd,
 };
 
-struct ipc_ops ipc_ops = {
+struct ipc_ops wave_fmt_ops = {
     .send = wave_ipc_client_send,
     .recv = wave_ipc_client_recv,
     .bootstrap = wave_modem_bootstrap,
 };
+
+void wave_ipc_register(void)
+{
+    ipc_register_device_client_handlers(IPC_DEVICE_WAVE, &wave_fmt_ops,
+                                        NULL, &wave_default_handlers);
+}
 
 // vim:ts=4:sw=4:expandtab

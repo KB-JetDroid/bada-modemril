@@ -25,10 +25,6 @@
 
 #include <radio.h>
 
-struct ipc_client;
-
-void ipc_client_log(struct ipc_client *client, const char *message, ...);
-
 struct ipc_ops {
     int32_t (*bootstrap)(struct ipc_client *client);
     int32_t (*modem_operations)(struct ipc_client *client, void *data, uint32_t cmd);
@@ -52,6 +48,14 @@ struct ipc_handlers {
     void *power_on_data;
     ipc_handler_cb power_off;
     void *power_off_data;
+
+    /* Handlers common data*/
+    void *common_data;
+
+    void *(*common_data_create)(void);
+    int (*common_data_destroy)(void *io_data);
+    int (*common_data_set_fd)(void *io_data, int fd);
+    int (*common_data_get_fd)(void *io_data);
 };
 
 struct ipc_client {
@@ -63,6 +67,16 @@ struct ipc_client {
     struct ipc_ops *ops;
     struct ipc_handlers *handlers;
 };
+
+struct ipc_device_desc {
+    struct ipc_ops *fmt_ops;
+    struct ipc_ops *rfs_ops;
+    struct ips_handlers *handlers;
+};
+
+void ipc_client_log(struct ipc_client *client, const char *message, ...);
+void ipc_register_device_client_handlers(int device, struct ipc_ops *fmt_ops,
+                                         struct ipc_ops *rfs_ops, struct ipc_handlers *handlers);
 
 #endif
 

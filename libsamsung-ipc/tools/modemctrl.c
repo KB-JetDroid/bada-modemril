@@ -301,10 +301,8 @@ int32_t modem_start(struct ipc_client *client)
 {
     int32_t rc = -1;
 
-    rc = ipc_client_set_all_handlers_data(client, &client_fd);
-
-    if(rc < 0)
-        DEBUG_I("error in setting handlers_data\n");
+//    ipc_client_set_handlers(client, &ipc_default_handlers);
+    ipc_client_create_handlers_common_data(client);
 
     ipc_client_bootstrap_modem(client);
 
@@ -316,6 +314,8 @@ int32_t modem_start(struct ipc_client *client)
 
     if(rc < 0)
         return -1;
+
+    client_fd = ipc_client_get_handlers_common_data_fd(client);
 
     DEBUG_I("Power on modem\n");
 
@@ -339,6 +339,7 @@ void print_help()
     printf("usage: modemctrl <command>\n");
     printf("commands:\n");
     printf("\tstart                 bootstrap modem and start read loop\n");
+    printf("\tbootstrap             bootstrap modem only\n");
     printf("\tpower-on              power on the modem\n");
     printf("\tpower-off             power off the modem\n");
     printf("arguments:\n");
@@ -354,10 +355,12 @@ int main(int argc, char *argv[])
 {
     struct ipc_client *client_fmt;
     int c = 0;
-	int opt_i = 0;
+    int opt_i = 0;
     int rc = -1;
+    int debug = 0;
 
     struct option opt_l[] = {
+        {"help",    no_argument,        0,  0 },
         {"debug",   no_argument,        0,  0 },
         {"pin",     required_argument,  0,  0 },
         {0,         0,                  0,  0 }
@@ -378,7 +381,11 @@ int main(int argc, char *argv[])
 
         switch(c) {
             case 0:
-                if(strcmp(opt_l[opt_i].name, "debug") == 0) {
+                if (strncmp(opt_l[opt_i].name, "help", 4) == 0) {
+                    print_help();
+                    exit(1);
+                } else if(strcmp(opt_l[opt_i].name, "debug") == 0) {
+                    debug = 1;
                     DEBUG_I("Debug enabled\n");
                 } else if(strcmp(opt_l[opt_i].name, "pin") == 0) {
                     if(optarg) {
@@ -395,21 +402,38 @@ int main(int argc, char *argv[])
         }
     }
 
-        while(opt_i < argc) {
-            if(strncmp(argv[optind], "power-on", 8) == 0) {
-                ipc_client_power_on(client_fmt);
-                goto modem_quit;
-            } else if(strncmp(argv[optind], "power-off", 9) == 0) {
-                ipc_client_power_off(client_fmt);
-                goto modem_quit;
-            } else if(strncmp(argv[optind], "start", 5) == 0) {
-                DEBUG_I("Starting modem on FMT client\n");
-                rc = modem_start(client_fmt);
-                if(rc > 0) {
-                    DEBUG_E("Something went wrong\n");
-                    modem_stop(client_fmt);
-                    return 1;
-                }
+    ipc_init();
+    client_fmt = ipc_client_new(IPC_CLIENT_TYPE_FMT);
+
+    if (client_fmt == 0) {
+        printf("[E] Could not create IPC client; aborting ...\n");
+        goto modem_quit;
+    }
+
+    if (debug == 0)
+        ipc_client_set_log_handler(client_fmt, modem_log_handler_quiet, NULL);
+    else ipc_client_set_log_handler(client_fmt, modem_log_handler, NULL);
+
+    while(opt_i < argc) {
+        if(strncmp(argv[optind], "power-on", 8) == 0) {
+            if (ipc_client_power_on(client_fmt) < 0)
+                printf("[E] Something went wrong while powering modem on\n");
+            goto modem_quit;
+        } else if(strncmp(argv[optind], "power-off", 9) == 0) {
+            if (ipc_client_power_off(client_fmt) < 0)
+                printf("[E] Something went wrong while powering modem off\n");
+            goto modem_quit;
+        } else if (strncmp(argv[optind], "bootstrap", 9) == 0) {
+            ipc_client_create_handlers_common_data(client_fmt);
+            ipc_client_bootstrap_modem(client_fmt);
+        } else if(strncmp(argv[optind], "start", 5) == 0) {
+            printf("[0] Starting modem on FMT client\n");
+            rc = modem_start(client_fmt);
+            if(rc < 0) {
+                printf("[E] Something went wrong\n");
+                modem_stop(client_fmt);
+                return 1;
+            }
 
                 DEBUG_I("Starting modem_read_loop on FMT client\n");
                 /*
@@ -428,7 +452,9 @@ int main(int argc, char *argv[])
         }
 
 modem_quit:
-    ipc_client_free(client_fmt);
+    if (client_fmt != 0)
+        ipc_client_free(client_fmt);
+    ipc_shutdown();
 
     return 0;
 }

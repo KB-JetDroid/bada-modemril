@@ -43,7 +43,7 @@ struct samsung_rfs_cfrm
 int wake_lock(char *lock_name, int len);
 int wake_unlock(char *lock_name, int len);
 
-extern struct ipc_handlers crespo_ipc_default_handlers;
+extern struct ipc_handlers wave_default_handlers;
 
 #endif
 

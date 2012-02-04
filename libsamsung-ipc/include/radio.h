@@ -33,6 +33,13 @@
 #define IPC_CLIENT_TYPE_RFS      1
 #define IPC_CLIENT_TYPE_PACKET   2 //For Jet
 
+#define IPC_DEVICE_CRESPO       0
+#define IPC_DEVICE_ARIES        1
+#define IPC_DEVICE_JET          2
+#define IPC_DEVICE_WAVE         3
+
+#define IPC_DEVICE_MAX          IPC_DEVICE_WAVE
+
 #define IPC_COMMAND(f)  ((f->group << 8) | f->index)
 #define IPC_GROUP(m)    (m >> 8)
 #define IPC_INDEX(m)    (m & 0xff)
@@ -82,12 +89,16 @@ struct ipc_handlers;
 
 extern struct ipc_handlers ipc_default_handlers;
 
+void ipc_init(void);
+void ipc_shutdown(void);
+
 typedef void (*ipc_client_log_handler_cb)(const char *message, void *user_data);
 
 typedef int (*ipc_io_handler_cb)(void *data, unsigned int size, void *io_data);
 typedef int (*ipc_handler_cb)(void *data);
 
-struct ipc_client *ipc_client_new(int client_type);
+struct ipc_client* ipc_client_new(int client_type);
+struct ipc_client *ipc_client_new_for_device(int device_type, int client_type);
 int ipc_client_free(struct ipc_client *client);
 
 int ipc_client_set_log_handler(struct ipc_client *client, ipc_client_log_handler_cb log_handler_cb, void *user_data);
@@ -96,7 +107,12 @@ int ipc_client_set_handlers(struct ipc_client *client, struct ipc_handlers *hand
 int ipc_client_set_io_handlers(struct ipc_client *client, 
                                ipc_io_handler_cb read, void *read_data,
                                ipc_io_handler_cb write, void *write_data);
-int ipc_client_set_all_handlers_data(struct ipc_client *client, void *data);
+int ipc_client_set_handlers_common_data(struct ipc_client *client, void *data);
+void *ipc_client_get_handlers_common_data(struct ipc_client *client);
+int ipc_client_create_handlers_common_data(struct ipc_client *client);
+int ipc_client_destroy_handlers_common_data(struct ipc_client *client);
+int ipc_client_set_handlers_common_data_fd(struct ipc_client *client, int fd);
+int ipc_client_get_handlers_common_data_fd(struct ipc_client *client);
 
 int ipc_client_bootstrap_modem(struct ipc_client *client);
 int ipc_client_modem_operations(struct ipc_client *client, void *data, unsigned int cmd);

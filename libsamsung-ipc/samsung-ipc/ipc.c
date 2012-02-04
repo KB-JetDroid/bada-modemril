@@ -25,18 +25,55 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
 #include <stdarg.h>
+#include <unistd.h>
+#include <stdbool.h>
+#include <termios.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <asm/types.h>
 
 #include <radio.h>
 
 #include "ipc_private.h"
 
-extern struct ipc_ops ipc_ops;
-extern struct ipc_handlers ipc_default_handlers;
+struct ipc_device_desc devices[IPC_DEVICE_MAX+1];
+
+extern void crespo_ipc_register(void);
+extern void aries_ipc_register();
+extern void jet_ipc_register();
+extern void wave_ipc_register();
+
+void ipc_init(void)
+{
+//    crespo_ipc_register();
+//    aries_ipc_register();
+#if defined(DEVICE_JET)
+    jet_ipc_register();
+#elif defined(DEVICE_WAVE)
+    wave_ipc_register();
+#endif
+}
+
+void ipc_shutdown(void)
+{
+}
 
 void log_handler_default(const char *message, void *user_data)
 {
     printf("%s\n", message);
+}
+
+void ipc_register_device_client_handlers(int device, struct ipc_ops *fmt_ops,
+                                         struct ipc_ops *rfs_ops, struct ipc_handlers *handlers)
+{
+    devices[device].fmt_ops = fmt_ops;
+    devices[device].rfs_ops = rfs_ops;
+    devices[device].handlers = handlers;
 }
 
 void ipc_client_log(struct ipc_client *client, const char *message, ...)
@@ -52,31 +89,71 @@ void ipc_client_log(struct ipc_client *client, const char *message, ...)
     va_end(args);
 }
 
-struct ipc_client* ipc_client_new(int32_t client_type)
+struct ipc_client* ipc_client_new(int client_type)
+{
+    int device_type = -1, in_hardware = 0;
+    char buf[4096];
+
+    // gather device type from /proc/cpuinfo
+    int fd = open("/proc/cpuinfo", O_RDONLY);
+    int bytesread = read(fd, buf, 4096);
+    close(fd);
+
+    // match hardware name with our supported devices
+    char *pch = strtok(buf, "\n");
+    while (pch != NULL)
+    {
+        int rc;
+        if ((rc = strncmp(pch, "Hardware", 9)) == 9)
+        {
+            if (strstr(pch, "herring") != NULL)
+                device_type = IPC_DEVICE_CRESPO;
+            else if (strstr(pch, "GT-S8000") != NULL)
+                device_type = IPC_DEVICE_JET;
+            else if (strstr(pch, "wave") != NULL)
+                device_type = IPC_DEVICE_WAVE;
+        }
+        pch = strtok(NULL, "\n");
+    }
+
+    // validate that we have found any supported device
+    if (device_type == -1)
+        return NULL;
+
+    return ipc_client_new_for_device(device_type, client_type);
+}
+
+struct ipc_client* ipc_client_new_for_device(int device_type, int client_type)
 {
     struct ipc_client *client;
-    struct ipc_ops *ops = NULL;
 
-    switch (client_type)
-    {
-        case IPC_CLIENT_TYPE_FMT:
-        case IPC_CLIENT_TYPE_RFS:
-            ops = &ipc_ops;
-            break;
-        default:
-            return NULL;
-    }
+    if (device_type < 0 || device_type > IPC_DEVICE_MAX)
+        return 0;
+    if (client_type < 0 || client_type > IPC_CLIENT_TYPE_RFS)
+        return 0;
 
     client = (struct ipc_client*) malloc(sizeof(struct ipc_client));
     client->type = client_type;
-    client->ops = ops;
+
+    switch (client_type)
+    {
+        case IPC_CLIENT_TYPE_RFS:
+            client->ops = devices[device_type].rfs_ops;
+            break;
+        case IPC_CLIENT_TYPE_FMT:
+            client->ops = devices[device_type].fmt_ops;
+            break;
+    }
+
     client->handlers = (struct ipc_handlers *) malloc(sizeof(struct ipc_handlers));
     client->log_handler = log_handler_default;
-memcpy(client->handlers, &ipc_default_handlers, sizeof(struct ipc_handlers));
+    if (devices[device_type].handlers != 0)
+        memcpy(client->handlers, devices[device_type].handlers , sizeof(struct ipc_handlers));
+
     return client;
 }
 
-int32_t ipc_client_free(struct ipc_client *client)
+int ipc_client_free(struct ipc_client *client)
 {
     free(client->handlers);
     free(client);
@@ -97,9 +174,8 @@ int32_t ipc_client_set_log_handler(struct ipc_client *client, ipc_client_log_han
 
 int32_t ipc_client_set_handlers(struct ipc_client *client, struct ipc_handlers *handlers)
 {
-    if(client == NULL)
-        return -1;
-    if(handlers == NULL)
+    if(client == NULL ||
+       handlers == NULL)
         return -1;
 
     memcpy(client->handlers, handlers, sizeof(struct ipc_handlers));
@@ -111,7 +187,8 @@ int32_t ipc_client_set_io_handlers(struct ipc_client *client,
                                ipc_io_handler_cb read, void *read_data,
                                ipc_io_handler_cb write, void *write_data)
 {
-    if(client == NULL)
+    if(client == NULL ||
+       client->handlers == NULL)
         return -1;
 
     if(read != NULL)
@@ -126,23 +203,105 @@ int32_t ipc_client_set_io_handlers(struct ipc_client *client,
     return 0;
 }
 
-int32_t ipc_client_set_all_handlers_data(struct ipc_client *client, void *data)
+int ipc_client_set_handlers_common_data(struct ipc_client *client, void *data)
 {
-    if(client == NULL)
-        return -1;
-    if(data == NULL)
+    void *common_data;
+
+    if(client == NULL ||
+       client->handlers == NULL ||
+       data == NULL)
         return -1;
 
-    client->handlers->read_data = data;
-    client->handlers->write_data = data;
-    client->handlers->open_data = data;
-    client->handlers->close_data = data;
-    client->handlers->power_on_data = data;
-    client->handlers->power_off_data = data;
+    common_data = data;
+    client->handlers->common_data = common_data;
+
+    client->handlers->read_data = common_data;
+    client->handlers->write_data = common_data;
+    client->handlers->open_data = common_data;
+    client->handlers->close_data = common_data;
+    client->handlers->power_on_data = common_data;
+    client->handlers->power_off_data = common_data;
 
     return 0;
 }
 
+void *ipc_client_get_handlers_common_data(struct ipc_client *client)
+{
+    if(client == NULL ||
+       client->handlers == NULL)
+        return NULL;
+
+    return client->handlers->common_data;
+}
+
+int ipc_client_create_handlers_common_data(struct ipc_client *client)
+{
+    void *common_data;
+
+    if(client == NULL ||
+       client->handlers == NULL)
+        return -1;
+
+    common_data = client->handlers->common_data_create();
+    client->handlers->common_data = common_data;
+
+    client->handlers->read_data = common_data;
+    client->handlers->write_data = common_data;
+    client->handlers->open_data = common_data;
+    client->handlers->close_data = common_data;
+    client->handlers->power_on_data = common_data;
+    client->handlers->power_off_data = common_data;
+
+    return 0;
+}
+
+int ipc_client_destroy_handlers_common_data(struct ipc_client *client)
+{
+    void *common_data;
+    int rc;
+
+    if(client == NULL ||
+       client->handlers == NULL ||
+       client->handlers->common_data_destroy == NULL)
+        return -1;
+
+    rc = client->handlers->common_data_destroy(client->handlers->common_data);
+
+    if(rc < 0)
+        return -1;
+
+    common_data = NULL;
+    client->handlers->common_data = common_data;
+
+    client->handlers->read_data = common_data;
+    client->handlers->write_data = common_data;
+    client->handlers->open_data = common_data;
+    client->handlers->close_data = common_data;
+    client->handlers->power_on_data = common_data;
+    client->handlers->power_off_data = common_data;
+
+    return 0;
+}
+
+int ipc_client_set_handlers_common_data_fd(struct ipc_client *client, int fd)
+{
+    if(client == NULL ||
+       client->handlers == NULL ||
+       client->handlers->common_data_set_fd == NULL)
+        return -1;
+
+    return client->handlers->common_data_set_fd(client->handlers->common_data, fd);
+}
+
+int ipc_client_get_handlers_common_data_fd(struct ipc_client *client)
+{
+    if(client == NULL ||
+       client->handlers == NULL ||
+       client->handlers->common_data_get_fd == NULL)
+        return -1;
+
+    return client->handlers->common_data_get_fd(client->handlers->common_data);
+}
 int32_t ipc_client_bootstrap_modem(struct ipc_client *client)
 {
     if (client == NULL ||
@@ -182,7 +341,7 @@ int32_t ipc_client_close(struct ipc_client *client)
 {
     if (client == NULL ||
         client->handlers == NULL ||
-        client->handlers->open == NULL)
+        client->handlers->close == NULL)
         return -1;
 
     return client->handlers->close(NULL, 0, client->handlers->close_data);
@@ -193,7 +352,7 @@ int32_t ipc_client_power_on(struct ipc_client *client)
 	return 0; //for jet
     if (client == NULL ||
         client->handlers == NULL ||
-        client->handlers->open == NULL)
+        client->handlers->power_on == NULL)
         return -1;
 
     return client->handlers->power_on(client->handlers->power_on_data);
@@ -204,7 +363,7 @@ int32_t ipc_client_power_off(struct ipc_client *client)
 	return 0; //for jet
 	if (client == NULL ||
         client->handlers == NULL ||
-        client->handlers->open == NULL)
+        client->handlers->power_off == NULL)
         return -1;
 
     return client->handlers->power_off(client->handlers->power_off_data);

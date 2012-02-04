@@ -185,6 +185,7 @@ typedef enum
 #define IPC_GROUP_IMEI                              0x10
 #define IPC_GROUP_GPS                               0x11
 #define IPC_GROUP_SAP                               0x12
+#define IPC_GROUP_RFS                               0x42
 #define IPC_GROUP_GEN                               0x80
 
 /* Pb */
