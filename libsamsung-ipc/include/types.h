@@ -34,9 +34,9 @@
 #endif
 
 #ifdef RIL_SHLIB
-#define DEBUG_E(...) LOGE(__VA_ARGS__)
-#define DEBUG_W(...) LOGW(__VA_ARGS__)
-#define DEBUG_I(...) LOGI(__VA_ARGS__)
+#define DEBUG_E(...) ALOGE(__VA_ARGS__)
+#define DEBUG_W(...) ALOGW(__VA_ARGS__)
+#define DEBUG_I(...) ALOGI(__VA_ARGS__)
 #else
 
 #ifdef DEBUG_ERROR
@@ -69,7 +69,7 @@ x, __FUNCTION__ ,__LINE__, ## args)
 
 #endif //RIL_SHLIB
 
-#define MAX_SIGNLE_FRAME_DATA 	0xFF4
+#define MAX_SINGLE_FRAME_DATA 	0xFF4
 
 /* AP -> Baseband */
 #define IPC_TYPE_EXEC                               0x01

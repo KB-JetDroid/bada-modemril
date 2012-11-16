@@ -35,7 +35,7 @@ void ipc_rfs_nv_read_item(struct ipc_message_info *info)
 	ipc_client = ((struct ipc_client_object *) ipc_rfs_client->object)->ipc_client;
 
 	if(rfs_io == NULL) {
-		LOGE("Error: NULL rfs_io");
+		ALOGE("Error: NULL rfs_io");
 		return;
 	}
 
@@ -43,13 +43,13 @@ void ipc_rfs_nv_read_item(struct ipc_message_info *info)
 	memset(rfs_io_conf, 0, rfs_io->length + sizeof(struct ipc_rfs_io_confirm));
 	rfs_data = rfs_io_conf + sizeof(struct ipc_rfs_io_confirm);
 
-	LOGD("Asked to read 0x%x bytes at offset 0x%x", rfs_io->length, rfs_io->offset);
+	ALOGD("Asked to read 0x%x bytes at offset 0x%x", rfs_io->length, rfs_io->offset);
 	rc = nv_data_read(ipc_client, rfs_io->offset, rfs_io->length, rfs_data);
 
-	LOGD("Read rfs_data dump:");
+	ALOGD("Read rfs_data dump:");
 	hex_dump(rfs_data, rfs_io->length);
 
-	LOGD("Sending RFS IO Confirm message (rc is %d)", rc);
+	ALOGD("Sending RFS IO Confirm message (rc is %d)", rc);
 	rfs_io_conf->confirm = rc < 0 ? 0 : 1;
 	rfs_io_conf->offset = rfs_io->offset;
 	rfs_io_conf->length = rfs_io->length;
@@ -70,19 +70,19 @@ void ipc_rfs_nv_write_item(struct ipc_message_info *info)
 	ipc_client = ((struct ipc_client_object *) ipc_rfs_client->object)->ipc_client;
 
 	if(rfs_io == NULL) {
-		LOGE("Error: NULL rfs_io");
+		ALOGE("Error: NULL rfs_io");
 		return;
 	}
 
 	rfs_data = info->data + sizeof(struct ipc_rfs_io);
 
-	LOGD("Write rfs_data dump:");
+	ALOGD("Write rfs_data dump:");
 	hex_dump(rfs_data, rfs_io->length);
 
-	LOGD("Asked to write 0x%x bytes at offset 0x%x", rfs_io->length, rfs_io->offset);
+	ALOGD("Asked to write 0x%x bytes at offset 0x%x", rfs_io->length, rfs_io->offset);
 	rc = nv_data_write(ipc_client, rfs_io->offset, rfs_io->length, rfs_data);
 
-	LOGD("Sending RFS IO Confirm message (rc is %d)", rc);
+	ALOGD("Sending RFS IO Confirm message (rc is %d)", rc);
 	rfs_io_conf.confirm = rc < 0 ? 0 : 1;
 	rfs_io_conf.offset = rfs_io->offset;
 	rfs_io_conf.length = rfs_io->length;

@@ -311,7 +311,7 @@ void ipc_fmt_dispatch(struct modem_io *resp)
 			ipc_gprs_ip_configuration(info);
 			break;
 		default:
-			LOGD("Unhandled command: %s (%04x)", ipc_command_to_str(IPC_COMMAND(info)), IPC_COMMAND(info));
+			ALOGD("Unhandled command: %s (%04x)", ipc_command_to_str(IPC_COMMAND(info)), IPC_COMMAND(info));
 			break;
 	}
 #endif
@@ -329,7 +329,7 @@ void ipc_rfs_dispatch(struct ipc_message_info *info)
 			ipc_rfs_nv_write_item(info);
 			break;
 		default:
-			LOGD("Unhandled command: %s (%04x)", ipc_command_to_str(IPC_COMMAND(info)), IPC_COMMAND(info));
+			ALOGD("Unhandled command: %s (%04x)", ipc_command_to_str(IPC_COMMAND(info)), IPC_COMMAND(info));
 			break;
 	}
 #endif
@@ -352,7 +352,7 @@ void srs_dispatch(struct srs_message *message)
 //			srs_snd_set_call_audio_path(message);
 			break;
 		default:
-			LOGD("Unhandled command: (%04x)", message->command);
+			ALOGD("Unhandled command: (%04x)", message->command);
 			break;
 	}
 }
@@ -494,7 +494,7 @@ void onRequest(int request, void *data, size_t datalen, RIL_Token t)
 			RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
 			break;
 		default:
-			LOGE("Request not implemented: %d\n", request);
+			ALOGE("Request not implemented: %d\n", request);
 			RIL_onRequestComplete(t, RIL_E_REQUEST_NOT_SUPPORTED, NULL, 0);
 			break;
 	}
@@ -571,66 +571,66 @@ const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **a
 	ril_state_lpm();
 
 ipc_fmt:
-	LOGD("Creating IPC FMT client");
+	ALOGD("Creating IPC FMT client");
 
 	ipc_fmt_client = ril_client_new(&ipc_fmt_client_funcs);
 	rc = ril_client_create(ipc_fmt_client);
 
 	if(rc < 0) {
-		LOGE("IPC FMT client creation failed.");
+		ALOGE("IPC FMT client creation failed.");
 		goto srs;
 	}
 
 	rc = ril_client_thread_start(ipc_fmt_client);
 
 	if(rc < 0) {
-		LOGE("IPC FMT thread creation failed.");
+		ALOGE("IPC FMT thread creation failed.");
 		goto srs;
 	}
 
-	LOGD("IPC FMT client ready");
+	ALOGD("IPC FMT client ready");
 
 #if 0
 ipc_rfs:
-	LOGD("Creating IPC RFS client");
+	ALOGD("Creating IPC RFS client");
 
 	ipc_rfs_client = ril_client_new(&ipc_rfs_client_funcs);
 	rc = ril_client_create(ipc_rfs_client);
 
 	if(rc < 0) {
-		LOGE("IPC RFS client creation failed.");
+		ALOGE("IPC RFS client creation failed.");
 		goto srs;
 	}
 
 	rc = ril_client_thread_start(ipc_rfs_client);
 
 	if(rc < 0) {
-		LOGE("IPC RFS thread creation failed.");
+		ALOGE("IPC RFS thread creation failed.");
 		goto srs;
 	}
 
-	LOGD("IPC RFS client ready");
+	ALOGD("IPC RFS client ready");
 #endif
 
 srs:
-	LOGD("Creating SRS client");
+	ALOGD("Creating SRS client");
 
 	srs_client = ril_client_new(&srs_client_funcs);
 	rc = ril_client_create(srs_client);
 
 	if(rc < 0) {
-		LOGE("SRS client creation failed.");
+		ALOGE("SRS client creation failed.");
 		goto end;
 	}
 
 	rc = ril_client_thread_start(srs_client);
 
 	if(rc < 0) {
-		LOGE("SRS thread creation failed.");
+		ALOGE("SRS thread creation failed.");
 		goto end;
 	}
 
-	LOGD("SRS client ready");
+	ALOGD("SRS client ready");
 
 end:
 	return &ril_ops;
@@ -644,66 +644,66 @@ int main(int argc, char *argv[])
 	ril_state_lpm();
 
 ipc_fmt:
-	LOGD("Creating IPC FMT client");
+	ALOGD("Creating IPC FMT client");
 
 	ipc_fmt_client = ril_client_new(&ipc_fmt_client_funcs);
 	rc = ril_client_create(ipc_fmt_client);
 
 	if(rc < 0) {
-		LOGE("IPC FMT client creation failed.");
+		ALOGE("IPC FMT client creation failed.");
 		goto srs;
 	}
 
 	rc = ril_client_thread_start(ipc_fmt_client);
 
 	if(rc < 0) {
-		LOGE("IPC FMT thread creation failed.");
+		ALOGE("IPC FMT thread creation failed.");
 		goto srs;
 	}
 
-	LOGD("IPC FMT client ready");
+	ALOGD("IPC FMT client ready");
 
 #if 0
 ipc_rfs:
-	LOGD("Creating IPC RFS client");
+	ALOGD("Creating IPC RFS client");
 
 	ipc_rfs_client = ril_client_new(&ipc_rfs_client_funcs);
 	rc = ril_client_create(ipc_rfs_client);
 
 	if(rc < 0) {
-		LOGE("IPC RFS client creation failed.");
+		ALOGE("IPC RFS client creation failed.");
 		goto srs;
 	}
 
 	rc = ril_client_thread_start(ipc_rfs_client);
 
 	if(rc < 0) {
-		LOGE("IPC RFS thread creation failed.");
+		ALOGE("IPC RFS thread creation failed.");
 		goto srs;
 	}
 
-	LOGD("IPC RFS client ready");
+	ALOGD("IPC RFS client ready");
 #endif
 
 srs:
-	LOGD("Creating SRS client");
+	ALOGD("Creating SRS client");
 
 	srs_client = ril_client_new(&srs_client_funcs);
 	rc = ril_client_create(srs_client);
 
 	if(rc < 0) {
-		LOGE("SRS client creation failed.");
+		ALOGE("SRS client creation failed.");
 		goto end;
 	}
 
 	rc = ril_client_thread_start(srs_client);
 
 	if(rc < 0) {
-		LOGE("SRS thread creation failed.");
+		ALOGE("SRS thread creation failed.");
 		goto end;
 	}
 
-	LOGD("SRS client ready");
+	ALOGD("SRS client ready");
 
 end:
 	return 0;

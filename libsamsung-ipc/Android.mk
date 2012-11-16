@@ -1,11 +1,16 @@
-# TARGET_DEVICE hardcoded since Jet's platform build system is not set for cyanogen gingerbread
-TARGET_DEVICE:= jet
-
-BUILD_IPC-MODEMCTRL := true
-DEBUG := true
 
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
+
+TARGET_PLATFORM := $(TARGET_DEVICE)
+
+# walkaround for the need to duplicate wave sources for wave2
+ifeq ($(TARGET_DEVICE),wave2)
+	TARGET_PLATFORM := wave
+endif
+
+BUILD_IPC-MODEMCTRL := true
+DEBUG := true
 
 LOCAL_MODULE := libsamsung-ipc
 LOCAL_MODULE_TAGS := optional
@@ -25,29 +30,18 @@ samsung-ipc_files := \
 	samsung-ipc/tapi_at.c \
 	samsung-ipc/tapi_dmh.c \
 	samsung-ipc/tapi_config.c \
-	samsung-ipc/device/$(TARGET_DEVICE)/$(TARGET_DEVICE)_ipc.c
+	samsung-ipc/device/$(TARGET_PLATFORM)/$(TARGET_PLATFORM)_ipc.c
 
-ifeq ($(TARGET_DEVICE),crespo)
-	device_files := samsung-ipc/device/$(TARGET_DEVICE)/$(TARGET_DEVICE)_nv_data.c
-	LOCAL_CFLAGS += -Iexternal/openssl/include
-	LOCAL_LDFLAGS += -lcrypto
-	LOCAL_CFLAGS += -DDEVICE_CRESPO
-endif
 
-ifeq ($(TARGET_DEVICE),wave)
-	device_files := samsung-ipc/device/$(TARGET_DEVICE)/$(TARGET_DEVICE)_nv_data.c
-	LOCAL_CFLAGS += -Iexternal/openssl/include
-	LOCAL_LDFLAGS += -lcrypto
-	LOCAL_CFLAGS += -DDEVICE_CRESPO
-endif
-
-ifeq ($(TARGET_DEVICE),h1)
-	LOCAL_CFLAGS += -DDEVICE_H1
-endif
 ifeq ($(TARGET_DEVICE),jet)
 	LOCAL_CFLAGS += -DDEVICE_JET
 endif
+
 ifeq ($(TARGET_DEVICE),wave)
+	LOCAL_CFLAGS += -DDEVICE_WAVE
+endif
+
+ifeq ($(TARGET_DEVICE),wave2)
 	LOCAL_CFLAGS += -DDEVICE_WAVE
 endif
 
@@ -75,13 +69,6 @@ LOCAL_MODULE_TAGS := optional
 
 modemctrl_files := tools/modemctrl.c
 
-
-ifeq ($(TARGET_DEVICE),crespo)
-	LOCAL_CFLAGS += -DDEVICE_CRESPO
-endif
-ifeq ($(TARGET_DEVICE),h1)
-	LOCAL_CFLAGS += -DDEVICE_H1
-endif
 ifeq ($(TARGET_DEVICE),jet)
 	LOCAL_CFLAGS += -DDEVICE_JET
 endif
@@ -130,14 +117,14 @@ LOCAL_SHARED_LIBRARIES := \
 # for asprinf
 LOCAL_CFLAGS := -D_GNU_SOURCE
 
-ifeq ($(TARGET_DEVICE),crespo)
-	LOCAL_CFLAGS += -DDEVICE_CRESPO
-endif
-ifeq ($(TARGET_DEVICE),h1)
-	LOCAL_CFLAGS += -DDEVICE_H1
-endif
 ifeq ($(TARGET_DEVICE),jet)
 	LOCAL_CFLAGS += -DDEVICE_JET
+endif
+ifeq ($(TARGET_DEVICE),wave)
+	LOCAL_CFLAGS += -DDEVICE_WAVE
+endif
+ifeq ($(TARGET_DEVICE),wave2)
+	LOCAL_CFLAGS += -DDEVICE_WAVE
 endif
 
 LOCAL_C_INCLUDES := external/libsamsung-ipc/include

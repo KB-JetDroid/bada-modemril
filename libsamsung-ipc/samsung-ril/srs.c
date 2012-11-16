@@ -193,12 +193,12 @@ int srs_read_loop(struct ril_client *client)
 	int rc;
 
 	if(client == NULL) {
-		LOGE("client is NULL, aborting!");
+		ALOGE("client is NULL, aborting!");
 		return -1;
 	}
 
 	if(client->object == NULL) {
-		LOGE("client object is NULL, aborting!");
+		ALOGE("client object is NULL, aborting!");
 		return -1;
 	}
 
@@ -206,13 +206,13 @@ int srs_read_loop(struct ril_client *client)
 
 	while(1) {
 		if(srs_server->server_fd < 0) {
-			LOGE("SRS client server_fd is negative, aborting!");
+			ALOGE("SRS client server_fd is negative, aborting!");
 			return -1;
 		}
 
 		rc = srs_server_accept(srs_server);
 
-		LOGE("SRS server accept!");
+		ALOGE("SRS server accept!");
 
 		FD_ZERO(&fds);
 		FD_SET(srs_server->client_fd, &fds);
@@ -225,11 +225,11 @@ int srs_read_loop(struct ril_client *client)
 
 			if(FD_ISSET(srs_server->client_fd, &fds)) {
 				if(srs_server_recv(srs_server, &srs_message) < 0) {
-					LOGE("SRS recv failed, aborting!");
+					ALOGE("SRS recv failed, aborting!");
 					break;
 				}
 
-				LOGD("SRS recv: command=%d data_len=%d", srs_message.command, srs_message.data_len);
+				ALOGD("SRS recv: command=%d data_len=%d", srs_message.command, srs_message.data_len);
 				hex_dump(srs_message.data, srs_message.data_len);
 
 				srs_dispatch(&srs_message);
@@ -244,7 +244,7 @@ int srs_read_loop(struct ril_client *client)
 			srs_server->client_fd = -1;
 		}
 
-		LOGE("SRS server client ended!");
+		ALOGE("SRS server client ended!");
 	}
 
 	return 0;
@@ -254,13 +254,13 @@ int srs_create(struct ril_client *client)
 {
 	struct srs_server *srs_server;
 
-	LOGD("Creating new SRS client");
+	ALOGD("Creating new SRS client");
 
 	srs_server = srs_server_new();
 	client->object = (void *) srs_server;
 
 	if(srs_server_open(srs_server) < 0) {
-		LOGE("%s: samsung-ril-socket server open failed", __FUNCTION__);
+		ALOGE("%s: samsung-ril-socket server open failed", __FUNCTION__);
 		return -1;
 	}
 

@@ -53,7 +53,7 @@ void ipc_gprs_pdp_context_complete(struct ipc_message_info *info)
 	rc = ipc_gen_phone_res_check(phone_res);
 	if(rc < 0) {
 		RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
-		LOGE("There was an error, aborting PDP context complete");
+		ALOGE("There was an error, aborting PDP context complete");
 		return;
 	}
 
@@ -97,7 +97,7 @@ void ril_request_setup_data_call(RIL_Token t, void *data, int length)
 		password = "dummy";
 	}
 
-	LOGD("Requesting data connection to APN '%s'\n", apn);
+	ALOGD("Requesting data connection to APN '%s'\n", apn);
 
 	/* create the structs with the apn */
 	ipc_gprs_define_pdp_context_setup(&setup_apn_message, apn);
@@ -146,7 +146,7 @@ void ipc_gprs_ip_configuration(struct ipc_message_info *info)
         snprintf(dns2, IP_STRING_SIZE , "%i.%i.%i.%i",(ip_config->dns2)[0],(ip_config->dns2)[1],
                                                 (ip_config->dns2)[2],(ip_config->dns2)[3]);
 
-        LOGD("GPRS configuration: ip:%s, gateway:%s, subnet_mask:%s, dns1:%s, dns2:%s",
+        ALOGD("GPRS configuration: ip:%s, gateway:%s, subnet_mask:%s, dns1:%s, dns2:%s",
 							local_ip, gateway, subnet_mask ,dns1, dns2);
 	rc = ifc_configure(INTERFACE, 
 			inet_addr(local_ip),
@@ -154,7 +154,7 @@ void ipc_gprs_ip_configuration(struct ipc_message_info *info)
 			inet_addr(gateway),
 			inet_addr(dns1),
 			inet_addr(dns2));
-        LOGD("ifc_configure: %d",rc);
+        ALOGD("ifc_configure: %d",rc);
 
 	snprintf(dns_prop_name, sizeof(dns_prop_name), "net.%s.dns1", INTERFACE);
 	property_set(dns_prop_name, dns1);

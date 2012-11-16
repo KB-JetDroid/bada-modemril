@@ -58,7 +58,7 @@ void ipc_pwr_phone_state(struct ipc_message_info *info)
 		case IPC_PWR_R(IPC_PWR_PHONE_STATE_LPM):
 			ril_state.power_mode = POWER_MODE_LPM;
 			ril_state.radio_state = RADIO_STATE_OFF;
-			LOGD("Got power to LPM");
+			ALOGD("Got power to LPM");
 			RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 		break;
 		case IPC_PWR_R(IPC_PWR_PHONE_STATE_NORMAL):
@@ -66,7 +66,7 @@ void ipc_pwr_phone_state(struct ipc_message_info *info)
 
 			ril_state.power_mode = POWER_MODE_NORMAL;
 			ril_state.radio_state = RADIO_STATE_SIM_NOT_READY;
-			LOGD("Got power to NORMAL");
+			ALOGD("Got power to NORMAL");
 
 			/* 
 			 * return RIL_E_SUCCESS is done at IPC_SEC_PIN_STATUS:
@@ -91,10 +91,10 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 	int power_state = *((int *)data);
 	unsigned short power_data;
 
-	LOGD("requested power_state is %d", power_state);
+	ALOGD("requested power_state is %d", power_state);
 
 	if(power_state > 0) {
-		LOGD("Request power to NORMAL");
+		ALOGD("Request power to NORMAL");
 		power_data = IPC_PWR_PHONE_STATE_NORMAL;
 		ipc_fmt_send(IPC_PWR_PHONE_STATE, IPC_TYPE_EXEC, (void *) &power_data, sizeof(power_data), reqGetId(t));
 
@@ -102,7 +102,7 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 
 		/* Don't tell the RIL we're not off anymore: wait for the message */
 	} else {
-		LOGD("Request power to LPM");
+		ALOGD("Request power to LPM");
 		power_data = IPC_PWR_PHONE_STATE_LPM;
 		ipc_fmt_send(IPC_PWR_PHONE_STATE, IPC_TYPE_EXEC, (void *) &power_data, sizeof(power_data), reqGetId(t));
 

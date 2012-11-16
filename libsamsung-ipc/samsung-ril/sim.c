@@ -107,13 +107,13 @@ void ipc_sec_pin_status(struct ipc_message_info *info)
 					break;
 				default:
 					ril_state.sim_status = SIM_ABSENT;
-					LOGE("%s: unknown SC substate %d --> setting SIM_ABSENT", __FUNCTION__, pin_status->key);
+					ALOGE("%s: unknown SC substate %d --> setting SIM_ABSENT", __FUNCTION__, pin_status->key);
 					break;
 			}
 			break;
 		case IPC_SEC_PIN_SIM_LOCK_FD:
 			ril_state.sim_status = SIM_ABSENT;
-			LOGE("%s: FD lock present (unhandled state --> setting SIM_ABSENT)", __FUNCTION__);
+			ALOGE("%s: FD lock present (unhandled state --> setting SIM_ABSENT)", __FUNCTION__);
 			break;
 		case IPC_SEC_PIN_SIM_LOCK_PN:
 			ril_state.sim_status = SIM_NETWORK_PERSO;
@@ -319,7 +319,7 @@ void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen)
 
 	/* 1. Send PIN */
 	if(strlen(data) > 16) {
-		LOGE("%s: pin exceeds maximum length", __FUNCTION__);
+		ALOGE("%s: pin exceeds maximum length", __FUNCTION__);
 		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
@@ -358,7 +358,7 @@ void ipc_sec_pin_status_complete(struct ipc_message_info *info)
 	} else if(gen_res->code == 0x8000) {
 		RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_SUCCESS, &attempts, sizeof(int*));
 	} else {
-		LOGE("%s: unhandled code %04x", __FUNCTION__, gen_res->code);
+		ALOGE("%s: unhandled code %04x", __FUNCTION__, gen_res->code);
 	}
 }
 
@@ -377,9 +377,9 @@ void ipc_sec_lock_info(struct ipc_message_info *info)
 
 	if(lock_info->type == IPC_SEC_PIN_TYPE_PIN1) {
 		attempts = lock_info->attempts;
-		LOGD("%s: PIN1 %d attempts left", __FUNCTION__, attempts);
+		ALOGD("%s: PIN1 %d attempts left", __FUNCTION__, attempts);
 	} else {
-		LOGE("%s: unhandled lock type %d", __FUNCTION__, lock_info->type);
+		ALOGE("%s: unhandled lock type %d", __FUNCTION__, lock_info->type);
 	}
 }
 
@@ -399,7 +399,7 @@ void ril_request_query_facility_lock(RIL_Token t, void *data, size_t datalen)
 	} else if(!strcmp(facility, "FD")) {
 		lock_type = IPC_SEC_PIN_SIM_LOCK_FD;
 	} else {
-		LOGE("%s: unsupported facility: %s", __FUNCTION__, facility);
+		ALOGE("%s: unsupported facility: %s", __FUNCTION__, facility);
 		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
@@ -438,7 +438,7 @@ void ril_request_set_facility_lock(RIL_Token t, void *data, size_t datalen)
 	} else if(!strcmp(facility, "FD")) {
 		lock_type = IPC_SEC_PIN_SIM_LOCK_FD;
 	} else {
-		LOGE("%s: unsupported facility: %s", __FUNCTION__, facility);
+		ALOGE("%s: unsupported facility: %s", __FUNCTION__, facility);
 		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 

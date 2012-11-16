@@ -67,12 +67,12 @@ int ril_client_create(struct ril_client *client)
 	int c;
 
 	for(c = 5 ; c > 0 ; c--) {
-		LOGD("Creating RIL client inners, try #%d", 6-c);
+		ALOGD("Creating RIL client inners, try #%d", 6-c);
 
 		rc = client->create(client);
 
 		if(rc < 0)
-			LOGD("RIL client inners creation failed!");
+			ALOGD("RIL client inners creation failed!");
 		else
 			break;
 
@@ -95,12 +95,12 @@ int ril_client_destroy(struct ril_client *client)
 	int c;
 
 	for(c = 5 ; c > 0 ; c--) {
-		LOGD("Destroying RIL client inners, try #%d", 6-c);
+		ALOGD("Destroying RIL client inners, try #%d", 6-c);
 
 		rc = client->destroy(client);
 
 		if(rc < 0)
-			LOGD("RIL client inners destroying failed!");
+			ALOGD("RIL client inners destroying failed!");
 		else
 			break;
 
@@ -124,7 +124,7 @@ void *ril_client_thread(void *data)
 	int c;
 
 	if(data == NULL) {
-		LOGE("Data passed to thread is NULL!");
+		ALOGE("Data passed to thread is NULL!");
 
 		return 0;
 	}
@@ -139,7 +139,7 @@ void *ril_client_thread(void *data)
 		if(rc < 0) {
 			client->state = RIL_CLIENT_ERROR;
 
-			LOGE("There was an error with the read loop! Trying to destroy and recreate client object");
+			ALOGE("There was an error with the read loop! Trying to destroy and recreate client object");
 
 			ril_client_destroy(client);
 			ril_client_create(client);
@@ -148,25 +148,25 @@ void *ril_client_thread(void *data)
 		} else {
 			client->state = RIL_CLIENT_CREATED;
 
-			LOGD("read loop ended with no error!");
+			ALOGD("read loop ended with no error!");
 			break;
 		}
 	}
 
 	if(c == 0) {
-		LOGE("FATAL: Main loop failed too many times.");
+		ALOGE("FATAL: Main loop failed too many times.");
 	}
 
 	// We are destroying everything here
 
 	rc = ril_client_destroy(client);
 	if(rc < 0) {
-		LOGE("RIL client destroy failed!");
+		ALOGE("RIL client destroy failed!");
 	}
 
 	rc = ril_client_free(client);
 	if(rc < 0) {
-		LOGE("RIL client free failed!");
+		ALOGE("RIL client free failed!");
 	}
 
 	return 0;
@@ -183,7 +183,7 @@ int ril_client_thread_start(struct ril_client *client)
 	rc = pthread_create(&(client->thread), &attr, ril_client_thread, (void *) client);
 
 	if(rc != 0) {
-		LOGE("pthread creation failed");
+		ALOGE("pthread creation failed");
 		return -1;
 	}
 

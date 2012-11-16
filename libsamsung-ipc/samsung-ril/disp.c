@@ -52,7 +52,7 @@ void ipc_disp_icon_info(struct ipc_message_info *info)
 	ss.EVDO_SignalStrength.dbm = rssi;
 	ss.EVDO_SignalStrength.ecio = 200;
 
-	LOGD("Signal Strength is %d\n", rssi);
+	ALOGD("Signal Strength is %d\n", rssi);
 
 	RIL_onUnsolicitedResponse(RIL_UNSOL_SIGNAL_STRENGTH, &ss, sizeof(ss));
 }
@@ -87,7 +87,7 @@ void ipc_disp_rssi_info(struct ipc_message_info *info)
 	ss.EVDO_SignalStrength.dbm = rssi;
 	ss.EVDO_SignalStrength.ecio = 200;
 
-	LOGD("Signal Strength is %d\n", rssi);
+	ALOGD("Signal Strength is %d\n", rssi);
 
 	RIL_onUnsolicitedResponse(RIL_UNSOL_SIGNAL_STRENGTH, &ss, sizeof(ss));
 }

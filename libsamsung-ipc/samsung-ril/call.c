@@ -44,7 +44,7 @@ unsigned char ipc2ril_call_list_entry_state(unsigned char call_state)
 		case IPC_CALL_LIST_ENTRY_STATE_WAITING:
 			return RIL_CALL_WAITING;
 		default:
-			LOGE("Unknown IPC_CALL_LIST_ENTRY_STATE!");
+			ALOGE("Unknown IPC_CALL_LIST_ENTRY_STATE!");
 			return -1;
 	}
 }
@@ -271,7 +271,7 @@ void ipc_call_burst_dtmf(struct ipc_message_info *info)
 
 	// This apparently should return 1, or perhaps that is the DTMF tones count
 	if(ret == 0) {
-		LOGD("Apparently, something went wrong with DTMF burst");
+		ALOGD("Apparently, something went wrong with DTMF burst");
 
 		RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
 	}

@@ -1,7 +1,10 @@
 /**
  * This file is part of libsamsung-ipc.
  *
- * Copyright (C) 2011 Paul Kocialkowski <contact@paulk.fr>
+ * Copyright (C) 2010-2011 Joerie de Gram <j.de.gram@gmail.com>
+ *
+ * Modified for Jet & Wave - 	KB <kbjetdroid@gmail.com>
+ *								Dominik Marszk <dmarszk@gmail.com>
  *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,34 +20,40 @@
  * along with libsamsung-ipc.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+ 
+#ifndef _WAVE_IPC_H_
+#define _WAVE_IPC_H_
 
-#ifndef __WAVE_IPC_H__
-#define __WAVE_IPC_H__
+#include <radio.h>
 
-#define BOOTCORE_VERSION        0xf0
-#define PSI_MAGIC               0x30
-#define PSI_DATA_LEN            0x5000
-#define RADIO_IMG_SIZE          0xd80000
+#define DPRAM_TTY			"/dev/dpram0"
 
-#define MAX_MODEM_DATA_SIZE     0x1000
+#define IOCTL_PHONE_ON			0x68d0
+#define IOCTL_PHONE_OFF			0x68d1
+#define IOCTL_PHONE_GETSTATUS		0x68d2
+#define IOCTL_PHONE_RESET		0x68d3
+#define IOCTL_PHONE_RAMDUMP		0x68d4
+#define IOCTL_PHONE_BOOTTYPE		0x68d5
+#define IOCTL_MEM_RW			0x68d6
+#define IOCTL_WAKEUP			0x68d7
+#define IOCTL_SILENT_RESET		0x68d8
 
-struct samsung_rfs_msg
-{
-    uint32_t offset;
-    uint32_t size;
+#define FRAME_START	0x7f
+#define FRAME_END	0x7e
+
+struct hdlc_header {
+	uint16_t length;
+	uint8_t unknown;
+
+	struct ipc_header ipc;
+} __attribute__((__packed__));
+
+struct multiPacketHeader {
+	uint32_t command;
+	uint32_t packtLen;
+	uint32_t packetType;
 };
 
-struct samsung_rfs_cfrm
-{
-    uint8_t confirmation;
-    struct samsung_rfs_msg msg;
-};
-
-int wake_lock(char *lock_name, int len);
-int wake_unlock(char *lock_name, int len);
-
-extern struct ipc_handlers wave_default_handlers;
 
 #endif
 
-// vim:ts=4:sw=4:expandtab

@@ -54,7 +54,7 @@ void ipc_misc_me_sn_imei(RIL_Token t, void *data, int length)
 	imei_info = (struct ipc_misc_me_sn *) data;
 
 	if(ril_state.tokens.get_imei != 0 && ril_state.tokens.get_imei != t) 
-		LOGE("IMEI tokens mismatch");
+		ALOGE("IMEI tokens mismatch");
 
 	if(imei_info->length > 32)
 		return;
@@ -87,7 +87,7 @@ void ipc_misc_me_sn(struct ipc_message_info *info)
 			ipc_misc_me_sn_imei(reqGetToken(info->aseq), info->data, info->length);
 			break;
 		case IPC_MISC_ME_SN_SERIAL_NUM_SERIAL:
-			LOGD("Got IPC_MISC_ME_SN_SERIAL_NUM_SERIAL: %s\n", me_sn_info->data);
+			ALOGD("Got IPC_MISC_ME_SN_SERIAL_NUM_SERIAL: %s\n", me_sn_info->data);
 			break;
 	}
 }
@@ -139,7 +139,7 @@ void ipc_misc_me_imsi(struct ipc_message_info *info)
 	char *imsi;
 
 	if(info->length < 1) {
-		LOGE("%s: zero data length", __FUNCTION__);
+		ALOGE("%s: zero data length", __FUNCTION__);
 		RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
 		return;
 	}
@@ -147,7 +147,7 @@ void ipc_misc_me_imsi(struct ipc_message_info *info)
 	imsi_length = (unsigned char*) info->data;
 
 	if(((int) info->length) < *imsi_length + 1) {
-		LOGE("%s: missing IMSI data", __FUNCTION__);
+		ALOGE("%s: missing IMSI data", __FUNCTION__);
 		RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
 		return;
 	}

@@ -177,7 +177,7 @@ int32_t jet_ipc_send(struct ipc_client *client, struct modem_io *request)
 	struct modem_io multi_request;
 	struct multiPacketHeader *multiHeader;
 
-	if (request->datasize > MAX_SIGNLE_FRAME_DATA)
+	if (request->datasize > MAX_SINGLE_FRAME_DATA)
 	{
 		DEBUG_I("packet to send is larger than 0x1000\n");
 
@@ -201,9 +201,9 @@ int32_t jet_ipc_send(struct ipc_client *client, struct modem_io *request)
 
 		while (left_data > 0)
 		{
-			if (left_data > MAX_SIGNLE_FRAME_DATA)
+			if (left_data > MAX_SINGLE_FRAME_DATA)
 			{
-				multi_request.datasize = MAX_SIGNLE_FRAME_DATA;
+				multi_request.datasize = MAX_SINGLE_FRAME_DATA;
 			}
 			else
 			{
@@ -212,9 +212,9 @@ int32_t jet_ipc_send(struct ipc_client *client, struct modem_io *request)
 
 			send_packet(client, &multi_request);
 
-			multi_request.data += MAX_SIGNLE_FRAME_DATA;
+			multi_request.data += MAX_SINGLE_FRAME_DATA;
 
-			left_data -= MAX_SIGNLE_FRAME_DATA;
+			left_data -= MAX_SINGLE_FRAME_DATA;
 		}
 	}
 	else

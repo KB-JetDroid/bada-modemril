@@ -121,7 +121,7 @@ void hex_dump(void *data, int size)
 
 		if(n%16 == 0) {
 			/* line completed */
-			LOGD("[%4.4s]   %-50.50s  %s", addrstr, hexstr, charstr);
+			ALOGD("[%4.4s]   %-50.50s  %s", addrstr, hexstr, charstr);
 			hexstr[0] = 0;
 			charstr[0] = 0;
 		} else if(n%8 == 0) {
@@ -134,6 +134,6 @@ void hex_dump(void *data, int size)
 
 	if (strlen(hexstr) > 0) {
 		/* print rest of buffer if not empty */
-		LOGD("[%4.4s]   %-50.50s  %s\n", addrstr, hexstr, charstr);
+		ALOGD("[%4.4s]   %-50.50s  %s\n", addrstr, hexstr, charstr);
 	}
 }

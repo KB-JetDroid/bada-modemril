@@ -61,7 +61,7 @@ void respondSatProactiveCmdResp(struct ipc_message_info *info)
 	if(sw1 == 0x90 && sw2 == 0x00) {
 		RIL_onUnsolicitedResponse(RIL_UNSOL_STK_SESSION_END, NULL, 0);
 	} else {
-		LOGE("%s: unhandled response sw1=%02x sw2=%02x", __FUNCTION__, sw1, sw2);
+		ALOGE("%s: unhandled response sw1=%02x sw2=%02x", __FUNCTION__, sw1, sw2);
 	}
 }
 
@@ -75,7 +75,7 @@ void respondSatProactiveCmd(struct ipc_message_info *info)
 	} else if(info->type == IPC_TYPE_RESP) {
 		respondSatProactiveCmdResp(info);
 	} else {
-		LOGE("%s: unhandled proactive command response type %d", __FUNCTION__, info->type);
+		ALOGE("%s: unhandled proactive command response type %d", __FUNCTION__, info->type);
 	}
 }
 
@@ -92,7 +92,7 @@ void requestSatSendTerminalResponse(RIL_Token t, void *data, size_t datalen)
 	int len = (strlen(data) / 2);
 
 	if(len > 255) {
-		LOGE("%s: data exceeds maximum length", __FUNCTION__);
+		ALOGE("%s: data exceeds maximum length", __FUNCTION__);
 		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
@@ -119,7 +119,7 @@ void requestSatSendEnvelopeCommand(RIL_Token t, void *data, size_t datalen)
 	int len = (strlen(data) / 2);
 
 	if(len > 255) {
-		LOGE("%s: data exceeds maximum length", __FUNCTION__);
+		ALOGE("%s: data exceeds maximum length", __FUNCTION__);
 		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
