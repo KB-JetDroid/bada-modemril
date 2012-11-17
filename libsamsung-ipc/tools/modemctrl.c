@@ -308,7 +308,7 @@ int32_t modem_start(struct ipc_client *client)
 
     usleep(300);
 
-    DEBUG_I("Opening modem_ctl\n");
+    DEBUG_I("Opening modem_packet\n");
 
     rc = ipc_client_open(client);
 
@@ -317,9 +317,9 @@ int32_t modem_start(struct ipc_client *client)
 
     client_fd = ipc_client_get_handlers_common_data_fd(client);
 
-    DEBUG_I("Power on modem\n");
+    //DEBUG_I("Power on modem\n");
 
-    rc = ipc_client_power_on(client);
+  //  rc = ipc_client_power_on(client);
     if(rc < 0)
         return -1;
 
@@ -430,14 +430,11 @@ int main(int argc, char *argv[])
                 modem_stop(client);
                 return 1;
             }
+			DEBUG_I("Starting modem_read_loop on IPC client\n");
+			
+			modem_read_loop(client);
 
-                DEBUG_I("Starting modem_read_loop on IPC client\n");
-                /*
-                 * TODO: Create thread for modem_read_loop which will be used as readerLoop in RIL implementation
-                 */
-                modem_read_loop(client);
-
-                modem_stop(client);
+			modem_stop(client);
             } else {
                 DEBUG_E("Unknown argument: '%s'\n", argv[optind]);
                 print_help();

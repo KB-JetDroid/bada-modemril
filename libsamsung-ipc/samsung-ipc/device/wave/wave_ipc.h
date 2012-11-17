@@ -27,6 +27,7 @@
 #include <radio.h>
 
 #define MODEMCTL_PATH			"/dev/modem_ctl"
+#define MODEMPACKET_PATH			"/dev/modem_packet"
 
 #define FRAME_START	0x7f
 #define FRAME_END	0x7e
