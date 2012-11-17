@@ -61,7 +61,7 @@ void ipc_gprs_pdp_context_complete(struct ipc_message_info *info)
 	aseq = ril_request_reg_id(reqGetToken(info->aseq));
 
 	/* activate the connection */
-	ipc_fmt_send(IPC_GPRS_PDP_CONTEXT, IPC_TYPE_SET, 
+	ipc_send(IPC_GPRS_PDP_CONTEXT, IPC_TYPE_SET, 
 			(void *) &(ril_state.gprs_context), sizeof(struct ipc_gprs_pdp_context), aseq);
 
 	ipc_gen_phone_res_expect_to_abort(aseq, IPC_GPRS_PDP_CONTEXT);
@@ -106,7 +106,7 @@ void ril_request_setup_data_call(RIL_Token t, void *data, int length)
 	ipc_gprs_pdp_context_setup(&(ril_state.gprs_context), username, password);
 
 	/* send the struct to the modem */
-	ipc_fmt_send(IPC_GPRS_DEFINE_PDP_CONTEXT, IPC_TYPE_SET, 
+	ipc_send(IPC_GPRS_DEFINE_PDP_CONTEXT, IPC_TYPE_SET, 
 			(void *) &setup_apn_message, sizeof(struct ipc_gprs_define_pdp_context), reqGetId(t));
 
 	ipc_gen_phone_res_expect_to_func(reqGetId(t), IPC_GPRS_DEFINE_PDP_CONTEXT,
@@ -177,7 +177,7 @@ void ril_request_deactivate_data_call(RIL_Token t, void *data, int length)
 	deactivate_message.unk0[1]=1;
 
 	/* send the struct to the modem */
-	ipc_fmt_send(IPC_GPRS_PDP_CONTEXT, IPC_TYPE_SET, 
+	ipc_send(IPC_GPRS_PDP_CONTEXT, IPC_TYPE_SET, 
 			(void *) &deactivate_message, sizeof(struct ipc_gprs_pdp_context), reqGetId(t));
 
 	RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);

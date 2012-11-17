@@ -371,7 +371,7 @@ struct ipc_handlers jet_default_handlers = {
     .common_data_get_fd = jet_ipc_common_data_get_fd,
 };
 
-struct ipc_ops jet_fmt_ops = {
+struct ipc_ops jet_ops = {
     .send = jet_ipc_send,
     .recv = jet_ipc_recv,
     .bootstrap = jet_modem_bootstrap,
@@ -380,6 +380,5 @@ struct ipc_ops jet_fmt_ops = {
 
 void jet_ipc_register(void)
 {
-    ipc_register_device_client_handlers(IPC_DEVICE_JET, &jet_fmt_ops,
-                                        NULL, &jet_default_handlers);
+    ipc_register_device_client_handlers(IPC_DEVICE_JET, &jet_ops, &jet_default_handlers);
 }

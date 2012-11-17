@@ -264,7 +264,7 @@ void ril_request_sim_io(RIL_Token t, void *data, size_t datalen)
 		hex2bin(sim_io->data, strlen(sim_io->data), rsim_payload);
 	}
 
-	ipc_fmt_send(IPC_SEC_RSIM_ACCESS, IPC_TYPE_GET, (unsigned char*)&message, sizeof(message), reqGetId(t));
+	ipc_send(IPC_SEC_RSIM_ACCESS, IPC_TYPE_GET, (unsigned char*)&message, sizeof(message), reqGetId(t));
 }
 
 /**
@@ -325,7 +325,7 @@ void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen)
 
 	ipc_sec_pin_status_set_setup(&pin_status, IPC_SEC_PIN_TYPE_PIN1, pin, NULL);
 
-	ipc_fmt_send_set(IPC_SEC_PIN_STATUS, reqGetId(t), (unsigned char *) &pin_status, sizeof(pin_status));
+	ipc_send_set(IPC_SEC_PIN_STATUS, reqGetId(t), (unsigned char *) &pin_status, sizeof(pin_status));
 
 	ipc_gen_phone_res_expect_to_func(reqGetId(t), IPC_SEC_PIN_STATUS,
 		ipc_sec_pin_status_complete);
@@ -335,7 +335,7 @@ void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen)
 	buf[0] = 1;
 	buf[1] = IPC_SEC_PIN_TYPE_PIN1;
 
-	ipc_fmt_send(IPC_SEC_LOCK_INFO, IPC_TYPE_GET, buf, sizeof(buf), reqGetId(t));
+	ipc_send(IPC_SEC_LOCK_INFO, IPC_TYPE_GET, buf, sizeof(buf), reqGetId(t));
 }
 
 
@@ -403,7 +403,7 @@ void ril_request_query_facility_lock(RIL_Token t, void *data, size_t datalen)
 		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
-	ipc_fmt_send(IPC_SEC_PHONE_LOCK, IPC_TYPE_GET, &lock_type, sizeof(lock_type), reqGetId(t));
+	ipc_send(IPC_SEC_PHONE_LOCK, IPC_TYPE_GET, &lock_type, sizeof(lock_type), reqGetId(t));
 }
 
 /**
@@ -442,5 +442,5 @@ void ril_request_set_facility_lock(RIL_Token t, void *data, size_t datalen)
 		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
-	ipc_fmt_send(IPC_SEC_PHONE_LOCK, IPC_TYPE_GET, &lock_type, sizeof(lock_type), reqGetId(t));
+	ipc_send(IPC_SEC_PHONE_LOCK, IPC_TYPE_GET, &lock_type, sizeof(lock_type), reqGetId(t));
 }

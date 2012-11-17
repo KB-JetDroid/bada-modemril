@@ -307,7 +307,7 @@ void ril_request_operator(RIL_Token t)
 		/* Request data to the modem */
 		ril_state.tokens.operator = t;
 
-		ipc_fmt_send_get(IPC_NET_CURRENT_PLMN, reqGetId(t));
+		ipc_send_get(IPC_NET_CURRENT_PLMN, reqGetId(t));
 	} else {
 		ALOGE("Another request is going on, reporting failure");
 		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, response, sizeof(response));
@@ -439,7 +439,7 @@ void ril_request_registration_state(RIL_Token t)
 		ril_state.tokens.registration_state = t;
 
 		ipc_net_regist_get(&regist_req, IPC_NET_SERVICE_DOMAIN_GSM);
-		ipc_fmt_send(IPC_NET_REGIST, IPC_TYPE_GET, (void *)&regist_req, sizeof(struct ipc_net_regist_get), reqGetId(t));
+		ipc_send(IPC_NET_REGIST, IPC_TYPE_GET, (void *)&regist_req, sizeof(struct ipc_net_regist_get), reqGetId(t));
 	} else {
 		ALOGE("Another request is going on, reporting failure");
 		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
@@ -483,7 +483,7 @@ void ril_request_gprs_registration_state(RIL_Token t)
 		ril_state.tokens.gprs_registration_state = t;
 
 		ipc_net_regist_get(&regist_req, IPC_NET_SERVICE_DOMAIN_GPRS);
-		ipc_fmt_send(IPC_NET_REGIST, IPC_TYPE_GET, (void *)&regist_req, sizeof(struct ipc_net_regist_get), reqGetId(t));
+		ipc_send(IPC_NET_REGIST, IPC_TYPE_GET, (void *)&regist_req, sizeof(struct ipc_net_regist_get), reqGetId(t));
 	} else {
 		ALOGE("Another request is going on, reporting failure");
 		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
@@ -628,7 +628,7 @@ void ipc_net_regist(struct ipc_message_info *message)
  */
 void ril_request_query_available_networks(RIL_Token t)
 {
-	ipc_fmt_send_get(IPC_NET_PLMN_LIST, reqGetId(t));
+	ipc_send_get(IPC_NET_PLMN_LIST, reqGetId(t));
 }
 
 /* FIXME: cleanup struct names & resp[] addressing */
@@ -707,7 +707,7 @@ void ril_request_query_network_selection_mode(RIL_Token t)
 
 void ril_request_get_preferred_network_type(RIL_Token t)
 {
-	ipc_fmt_send_get(IPC_NET_MODE_SEL, reqGetId(t));
+	ipc_send_get(IPC_NET_MODE_SEL, reqGetId(t));
 }
 
 void ril_request_set_preffered_network_type(RIL_Token t, void *data, size_t datalen)
@@ -715,7 +715,7 @@ void ril_request_set_preffered_network_type(RIL_Token t, void *data, size_t data
 	int ril_mode = *(int*)data;
 	unsigned char ipc_mode = ril2ipc_modesel(ril_mode);
 
-	ipc_fmt_send(IPC_NET_MODE_SEL, IPC_TYPE_SET, &ipc_mode, sizeof(ipc_mode), reqGetId(t));
+	ipc_send(IPC_NET_MODE_SEL, IPC_TYPE_SET, &ipc_mode, sizeof(ipc_mode), reqGetId(t));
 }
 
 void ipc_net_mode_sel(struct ipc_message_info *info)

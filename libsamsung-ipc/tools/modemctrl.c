@@ -399,45 +399,45 @@ int main(int argc, char *argv[])
     }
 
     ipc_init();
-    client_fmt = ipc_client_new(IPC_CLIENT_TYPE_FMT);
+    client = ipc_client_new();
 
-    if (client_fmt == 0) {
+    if (client == 0) {
         printf("[E] Could not create IPC client; aborting ...\n");
         goto modem_quit;
     }
 
     if (debug == 0)
-        ipc_client_set_log_handler(client_fmt, modem_log_handler_quiet, NULL);
-    else ipc_client_set_log_handler(client_fmt, modem_log_handler, NULL);
+        ipc_client_set_log_handler(client, modem_log_handler_quiet, NULL);
+    else ipc_client_set_log_handler(client, modem_log_handler, NULL);
 
     while(opt_i < argc) {
         if(strncmp(argv[optind], "power-on", 8) == 0) {
-            if (ipc_client_power_on(client_fmt) < 0)
+            if (ipc_client_power_on(client) < 0)
                 printf("[E] Something went wrong while powering modem on\n");
             goto modem_quit;
         } else if(strncmp(argv[optind], "power-off", 9) == 0) {
-            if (ipc_client_power_off(client_fmt) < 0)
+            if (ipc_client_power_off(client) < 0)
                 printf("[E] Something went wrong while powering modem off\n");
             goto modem_quit;
         } else if (strncmp(argv[optind], "bootstrap", 9) == 0) {
-            ipc_client_create_handlers_common_data(client_fmt);
-            ipc_client_bootstrap_modem(client_fmt);
+            ipc_client_create_handlers_common_data(client);
+            ipc_client_bootstrap_modem(client);
         } else if(strncmp(argv[optind], "start", 5) == 0) {
-            printf("[0] Starting modem on FMT client\n");
-            rc = modem_start(client_fmt);
+            printf("[0] Starting modem on IPC client\n");
+            rc = modem_start(client);
             if(rc < 0) {
                 printf("[E] Something went wrong\n");
-                modem_stop(client_fmt);
+                modem_stop(client);
                 return 1;
             }
 
-                DEBUG_I("Starting modem_read_loop on FMT client\n");
+                DEBUG_I("Starting modem_read_loop on IPC client\n");
                 /*
                  * TODO: Create thread for modem_read_loop which will be used as readerLoop in RIL implementation
                  */
-                modem_read_loop(client_fmt);
+                modem_read_loop(client);
 
-                modem_stop(client_fmt);
+                modem_stop(client);
             } else {
                 DEBUG_E("Unknown argument: '%s'\n", argv[optind]);
                 print_help();
@@ -448,8 +448,8 @@ int main(int argc, char *argv[])
         }
 
 modem_quit:
-    if (client_fmt != 0)
-        ipc_client_free(client_fmt);
+    if (client != 0)
+        ipc_client_free(client);
     ipc_shutdown();
 
     return 0;

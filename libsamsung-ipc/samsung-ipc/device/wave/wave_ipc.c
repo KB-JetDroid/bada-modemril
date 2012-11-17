@@ -41,7 +41,7 @@ int32_t wave_modem_bootstrap(struct ipc_client *client)
 
 	int32_t rc = 0;
 
-    int32_t dpram_fd = -1;
+    int32_t modemctl_fd = -1;
 
 	int32_t fd, retval;
 
@@ -49,20 +49,20 @@ int32_t wave_modem_bootstrap(struct ipc_client *client)
 
     DEBUG_I("wave_ipc_bootstrap: open modem_ctl\n");
 
-    dpram_fd = open(DPRAM_TTY, O_RDWR | O_NDELAY);
+    modemctl_fd = open(MODEMCTL_PATH, O_RDWR | O_NDELAY);
 
-    if(dpram_fd < 0) {
-    	DEBUG_I("wave_ipc_bootstrap: failed to open dev/dpram0\n");
+    if(modemctl_fd < 0) {
+    	DEBUG_I("wave_ipc_bootstrap: failed to open %s\n", MODEMCTL_PATH);
     	return 1;
     }
 
     DEBUG_I("wave_ipc_bootstrap: send amss_run_request\n");
 
-    ioctl(dpram_fd, IOCTL_MODEM_AMSSRUNREQ);
+    ioctl(modemctl_fd, IOCTL_MODEM_AMSSRUNREQ);
 
-    DEBUG_I("wave_ipc_bootstrap: closing dev/modem_ctl\n");
+    DEBUG_I("wave_ipc_bootstrap: closing %s\n", MODEMCTL_PATH);
 
-    close(dpram_fd);
+    close(modemctl_fd);
 
     DEBUG_I("wave_ipc_bootstrap: exit\n");
 
@@ -80,7 +80,7 @@ int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
 
     fd = *((int32_t *) io_data);
 
-    fd = open(DPRAM_TTY, O_RDWR);
+    fd = open(MODEMCTL_PATH, O_RDWR);
 
     DEBUG_I("dpram fd = 0x%x\n", fd);
 
@@ -122,7 +122,7 @@ int32_t wave_ipc_power_on(void *data)
 
     fd = *((int32_t *) data);
 
-    ioctl(fd, IOCTL_PHONE_ON);
+    ioctl(fd, IOCTL_MODEM_ON);
 
     return 0;
 }
@@ -136,7 +136,7 @@ int32_t wave_ipc_power_off(void *data)
 
     fd = *((int32_t *) data);
 
-    ioctl(fd, IOCTL_PHONE_OFF);
+    ioctl(fd, IOCTL_MODEM_OFF);
 
     return 0;
 }
@@ -372,7 +372,7 @@ struct ipc_handlers wave_default_handlers = {
     .common_data_get_fd = wave_ipc_common_data_get_fd,
 };
 
-struct ipc_ops wave_fmt_ops = {
+struct ipc_ops wave_ops = {
     .send = wave_ipc_send,
     .recv = wave_ipc_recv,
     .bootstrap = wave_modem_bootstrap,
@@ -381,6 +381,5 @@ struct ipc_ops wave_fmt_ops = {
 
 void wave_ipc_register(void)
 {
-    ipc_register_device_client_handlers(IPC_DEVICE_WAVE, &wave_fmt_ops,
-                                        NULL, &wave_default_handlers);
+    ipc_register_device_client_handlers(IPC_DEVICE_WAVE, &wave_ops, &wave_default_handlers);
 }

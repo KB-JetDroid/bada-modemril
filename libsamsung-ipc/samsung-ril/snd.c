@@ -74,7 +74,7 @@ void ril_request_set_mute(RIL_Token t, void *data, size_t datalen)
 
 	ipc_gen_phone_res_expect_to_complete(reqGetId(t), IPC_SND_MIC_MUTE_CTRL);
 
-	ipc_fmt_send(IPC_SND_MIC_MUTE_CTRL, IPC_TYPE_SET, (void *) &mute_data, sizeof(mute_data), reqGetId(t));
+	ipc_send(IPC_SND_MIC_MUTE_CTRL, IPC_TYPE_SET, (void *) &mute_data, sizeof(mute_data), reqGetId(t));
 }
 
 void srs_snd_set_call_clock_sync(struct srs_message *message)
@@ -82,7 +82,7 @@ void srs_snd_set_call_clock_sync(struct srs_message *message)
 	unsigned char data = *((unsigned char *) message->data);
 	ALOGD("Clock sync data is 0x%x\n", data);
 
-	ipc_fmt_send(IPC_SND_CLOCK_CTRL, IPC_TYPE_EXEC, &data, sizeof(data), reqIdNew());
+	ipc_send(IPC_SND_CLOCK_CTRL, IPC_TYPE_EXEC, &data, sizeof(data), reqIdNew());
 }
 
 void srs_snd_set_call_volume(struct srs_message *message)
@@ -95,7 +95,7 @@ void srs_snd_set_call_volume(struct srs_message *message)
 	volume_ctrl.type = srs2ipc_call_type(call_volume->type);
 	volume_ctrl.volume = call_volume->volume;
 
-	ipc_fmt_send(IPC_SND_SPKR_VOLUME_CTRL, IPC_TYPE_SET, (void *) &volume_ctrl, sizeof(volume_ctrl), reqIdNew());
+	ipc_send(IPC_SND_SPKR_VOLUME_CTRL, IPC_TYPE_SET, (void *) &volume_ctrl, sizeof(volume_ctrl), reqIdNew());
 }
 
 void srs_snd_set_call_audio_path(struct srs_message *message)
@@ -105,5 +105,5 @@ void srs_snd_set_call_audio_path(struct srs_message *message)
 
 	ALOGD("Audio path to: 0x%x\n", path);
 
-	ipc_fmt_send(IPC_SND_AUDIO_PATH_CTRL, IPC_TYPE_SET, (void *) &path, sizeof(path), reqIdNew());
+	ipc_send(IPC_SND_AUDIO_PATH_CTRL, IPC_TYPE_SET, (void *) &path, sizeof(path), reqIdNew());
 }

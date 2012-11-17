@@ -29,10 +29,6 @@
 #include "types.h"
 #include "util.h"
 
-#define IPC_CLIENT_TYPE_FMT      0
-#define IPC_CLIENT_TYPE_RFS      1
-#define IPC_CLIENT_TYPE_PACKET   2 //For Jet
-
 #define IPC_DEVICE_CRESPO       0
 #define IPC_DEVICE_ARIES        1
 #define IPC_DEVICE_JET          2
@@ -97,8 +93,8 @@ typedef void (*ipc_client_log_handler_cb)(const char *message, void *user_data);
 typedef int (*ipc_io_handler_cb)(void *data, unsigned int size, void *io_data);
 typedef int (*ipc_handler_cb)(void *data);
 
-struct ipc_client* ipc_client_new(int client_type);
-struct ipc_client *ipc_client_new_for_device(int device_type, int client_type);
+struct ipc_client* ipc_client_new();
+struct ipc_client *ipc_client_new_for_device(int device_type);
 int ipc_client_free(struct ipc_client *client);
 
 int ipc_client_set_log_handler(struct ipc_client *client, ipc_client_log_handler_cb log_handler_cb, void *user_data);
@@ -138,21 +134,21 @@ void *ipc_file_read(struct ipc_client *client, char *file_name, int size, int bl
 
 #ifndef RIL_SHLIB
 
-struct ipc_client *client_fmt;
+struct ipc_client *client;
 
-static inline void ipc_fmt_send(struct modem_io *request)
+static inline void ipc_send(struct modem_io *request)
 {
-	ipc_client_send(client_fmt, request);
+	ipc_client_send(client, request);
 }
 
-static inline int ipc_fmt_modem_io(void *data, uint32_t cmd)
+static inline int ipc_modem_io(void *data, uint32_t cmd)
 {
-	return ipc_client_modem_operations(client_fmt, data, cmd);
+	return ipc_client_modem_operations(client, data, cmd);
 }
 
 #else
-	extern void ipc_fmt_send(struct modem_io *request);
-	extern int ipc_fmt_modem_io(void *data, uint32_t cmd);
+	extern void ipc_send(struct modem_io *request);
+	extern int ipc_modem_io(void *data, uint32_t cmd);
 
 #endif //RIL_SHLIB
 

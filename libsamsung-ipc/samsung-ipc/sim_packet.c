@@ -147,7 +147,7 @@ int sim_send_oem_req(uint8_t* simBuf, uint8_t simBufLen)
 
 	request.data = fifobuf;
 
-	ipc_fmt_send(&request);
+	ipc_send(&request);
 
 	free(fifobuf);
 	//TODO: return nonzero in case of failure

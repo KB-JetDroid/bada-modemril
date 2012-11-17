@@ -249,7 +249,7 @@ void ril_request_send_sms(RIL_Token t, void *data, size_t datalen)
 		/* Enqueue the request */
 		ril_request_sms_add(reqGetId(t), pdu, pdu_len, NULL, 0);
 
-		ipc_fmt_send_get(IPC_SMS_SVC_CENTER_ADDR, reqGetId(t));
+		ipc_send_get(IPC_SMS_SVC_CENTER_ADDR, reqGetId(t));
 		
 	} else {
 		ril_request_send_sms_complete(t, pdu, smsc);
@@ -439,7 +439,7 @@ pdu_end:
 
 	ipc_gen_phone_res_expect_to_func(reqGetId(t), IPC_SMS_SEND_MSG, ipc_sms_send_msg_complete);
 
-	ipc_fmt_send(IPC_SMS_SEND_MSG, IPC_TYPE_EXEC, data, data_len, reqGetId(t));
+	ipc_send(IPC_SMS_SEND_MSG, IPC_TYPE_EXEC, data, data_len, reqGetId(t));
 
 	free(pdu_dec);
 	free(data);
@@ -675,7 +675,7 @@ void ril_request_sms_acknowledge(RIL_Token t, void *data, size_t datalen)
 
 	ipc_gen_phone_res_expect_to_abort(reqGetId(t), IPC_SMS_DELIVER_REPORT);
 
-	ipc_fmt_send(IPC_SMS_DELIVER_REPORT, IPC_TYPE_EXEC, (void *) &report_msg, sizeof(struct ipc_sms_deliv_report_msg), reqGetId(t));
+	ipc_send(IPC_SMS_DELIVER_REPORT, IPC_TYPE_EXEC, (void *) &report_msg, sizeof(struct ipc_sms_deliv_report_msg), reqGetId(t));
 
 	ipc_sms_tpid_queue_del(id);
 }
@@ -698,7 +698,7 @@ void ipc_sms_deliver_report(struct ipc_message_info *info)
 void ipc_sms_device_ready(struct ipc_message_info *info)
 {
 	if(ril_state.radio_state == RADIO_STATE_SIM_READY) {
-		ipc_fmt_send(IPC_SMS_DEVICE_READY, IPC_TYPE_SET, NULL, 0, info->aseq);
+		ipc_send(IPC_SMS_DEVICE_READY, IPC_TYPE_SET, NULL, 0, info->aseq);
 	}
 
 	ril_tokens_check();

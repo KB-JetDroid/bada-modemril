@@ -61,8 +61,7 @@
  * RIL global vars
  */
 
-struct ril_client *ipc_fmt_client;
-struct ril_client *ipc_rfs_client;
+struct ril_client *ipc_packet_client;
 struct ril_client *srs_client;
 
 const struct RIL_Env *ril_env;
@@ -171,7 +170,7 @@ void ril_tokens_check(void)
  * Clients dispatch functions
  */
 
-void ipc_fmt_dispatch(struct modem_io *resp)
+void ipc_dispatch(struct modem_io *resp)
 {
 	int32_t ret;
 
@@ -318,24 +317,6 @@ void ipc_fmt_dispatch(struct modem_io *resp)
 
 }
 
-void ipc_rfs_dispatch(struct ipc_message_info *info)
-{
-#if 0
-	switch(IPC_COMMAND(info)) {
-		case IPC_RFS_NV_READ_ITEM:
-			ipc_rfs_nv_read_item(info);
-			break;
-		case IPC_RFS_NV_WRITE_ITEM:
-			ipc_rfs_nv_write_item(info);
-			break;
-		default:
-			ALOGD("Unhandled command: %s (%04x)", ipc_command_to_str(IPC_COMMAND(info)), IPC_COMMAND(info));
-			break;
-	}
-#endif
-
-}
-
 void srs_dispatch(struct srs_message *message)
 {
 	switch(message->command) {
@@ -363,10 +344,10 @@ void srs_dispatch(struct srs_message *message)
 
 int ril_modem_check(void)
 {
-	if(ipc_fmt_client == NULL)
+	if(ipc_packet_client == NULL)
 		return -1;
 
-	if(ipc_fmt_client->state != RIL_CLIENT_READY)
+	if(ipc_packet_client->state != RIL_CLIENT_READY)
 		return -1;
 
 	return 0;
@@ -570,47 +551,24 @@ const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **a
 	ril_globals_init();
 	ril_state_lpm();
 
-ipc_fmt:
-	ALOGD("Creating IPC FMT client");
+	ALOGD("Creating IPC client");
 
-	ipc_fmt_client = ril_client_new(&ipc_fmt_client_funcs);
-	rc = ril_client_create(ipc_fmt_client);
+	ipc_packet_client = ril_client_new(&ipc_client_funcs);
+	rc = ril_client_create(ipc_packet_client);
 
 	if(rc < 0) {
-		ALOGE("IPC FMT client creation failed.");
+		ALOGE("IPC client creation failed.");
 		goto srs;
 	}
 
-	rc = ril_client_thread_start(ipc_fmt_client);
+	rc = ril_client_thread_start(ipc_packet_client);
 
 	if(rc < 0) {
-		ALOGE("IPC FMT thread creation failed.");
+		ALOGE("IPC thread creation failed.");
 		goto srs;
 	}
 
-	ALOGD("IPC FMT client ready");
-
-#if 0
-ipc_rfs:
-	ALOGD("Creating IPC RFS client");
-
-	ipc_rfs_client = ril_client_new(&ipc_rfs_client_funcs);
-	rc = ril_client_create(ipc_rfs_client);
-
-	if(rc < 0) {
-		ALOGE("IPC RFS client creation failed.");
-		goto srs;
-	}
-
-	rc = ril_client_thread_start(ipc_rfs_client);
-
-	if(rc < 0) {
-		ALOGE("IPC RFS thread creation failed.");
-		goto srs;
-	}
-
-	ALOGD("IPC RFS client ready");
-#endif
+	ALOGD("IPC client ready");
 
 srs:
 	ALOGD("Creating SRS client");
@@ -643,47 +601,24 @@ int main(int argc, char *argv[])
 	ril_globals_init();
 	ril_state_lpm();
 
-ipc_fmt:
-	ALOGD("Creating IPC FMT client");
+	ALOGD("Creating IPC client");
 
-	ipc_fmt_client = ril_client_new(&ipc_fmt_client_funcs);
-	rc = ril_client_create(ipc_fmt_client);
+	ipc_packet_client = ril_client_new(&ipc_client_funcs);
+	rc = ril_client_create(ipc_packet_client);
 
 	if(rc < 0) {
-		ALOGE("IPC FMT client creation failed.");
+		ALOGE("IPC client creation failed.");
 		goto srs;
 	}
 
-	rc = ril_client_thread_start(ipc_fmt_client);
+	rc = ril_client_thread_start(ipc_packet_client);
 
 	if(rc < 0) {
-		ALOGE("IPC FMT thread creation failed.");
+		ALOGE("IPC thread creation failed.");
 		goto srs;
 	}
 
-	ALOGD("IPC FMT client ready");
-
-#if 0
-ipc_rfs:
-	ALOGD("Creating IPC RFS client");
-
-	ipc_rfs_client = ril_client_new(&ipc_rfs_client_funcs);
-	rc = ril_client_create(ipc_rfs_client);
-
-	if(rc < 0) {
-		ALOGE("IPC RFS client creation failed.");
-		goto srs;
-	}
-
-	rc = ril_client_thread_start(ipc_rfs_client);
-
-	if(rc < 0) {
-		ALOGE("IPC RFS thread creation failed.");
-		goto srs;
-	}
-
-	ALOGD("IPC RFS client ready");
-#endif
+	ALOGD("IPC client ready");
 
 srs:
 	ALOGD("Creating SRS client");

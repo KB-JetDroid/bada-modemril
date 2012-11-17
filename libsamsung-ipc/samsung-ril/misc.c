@@ -34,7 +34,7 @@ void ril_request_get_imei(RIL_Token t)
 	if(ril_state.radio_state != RADIO_STATE_OFF) {
 		data = IPC_MISC_ME_SN_SERIAL_NUM;
 
-		ipc_fmt_send(IPC_MISC_ME_SN, IPC_TYPE_GET, (unsigned char *) &data, sizeof(data), reqGetId(t));
+		ipc_send(IPC_MISC_ME_SN, IPC_TYPE_GET, (unsigned char *) &data, sizeof(data), reqGetId(t));
 	} else {
 		ril_state.tokens.get_imei = t;
 	}
@@ -95,7 +95,7 @@ void ipc_misc_me_sn(struct ipc_message_info *info)
 void ril_request_baseband_version(RIL_Token t)
 {
 	if(ril_state.radio_state != RADIO_STATE_OFF) {
-		ipc_fmt_send_get(IPC_MISC_ME_VERSION, reqGetId(t));
+		ipc_send_get(IPC_MISC_ME_VERSION, reqGetId(t));
 	} else {
 		ril_state.tokens.baseband_version = t;
 	}
@@ -122,7 +122,7 @@ void ipc_misc_me_version(struct ipc_message_info *info)
  */
 void ril_request_get_imsi(RIL_Token t)
 {
-	ipc_fmt_send_get(IPC_MISC_ME_IMSI, reqGetId(t));
+	ipc_send_get(IPC_MISC_ME_IMSI, reqGetId(t));
 }
 
 /**

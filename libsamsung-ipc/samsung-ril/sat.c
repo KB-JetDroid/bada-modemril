@@ -101,7 +101,7 @@ void requestSatSendTerminalResponse(RIL_Token t, void *data, size_t datalen)
 	buf[0] = len;
 	hex2bin(data, strlen(data), &buf[1]);
 
-	ipc_fmt_send(IPC_SAT_PROACTIVE_CMD, IPC_TYPE_GET, buf, sizeof(buf), reqGetId(t));
+	ipc_send(IPC_SAT_PROACTIVE_CMD, IPC_TYPE_GET, buf, sizeof(buf), reqGetId(t));
 
 	RIL_onRequestComplete(t, RIL_E_SUCCESS, buf, sizeof(char*));
 }
@@ -128,7 +128,7 @@ void requestSatSendEnvelopeCommand(RIL_Token t, void *data, size_t datalen)
 	buf[0] = len;
 	hex2bin(data, strlen(data), &buf[1]);
 
-	ipc_fmt_send(IPC_SAT_ENVELOPE_CMD, IPC_TYPE_EXEC, buf, sizeof(buf), reqGetId(t));
+	ipc_send(IPC_SAT_ENVELOPE_CMD, IPC_TYPE_EXEC, buf, sizeof(buf), reqGetId(t));
 }
 
 /**

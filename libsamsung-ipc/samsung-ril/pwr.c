@@ -96,7 +96,7 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 	if(power_state > 0) {
 		ALOGD("Request power to NORMAL");
 		power_data = IPC_PWR_PHONE_STATE_NORMAL;
-		ipc_fmt_send(IPC_PWR_PHONE_STATE, IPC_TYPE_EXEC, (void *) &power_data, sizeof(power_data), reqGetId(t));
+		ipc_send(IPC_PWR_PHONE_STATE, IPC_TYPE_EXEC, (void *) &power_data, sizeof(power_data), reqGetId(t));
 
 		ril_state.tokens.radio_power = t;
 
@@ -104,7 +104,7 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 	} else {
 		ALOGD("Request power to LPM");
 		power_data = IPC_PWR_PHONE_STATE_LPM;
-		ipc_fmt_send(IPC_PWR_PHONE_STATE, IPC_TYPE_EXEC, (void *) &power_data, sizeof(power_data), reqGetId(t));
+		ipc_send(IPC_PWR_PHONE_STATE, IPC_TYPE_EXEC, (void *) &power_data, sizeof(power_data), reqGetId(t));
 
 		RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
 

@@ -58,8 +58,7 @@ struct ril_state;
  * RIL globals
  */
 
-extern struct ril_client *ipc_fmt_client;
-extern struct ril_client *ipc_rfs_client;
+extern struct ril_client *ipc_packet_client;
 extern struct ril_client *srs_client;
 
 extern const struct RIL_Env *ril_env;
@@ -189,8 +188,7 @@ int ril_modem_check(void);
  * Clients dispatch functions
  */
 
-void ipc_fmt_dispatch(struct modem_io *resp);
-void ipc_rfs_dispatch(struct ipc_message_info *info);
+void ipc_dispatch(struct modem_io *resp);
 void srs_dispatch(struct srs_message *message);
 
 /* GEN */
@@ -326,9 +324,5 @@ void ril_request_setup_data_call(RIL_Token t, void *data, int length);
 void ril_request_deactivate_data_call(RIL_Token t, void *data, int length);
 void ipc_gprs_ip_configuration(struct ipc_message_info *info);
 
-/* RFS */
-
-void ipc_rfs_nv_read_item(struct ipc_message_info *info);
-void ipc_rfs_nv_write_item(struct ipc_message_info *info);
 
 #endif

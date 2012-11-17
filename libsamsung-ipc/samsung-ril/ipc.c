@@ -35,53 +35,53 @@ void ipc_log_handler(const char *message, void *user_data)
 }
 
 /**
- * IPC FMT
+ * IPC main frame type
  */
 
-void ipc_fmt_send(struct modem_io *request)
+void ipc_send(struct modem_io *request)
 {
 	struct ipc_client *ipc_client;
-	if(ipc_fmt_client == NULL) {
-		ALOGE("ipc_fmt_client is null, aborting!");
+	if(ipc_packet_client == NULL) {
+		ALOGE("ipc_packet_client is null, aborting!");
 		return;
 	}
 
-	if(ipc_fmt_client->object == NULL) {
-		ALOGE("ipc_fmt_client object is null, aborting!");
+	if(ipc_packet_client->object == NULL) {
+		ALOGE("ipc_packet_client object is null, aborting!");
 		return;
 	}
 
-	ipc_client = ((struct ipc_client_object *) ipc_fmt_client->object)->ipc_client;
+	ipc_client = ((struct ipc_client_object *) ipc_packet_client->object)->ipc_client;
 
-	RIL_CLIENT_LOCK(ipc_fmt_client);
+	RIL_CLIENT_LOCK(ipc_packet_client);
 	ipc_client_send(ipc_client, request);
-	RIL_CLIENT_UNLOCK(ipc_fmt_client);
+	RIL_CLIENT_UNLOCK(ipc_packet_client);
 }
 
-int ipc_fmt_modem_io(void *data, uint32_t cmd)
+int ipc_modem_io(void *data, uint32_t cmd)
 {
 	int retval;
 	struct ipc_client *ipc_client;
-	if(ipc_fmt_client == NULL) {
-		ALOGE("ipc_fmt_client is null, aborting!");
+	if(ipc_packet_client == NULL) {
+		ALOGE("ipc_packet_client is null, aborting!");
 		return -1;
 	}
 
-	if(ipc_fmt_client->object == NULL) {
-		ALOGE("ipc_fmt_client object is null, aborting!");
+	if(ipc_packet_client->object == NULL) {
+		ALOGE("ipc_packet_client object is null, aborting!");
 		return -1;
 	}
 
-	ipc_client = ((struct ipc_client_object *) ipc_fmt_client->object)->ipc_client;
+	ipc_client = ((struct ipc_client_object *) ipc_packet_client->object)->ipc_client;
 
-	RIL_CLIENT_LOCK(ipc_fmt_client);
+	RIL_CLIENT_LOCK(ipc_packet_client);
 	retval = ipc_client_modem_operations(ipc_client, data, cmd);
-	RIL_CLIENT_UNLOCK(ipc_fmt_client);
+	RIL_CLIENT_UNLOCK(ipc_packet_client);
 
 	return retval;
 }
 
-int ipc_fmt_read_loop(struct ril_client *client)
+int ipc_read_loop(struct ril_client *client)
 {
     struct modem_io resp;
 	struct ipc_message_info info;
@@ -109,7 +109,7 @@ int ipc_fmt_read_loop(struct ril_client *client)
 
 	while(1) {
 		if(ipc_client_fd < 0) {
-			ALOGE("IPC FMT client fd is negative, aborting!");
+			ALOGE("IPC client fd is negative, aborting!");
 			return -1;
 		}
 
@@ -119,12 +119,12 @@ int ipc_fmt_read_loop(struct ril_client *client)
 			RIL_CLIENT_LOCK(client);
 			if(ipc_client_recv(ipc_client, &resp) < 0) {
 				RIL_CLIENT_UNLOCK(client);
-				ALOGE("IPC FMT recv failed, aborting!");
+				ALOGE("IPC recv failed, aborting!");
 				return -1;
 			}
 			RIL_CLIENT_UNLOCK(client);
 
-			ipc_fmt_dispatch(&resp);
+			ipc_dispatch(&resp);
 
 			if(resp.data != NULL)
 				free(resp.data);
@@ -135,7 +135,7 @@ int ipc_fmt_read_loop(struct ril_client *client)
 	return 0;
 }
 
-int ipc_fmt_create(struct ril_client *client)
+int ipc_create(struct ril_client *client)
 {
 	struct ipc_client_object *client_object;
 	struct ipc_client *ipc_client;
@@ -150,11 +150,11 @@ int ipc_fmt_create(struct ril_client *client)
 
 	ipc_client = (struct ipc_client *) client_object->ipc_client;
 
-	ALOGD("Creating new FMT client");
-	ipc_client = ipc_client_new(IPC_CLIENT_TYPE_FMT);
+	ALOGD("Creating new client");
+	ipc_client = ipc_client_new();
 
 	if(ipc_client == NULL) {
-		ALOGE("FMT client creation failed!");
+		ALOGE("Client creation failed!");
 		return -1;
 	}
 
@@ -197,7 +197,7 @@ int ipc_fmt_create(struct ril_client *client)
 	client_object->ipc_client_fd = ipc_client_fd;
 
 	if(ipc_client_fd < 0) {
-		ALOGE("%s: client_fmt_fd is negative, aborting", __FUNCTION__);
+		ALOGE("%s: client_fd is negative, aborting", __FUNCTION__);
 		return -1;
 	}
 
@@ -207,18 +207,18 @@ int ipc_fmt_create(struct ril_client *client)
 		return -1;
 	}
 
-	ALOGD("IPC FMT client done");
+	ALOGD("IPC client done");
 
 	return 0;
 }
 
-int ipc_fmt_destroy(struct ril_client *client)
+int ipc_destroy(struct ril_client *client)
 {
 	struct ipc_client *ipc_client;
 	int ipc_client_fd;
 	int rc;
 
-	ALOGD("Destrying ipc fmt client");
+	ALOGD("Destroying ipc client");
 
 	if(client == NULL) {
 		ALOGE("client was already destroyed");
@@ -249,191 +249,9 @@ int ipc_fmt_destroy(struct ril_client *client)
 	return 0;
 }
 
-/**
- * IPC RFS
- */
 
-void ipc_rfs_send(const unsigned short command, unsigned char *data, const int length, unsigned char mseq)
-{
-	struct ipc_client *ipc_client;
-	struct modem_io *request;
-
-	if(ipc_rfs_client == NULL) {
-		ALOGE("ipc_rfs_client is null, aborting!");
-		return;
-	}
-
-	if(ipc_rfs_client->object == NULL) {
-		ALOGE("ipc_rfs_client object is null, aborting!");
-		return;
-	}
-
-	ipc_client = ((struct ipc_client_object *) ipc_rfs_client->object)->ipc_client;
-
-	RIL_CLIENT_LOCK(ipc_rfs_client);
-//	ipc_client_send(ipc_client, command, type, data, length, mseq);
-	ipc_client_send(ipc_client, request);
-	RIL_CLIENT_UNLOCK(ipc_rfs_client);
-}
-
-int ipc_rfs_read_loop(struct ril_client *client)
-{
-	struct ipc_message_info info;
-	struct ipc_client *ipc_client;
-	int ipc_client_fd;
-	fd_set fds;
-
-	if(client == NULL) {
-		ALOGE("client is NULL, aborting!");
-		return -1;
-	}
-
-	if(client->object == NULL) {
-		ALOGE("client object is NULL, aborting!");
-		return -1;
-	}
-
-	ipc_client = ((struct ipc_client_object *) client->object)->ipc_client;
-	ipc_client_fd = ((struct ipc_client_object *) client->object)->ipc_client_fd;
-
-	FD_ZERO(&fds);
-	FD_SET(ipc_client_fd, &fds);
-
-	while(1) {
-		if(ipc_client_fd < 0) {
-			ALOGE("IPC RFS client fd is negative, aborting!");
-			return -1;
-		}
-
-		select(FD_SETSIZE, &fds, NULL, NULL, NULL);
-
-		if(FD_ISSET(ipc_client_fd, &fds)) {
-			RIL_CLIENT_LOCK(client);
-			if(ipc_client_recv(ipc_client, &info) < 0) {
-				RIL_CLIENT_UNLOCK(client);
-				ALOGE("IPC RFS recv failed, aborting!");
-				return -1;
-			}
-			RIL_CLIENT_UNLOCK(client);
-
-			ipc_rfs_dispatch(&info);
-
-			if(info.data != NULL)
-				free(info.data);
-		}
-	}
-
-	return 0;
-}
-
-int ipc_rfs_create(struct ril_client *client)
-{
-	struct ipc_client_object *client_object;
-	struct ipc_client *ipc_client;
-	int ipc_client_fd;
-	int rc;
-
-	client_object = malloc(sizeof(struct ipc_client_object));
-	memset(client_object, 0, sizeof(struct ipc_client_object));
-	client_object->ipc_client_fd = -1;
-
-	client->object = client_object;
-
-	ipc_client = (struct ipc_client *) client_object->ipc_client;
-
-	ALOGD("Creating new RFS client");
-	ipc_client = ipc_client_new(IPC_CLIENT_TYPE_RFS);
-
-	if(ipc_client == NULL) {
-		ALOGE("RFS client creation failed!");
-		return -1;
-	}
-
-	client_object->ipc_client = ipc_client;
-
-	ALOGD("Setting log handler");
-	rc = ipc_client_set_log_handler(ipc_client, ipc_log_handler, NULL);
-
-	if(rc < 0) {
-		ALOGE("Setting log handler failed!");
-		return -1;
-	}
-
-	// ipc_client_set_handlers
-
-	ALOGD("Creating handlers common data");
-	rc = ipc_client_create_handlers_common_data(ipc_client);
-
-	if(rc < 0) {
-		ALOGE("Creating handlers common data failed!");
-		return -1;
-	}
-
-	ALOGD("Client open...");
-	if(ipc_client_open(ipc_client)) {
-		ALOGE("%s: failed to open ipc client", __FUNCTION__);
-		return -1;
-	}
-
-	ALOGD("Obtaining ipc_client_fd");
-	ipc_client_fd = ipc_client_get_handlers_common_data_fd(ipc_client);
-	client_object->ipc_client_fd = ipc_client_fd;
-
-	if(ipc_client_fd < 0) {
-		ALOGE("%s: client_rfs_fd is negative, aborting", __FUNCTION__);
-		return -1;
-	}
-
-	ALOGD("IPC RFS client done");
-
-	return 0;
-}
-
-
-int ipc_rfs_destroy(struct ril_client *client)
-{
-	struct ipc_client *ipc_client;
-	int ipc_client_fd;
-	int rc;
-
-	ALOGD("Destrying ipc rfs client");
-
-	if(client == NULL) {
-		ALOGE("client was already destroyed");
-		return 0;
-	}
-
-	if(client->object == NULL) {
-		ALOGE("client object was already destroyed");
-		return 0;
-	}
-
-	ipc_client_fd = ((struct ipc_client_object *) client->object)->ipc_client_fd;
-
-	if(ipc_client_fd)
-		close(ipc_client_fd);
-
-	ipc_client = ((struct ipc_client_object *) client->object)->ipc_client;
-
-	if(ipc_client != NULL) {
-		ipc_client_destroy_handlers_common_data(ipc_client);
-		ipc_client_close(ipc_client);
-		ipc_client_free(ipc_client);
-	}
-
-	free(client->object);
-
-	return 0;
-}
-
-struct ril_client_funcs ipc_fmt_client_funcs = {
-	.create = ipc_fmt_create,
-	.destroy = ipc_fmt_destroy,
-	.read_loop = ipc_fmt_read_loop,
-};
-
-struct ril_client_funcs ipc_rfs_client_funcs = {
-	.create = ipc_rfs_create,
-	.destroy = ipc_rfs_destroy,
-	.read_loop = ipc_rfs_read_loop,
+struct ril_client_funcs ipc_client_funcs = {
+	.create = ipc_create,
+	.destroy = ipc_destroy,
+	.read_loop = ipc_read_loop,
 };

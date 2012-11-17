@@ -691,7 +691,7 @@ int32_t modem_response_fm(struct modem_io *resp)
 
 	request.data = frame;
 
-	ipc_fmt_send(&request);
+	ipc_send(&request);
 
 	if(tx_packet.respBuf != NULL)
         free(tx_packet.respBuf);

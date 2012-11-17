@@ -127,7 +127,7 @@ ifeq ($(TARGET_DEVICE),wave2)
 	LOCAL_CFLAGS += -DDEVICE_WAVE
 endif
 
-LOCAL_C_INCLUDES := external/libsamsung-ipc/include
+LOCAL_C_INCLUDES := external/bada-modemril/libsamsung-ipc/include
 LOCAL_C_INCLUDES += hardware/ril/libsamsung-ipc/include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/samsung-ipc

@@ -121,7 +121,7 @@ int proto_send_packet(struct protoPacket* protoReq)
 
 	request.data = fifobuf;
 
-	ipc_fmt_send(&request);
+	ipc_send(&request);
 
 	free(fifobuf);
 	//TODO: return nonzero in case of failure

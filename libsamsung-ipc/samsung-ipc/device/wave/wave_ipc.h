@@ -26,17 +26,7 @@
 
 #include <radio.h>
 
-#define DPRAM_TTY			"/dev/dpram0"
-
-#define IOCTL_PHONE_ON			0x68d0
-#define IOCTL_PHONE_OFF			0x68d1
-#define IOCTL_PHONE_GETSTATUS		0x68d2
-#define IOCTL_PHONE_RESET		0x68d3
-#define IOCTL_PHONE_RAMDUMP		0x68d4
-#define IOCTL_PHONE_BOOTTYPE		0x68d5
-#define IOCTL_MEM_RW			0x68d6
-#define IOCTL_WAKEUP			0x68d7
-#define IOCTL_SILENT_RESET		0x68d8
+#define MODEMCTL_PATH			"/dev/modem_ctl"
 
 #define FRAME_START	0x7f
 #define FRAME_END	0x7e

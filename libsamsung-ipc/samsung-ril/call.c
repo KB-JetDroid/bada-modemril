@@ -115,7 +115,7 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 	call.length = strlen(dial->address);
 	memcpy(call.number, dial->address, strlen(dial->address));
 
-	ipc_fmt_send(IPC_CALL_OUTGOING, IPC_TYPE_EXEC, (unsigned char *) &call, sizeof(call), reqGetId(t));
+	ipc_send(IPC_CALL_OUTGOING, IPC_TYPE_EXEC, (unsigned char *) &call, sizeof(call), reqGetId(t));
 	
 	/* FIXME: This should actually be sent based on the response from baseband */
 	RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
@@ -130,7 +130,7 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
  */
 void ril_request_get_current_calls(RIL_Token t)
 {
-	ipc_fmt_send_get(IPC_CALL_LIST, reqGetId(t));
+	ipc_send_get(IPC_CALL_LIST, reqGetId(t));
 }
 
 /**
@@ -199,7 +199,7 @@ void ipc_call_list(struct ipc_message_info *info)
  */
 void ril_request_hangup(RIL_Token t)
 {
-	ipc_fmt_send_exec(IPC_CALL_RELEASE, reqGetId(t));
+	ipc_send_exec(IPC_CALL_RELEASE, reqGetId(t));
 
 	/* FIXME: This should actually be sent based on the response from baseband */
 	RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
@@ -216,7 +216,7 @@ void ril_request_hangup(RIL_Token t)
  */
 void ril_request_answer(RIL_Token t)
 {
-	ipc_fmt_send_exec(IPC_CALL_ANSWER, reqGetId(t));
+	ipc_send_exec(IPC_CALL_ANSWER, reqGetId(t));
 
 	/* FIXME: This should actually be sent based on the response from baseband */
 	RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
@@ -260,7 +260,7 @@ void ril_request_dtmf(RIL_Token t, void *data, int length)
 
 	ipc_gen_phone_res_expect_to_abort(reqGetId(t), IPC_CALL_BURST_DTMF);
 
-	ipc_fmt_send(IPC_CALL_BURST_DTMF, IPC_TYPE_EXEC, (void *) burst, burst_len, reqGetId(t));
+	ipc_send(IPC_CALL_BURST_DTMF, IPC_TYPE_EXEC, (void *) burst, burst_len, reqGetId(t));
 
 	free(burst);
 }
@@ -287,7 +287,7 @@ void ril_request_dtmf_start(RIL_Token t, void *data, int length)
 	cont_dtmf.state = IPC_CALL_DTMF_STATE_START;
 	cont_dtmf.tone = ((char *)data)[0];
 
-	ipc_fmt_send(IPC_CALL_CONT_DTMF, IPC_TYPE_SET, (void *) &cont_dtmf, sizeof(cont_dtmf), reqGetId(t));
+	ipc_send(IPC_CALL_CONT_DTMF, IPC_TYPE_SET, (void *) &cont_dtmf, sizeof(cont_dtmf), reqGetId(t));
 
 	RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
 }
@@ -298,7 +298,7 @@ void ril_request_dtmf_stop(RIL_Token t)
 	cont_dtmf.state = IPC_CALL_DTMF_STATE_STOP;
 	cont_dtmf.tone = 0;
 
-	ipc_fmt_send(IPC_CALL_CONT_DTMF, IPC_TYPE_SET, (void *) &cont_dtmf, sizeof(cont_dtmf), reqGetId(t));
+	ipc_send(IPC_CALL_CONT_DTMF, IPC_TYPE_SET, (void *) &cont_dtmf, sizeof(cont_dtmf), reqGetId(t));
 
 	RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
 }
