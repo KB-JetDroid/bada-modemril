@@ -193,7 +193,8 @@ void modem_response_handle(struct ipc_client *client, struct modem_io *resp)
 {
 
 	int32_t ret;
-
+	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
+	hexdump(resp->data, resp->datasize);
 	switch(resp->cmd)
     {
         case FIFO_PKT_FILE:

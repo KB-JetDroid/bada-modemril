@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <poll.h>
 
 #include <radio.h>
 
@@ -40,31 +41,32 @@ int32_t wave_modem_bootstrap(struct ipc_client *client)
 {
     int32_t modemctl_fd = -1;
 
-    DEBUG_I("%s: open %s\n", __func__, MODEMCTL_PATH);
+    DEBUG_I("open %s\n", MODEMCTL_PATH);
 
     modemctl_fd = open(MODEMCTL_PATH, O_RDWR | O_NDELAY);
 
     if(modemctl_fd < 0) {
-    	DEBUG_I("%s: failed to open %s\n", __func__, MODEMCTL_PATH);
+    	DEBUG_I("failed to open %s\n", MODEMCTL_PATH);
     	return 1;
     }
 
-    DEBUG_I("%s: send amss_run_request\n", __func__);
-
+    DEBUG_I("send amss_run_request\n");
+	
+	/* force status to POWER_ON as it's been done by FOTA */
+	ioctl(modemctl_fd, IOCTL_MODEM_FORCE_STATUS, 3);
     ioctl(modemctl_fd, IOCTL_MODEM_AMSSRUNREQ);
 
-    DEBUG_I("%s: closing %s\n", __func__, MODEMCTL_PATH);
+    DEBUG_I("closing %s\n", MODEMCTL_PATH);
 
     close(modemctl_fd);
 
-    DEBUG_I("%s: exit\n", __func__);
+    DEBUG_I("exit\n");
 
     return 0;
 }
 
 int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
 {
-    struct termios termios;
 
     int32_t fd = -1;
 
@@ -80,10 +82,6 @@ int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
     if(fd < 0) {
         return 1;
     }
-
-    tcgetattr(fd, &termios);
-    cfmakeraw(&termios);
-    tcsetattr(fd, TCSANOW, &termios);
 
     memcpy(io_data, &fd, sizeof(int32_t));
 
@@ -110,24 +108,24 @@ int32_t wave_ipc_power_on(void *data)
 {
     int32_t modemctl_fd = -1;
 
-    DEBUG_I("%s: open %s\n", __func__, MODEMCTL_PATH);
+    DEBUG_I("open %s\n", MODEMCTL_PATH);
 
     modemctl_fd = open(MODEMCTL_PATH, O_RDWR | O_NDELAY);
 
     if(modemctl_fd < 0) {
-    	DEBUG_I("%s: failed to open %s\n", __func__, MODEMCTL_PATH);
+    	DEBUG_I("failed to open %s\n", MODEMCTL_PATH);
     	return 1;
     }
 
-    DEBUG_I("%s: send IOCTL_MODEM_ON\n", __func__);
+    DEBUG_I("send IOCTL_MODEM_ON\n");
 
     ioctl(modemctl_fd, IOCTL_MODEM_ON);
 
-    DEBUG_I("%s: closing %s\n", __func__, MODEMCTL_PATH);
+    DEBUG_I("closing %s\n", MODEMCTL_PATH);
 
     close(modemctl_fd);
 
-    DEBUG_I("%s: exit\n", __func__);
+    DEBUG_I("exit\n");
 
     return 0;
 }
@@ -136,24 +134,24 @@ int32_t wave_ipc_power_off(void *data)
 {
     int32_t modemctl_fd = -1;
 
-    DEBUG_I("%s: open %s\n", __func__, MODEMCTL_PATH);
+    DEBUG_I("open %s\n", MODEMCTL_PATH);
 
     modemctl_fd = open(MODEMCTL_PATH, O_RDWR | O_NDELAY);
 
     if(modemctl_fd < 0) {
-    	DEBUG_I("%s: failed to open %s\n", __func__, MODEMCTL_PATH);
+    	DEBUG_I("failed to open %s\n", MODEMCTL_PATH);
     	return 1;
     }
 
-    DEBUG_I("%s: send IOCTL_MODEM_OFF\n", __func__);
+    DEBUG_I("send IOCTL_MODEM_OFF\n");
 
     ioctl(modemctl_fd, IOCTL_MODEM_OFF);
 
-    DEBUG_I("%s: closing %s\n", __func__, MODEMCTL_PATH);
+    DEBUG_I("closing %s\n", MODEMCTL_PATH);
 
     close(modemctl_fd);
 
-    DEBUG_I("%s: exit\n", __func__);
+    DEBUG_I("exit\n");
 
     return 0;
 }
@@ -166,27 +164,8 @@ int32_t send_packet(struct ipc_client *client, struct modem_io *request)
     uint8_t *payload;
     int32_t frame_length;
 
-    /* Frame length: FIFO header + payload length */
-    frame_length = (sizeof(*ipc) + request->datasize);
+	return client->handlers->write((void*) request, 0, client->handlers->write_data);
 
-    frame = (uint8_t*)malloc(frame_length);
-
-    /* FIFO header */
-    ipc = (struct fifoPacketHeader*)(frame);
-
-    ipc->magic = request->magic;
-    ipc->cmd = request->cmd;
-    ipc->datasize = request->datasize;
-
-    /* FIFO payload */
-    payload = (frame + sizeof(*ipc));
-    memcpy(payload, request->data, request->datasize);
-
-	retval = client->handlers->write(frame, frame_length, client->handlers->write_data);
-
-    free(frame);
-
-    return 0;
 }
 
 int32_t wave_ipc_send(struct ipc_client *client, struct modem_io *request)
@@ -245,69 +224,54 @@ int32_t wave_ipc_send(struct ipc_client *client, struct modem_io *request)
 
 int32_t wave_ipc_recv(struct ipc_client *client, struct modem_io *response)
 {
-    uint8_t buf[SIZ_PACKET_HEADER];
-    uint8_t *data;
-    uint32_t frame_length;
-    struct fifoPacketHeader *ipc;
-    struct modem_io modem_packet;
-    uint32_t num_read;
-    uint32_t left;
+	response->data = (uint8_t*)malloc(SIZ_PACKET_BUFSIZE);
+    return client->handlers->read((void*)response, 0, client->handlers->read_data);
 
-    num_read = client->handlers->read((void*)buf, sizeof(buf), client->handlers->read_data);
+}
 
-    ipc = (struct fifoPacketHeader *)buf;
+int32_t wave_ipc_read(void *data, unsigned int size, void *io_data)
+{
+    int fd = -1;
+    int rc;
 
-    if(num_read == sizeof(buf) && ipc->magic == 0xCAFECAFE) {
+    if(io_data == NULL)
+        return -1;
 
-        frame_length = ipc->datasize;
-        left = frame_length;
+    if(data == NULL)
+        return -1;
 
-        data = (uint8_t*)malloc(left);
-        num_read = client->handlers->read((void*)data, left, client->handlers->read_data);
+    fd = *((int *) io_data);
 
-        if(num_read == left) {
-            response->magic = ipc->magic;
-            response->cmd = ipc->cmd;
-            response->datasize = ipc->datasize;
+    if(fd < 0)
+        return -1;
 
-            response->data = (uint8_t*)malloc(left);
-            memcpy(response->data, data , response->datasize);
+    rc = ioctl(fd, IOCTL_MODEM_RECV, data);
 
-            return 0;
-        }
-    }
+    if(rc < 0)
+        return -1;
 
     return 0;
 }
 
-int32_t wave_ipc_read(void *data, uint32_t size, void *io_data)
+int32_t wave_ipc_write(void *data, unsigned int size, void *io_data)
 {
-    int32_t fd = -1;
+    int fd = -1;
+    int rc;
 
     if(io_data == NULL)
         return -1;
 
-    fd = *((int32_t *) io_data);
+    fd = *((int *) io_data);
 
     if(fd < 0)
         return -1;
 
-    return read(fd, data, size);
-}
+    rc = ioctl(fd, IOCTL_MODEM_SEND, data);
 
-int32_t wave_ipc_write(void *data, uint32_t size, void *io_data)
-{
-    int32_t fd = -1;
-
-    if(io_data == NULL)
+    if(rc < 0)
         return -1;
 
-    fd = *((int32_t *) io_data);
-
-    if(fd < 0)
-        return -1;
-
-    return write(fd, data, size);
+    return 0;
 }
 
 int32_t wave_modem_operations(struct ipc_client *client, void *data, uint32_t cmd)
@@ -315,24 +279,24 @@ int32_t wave_modem_operations(struct ipc_client *client, void *data, uint32_t cm
 	int32_t ret;
     int32_t modemctl_fd = -1;
 
-    DEBUG_I("%s: open %s\n", __func__, MODEMCTL_PATH);
+    DEBUG_I("open %s\n", MODEMCTL_PATH);
 
     modemctl_fd = open(MODEMCTL_PATH, O_RDWR | O_NDELAY);
 
     if(modemctl_fd < 0) {
-    	DEBUG_I("%s: failed to open %s\n", __func__, MODEMCTL_PATH);
+    	DEBUG_I("failed to open %s\n", MODEMCTL_PATH);
     	return 1;
     }
 
-    DEBUG_I("%s: send ioctl = 0x%x\n", __func__, cmd);
+    DEBUG_I("send ioctl = 0x%x\n", cmd);
 
     ret = ioctl(modemctl_fd, cmd, data);
 
-    DEBUG_I("%s: closing %s\n", __func__, MODEMCTL_PATH);
+    DEBUG_I("closing %s\n", MODEMCTL_PATH);
 
     close(modemctl_fd);
 
-    DEBUG_I("%s: exit\n", __func__);
+    DEBUG_I("exit\n");
 
     return ret;
 }

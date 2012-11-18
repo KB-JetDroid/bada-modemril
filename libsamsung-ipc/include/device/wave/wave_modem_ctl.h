@@ -28,26 +28,12 @@
 
 #define IOCTL_MODEM_ON               	_IO('o', 0x25)
 #define	IOCTL_MODEM_AMSSRUNREQ			_IO('o', 0x26)
-#define IOCTL_MODEM_PMIC				_IO('o', 0x27)
+#define IOCTL_MODEM_FORCE_STATUS       	_IO('o', 0x27)
 
 
 #define SIZ_PACKET_FRAME		0x00001000
 #define	SIZ_PACKET_HEADER		0x0000000C
 #define	SIZ_PACKET_BUFSIZE		SIZ_PACKET_FRAME-SIZ_PACKET_HEADER
 
-/* platform data */
-struct modemctl_data {
-	const char *name;
-	unsigned gpio_phone_active;
-	unsigned gpio_pda_active;
-	unsigned gpio_cp_reset;
-
-	unsigned gpio_phone_on;
-	unsigned gpio_usim_boot;
-	unsigned gpio_flm_sel;
-	unsigned gpio_sim_ndetect;
-
-
-};
 
 #endif
