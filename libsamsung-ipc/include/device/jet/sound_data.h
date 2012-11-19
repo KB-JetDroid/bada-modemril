@@ -1,7 +1,8 @@
 /**
  * This file is part of libsamsung-ipc.
  *
- * Copyright (C) 2011 KB <kbjetdroid@gmail.com>
+ * Copyright (C) 2012 Dominik Marszk <dmarszk@gmail.com>
+ *
  *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,40 +16,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with libsamsung-ipc.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <pthread.h>
-#include <getopt.h>
-
-#include <radio.h>
-#include <ipc_packet.h>
-
-#define LOG_TAG "RIL-IP"
-#include <utils/Log.h>
-
-/*
- * TODO: Implement handling of all the IPC packets
  *
  */
+ 
+#ifndef __DEVICE_JET_SND_DATA_H__
+#define __DEVICE_JET_SND_DATA_H__
 
-char *nvmFile = "/efs/bml4";
-
-char *jetFWVersion = "S800MPOJB1";
-
-/*
- * TODO: Read sound config data from file
- */
+#define SOUND_CFG_DATA_SIZE 0x194
 //	File									Field	Default	Hex
 int32_t RCV_MSM_Data[] =	{	-1900	,	//	<RX_CALL_VOL>	-900	-0x384
 							-1900	,	//		-900	-0x384
@@ -455,170 +429,4 @@ int32_t BTH_MSM_Data[] =	{	400	,	//	<RX_CALL_VOL>	400	0x190
 							11605	,	//		11605	0x2D55
 							256	};	//		256	0x100
 
-int32_t get_nvm_data(void *data, uint32_t size)
-{
-	int32_t fd, retval;
-	fd = open(nvmFile, O_RDONLY);
-
-	DEBUG_I("file %s open status = %d\n", nvmFile, fd);
-	retval = read(fd, data, size);
-	DEBUG_I("file %s read status = %d\n", nvmFile, retval);
-
-	if (fd > 0)
-		close(fd);
-	return 0;
-}
-
-void modem_response_ipc(struct modem_io *resp)
-{
-	DEBUG_I("Inside modem_response_ipc\n");
-	int32_t retval;
-	struct ipcPacketHeader *rx_header;
-	struct ipcRequest tx_packet;
-
-	struct modem_io request;
-    uint8_t *frame;
-    uint8_t *payload;
-    int32_t frame_length;
-
-	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
-
-	hexdump(resp->data, resp->datasize);
-
-    rx_header = (struct ipcPacketHeader *)(resp->data);
-
-	DEBUG_I("Packet type = 0x%x\n", rx_header->ipcPacketType);
-
-    switch (rx_header->ipcPacketType)
-    {
-	case 0x01:
-		DEBUG_I("ReadNvBackup IPC packet received\n");
-
-		struct ipcNvPacket *rx_packet;
-
-		rx_packet = (struct ipcNvPacket *)(resp->data);
-
-		DEBUG_I("size = 0x%x\n", rx_packet->size);
-
-		tx_packet.header.ipcPacketType = 0x03;
-		tx_packet.header.reserved = 0;
-		tx_packet.respBuf = NULL;
-
-		payload = malloc((rx_packet->size) + sizeof(struct ipcPacketHeader));
-
-		memcpy(payload, &tx_packet, sizeof(struct ipcPacketHeader));
-
-		retval = get_nvm_data(payload + sizeof(struct ipcPacketHeader), rx_packet->size);
-
-		request.magic = 0xCAFECAFE;
-		request.cmd = FIFO_PKT_DRV;
-		request.datasize = rx_packet->size +  sizeof(struct ipcPacketHeader);
-
-		request.data = payload;
-
-		ipc_send(&request);
-
-		break;
-
-	case 0x1C:
-		DEBUG_I("PMIC IPC packet received\n");
-
-		int32_t retval;
-		uint8_t params[3];
-		struct ipcPMICPacket *pmic_packet;
-
-		pmic_packet = (struct ipcPMICPacket *)(resp->data);
-
-		DEBUG_I("PMIC value = 0x%x\n", pmic_packet->value);
-
-		params[0] = 1;
-		params[1] = 0x9B; //SIMLTTV;
-		if (pmic_packet->value >= 0x7D0)
-			params[2] = 0x2D;
-		else
-			params[2] = 0x15;
-
-		retval = ipc_modem_io(params, IOCTL_MODEM_PMIC);
-
-		DEBUG_I("ioctl return value = 0x%x\n", retval);
-
-		ipc_send(resp);
-
-		break;
-
-	case 0x17:
-		DEBUG_I("SoundSetRequest IPC packet received\n");
-
-		struct ipcNvPacket *sndSetRequest_packet;
-
-		sndSetRequest_packet = (struct ipcNvPacket *)(resp->data);
-
-		DEBUG_I("size = 0x%x\n", sndSetRequest_packet->size);
-
-		tx_packet.header.ipcPacketType = 0x1B;
-		tx_packet.header.reserved = 0;
-		tx_packet.respBuf = NULL;
-
-		payload = malloc((0x194) + sizeof(struct ipcPacketHeader));
-
-		memcpy(payload, &tx_packet, sizeof(struct ipcPacketHeader));
-
-		request.magic = 0xCAFECAFE;
-		request.cmd = FIFO_PKT_DRV;
-		request.datasize = 0x194 +  sizeof(struct ipcPacketHeader);
-
-		memcpy(payload + sizeof(struct ipcPacketHeader), RCV_MSM_Data, sizeof(RCV_MSM_Data));
-
-		request.data = payload;
-
-		ipc_send(&request);
-
-		memcpy(payload + sizeof(struct ipcPacketHeader), EAR_MSM_Data, sizeof(EAR_MSM_Data));
-
-		request.data = payload;
-
-		ipc_send(&request);
-
-		memcpy(payload + sizeof(struct ipcPacketHeader), SPK_MSM_Data, sizeof(SPK_MSM_Data));
-
-		request.data = payload;
-
-		ipc_send(&request);
-
-		memcpy(payload + sizeof(struct ipcPacketHeader), BTH_MSM_Data, sizeof(BTH_MSM_Data));
-
-		request.data = payload;
-
-		ipc_send(&request);
-
-		tx_packet.header.ipcPacketType = 0x39;
-		tx_packet.header.reserved = 0;
-		tx_packet.respBuf = NULL;
-
-		payload = malloc((0x14) + sizeof(struct ipcPacketHeader));
-
-		memcpy(payload, &tx_packet, sizeof(struct ipcPacketHeader));
-
-		request.magic = 0xCAFECAFE;
-		request.cmd = FIFO_PKT_DRV;
-		request.datasize = 0x14 +  sizeof(struct ipcPacketHeader);
-
-		memcpy(payload + sizeof(struct ipcPacketHeader), jetFWVersion, sizeof(*jetFWVersion));
-
-		request.data = payload;
-
-		ipc_send(&request);
-
-		DEBUG_I("Sent all the sound packages\n");
-
-		break;
-
-	default :
-    		DEBUG_I("IPC Packet type 0x%x is not yet handled\n", rx_header->ipcPacketType);
-
-    		break;
-    }
-
-    DEBUG_I("Inside modem_response_ipc leaving\n");
-
-}
+#endif

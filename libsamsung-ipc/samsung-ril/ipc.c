@@ -201,11 +201,6 @@ int ipc_create(struct ril_client *client)
 		return -1;
 	}
 
-	ALOGD("Client power on...");
-	if(ipc_client_power_on(ipc_client)) {
-		ALOGE("%s: failed to power on ipc client", __FUNCTION__);
-		return -1;
-	}
 
 	ALOGD("IPC client done");
 

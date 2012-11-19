@@ -30,7 +30,7 @@
 #include "util.h"
 
 #include <fm_packet.h>
-#include <ipc_packet.h>
+#include <drv_packet.h>
 #include <tapi_packet.h>
 #include <proto_packet.h>
 #include <sim_packet.h>
@@ -192,10 +192,10 @@ void ipc_dispatch(struct modem_io *resp)
             //modem_response_boot(client, resp);
         break;
         case FIFO_PKT_DRV:
-        	modem_response_ipc(resp);
+        	modem_response_drv(resp);
         break;
         case FIFO_PKT_DEBUG:
-        	DEBUG_I("Debug string - %s\n", (char *)(resp->data));
+        	DEBUG_I("Debug string - %s", (char *)(resp->data));
         break;
         case FIFO_PKT_TAPI:
         	modem_response_tapi(resp);
@@ -204,8 +204,8 @@ void ipc_dispatch(struct modem_io *resp)
         	modem_response_sim(resp);
         break;
         default :
-        	DEBUG_I("Packet type 0x%x not yet handled\n", resp->cmd);
-        	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
+        	DEBUG_I("Packet type 0x%x not yet handled", resp->cmd);
+        	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", resp->magic, resp->cmd, resp->datasize);
         	hexdump(resp->data, resp->datasize);
 
     }
@@ -475,7 +475,7 @@ void onRequest(int request, void *data, size_t datalen, RIL_Token t)
 			RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
 			break;
 		default:
-			ALOGE("Request not implemented: %d\n", request);
+			ALOGE("Request not implemented: %d", request);
 			RIL_onRequestComplete(t, RIL_E_REQUEST_NOT_SUPPORTED, NULL, 0);
 			break;
 	}

@@ -1,0 +1,56 @@
+/**
+ * This file is part of libsamsung-ipc.
+ *
+ * Copyright (C) 2011-2012 KB <kbjetdroid@gmail.com>
+ *
+ * Implemented as per the Mocha AP-CP protocol analysis done by Dominik Marszk
+ *
+ * libsamsung-ipc is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * libsamsung-ipc is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with libsamsung-ipc.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+#ifndef __DRV_PACKET_H__
+#define __DRV_PACKET_H__
+
+#if defined(DEVICE_JET)
+#include "device/jet/drv_packet.h"
+#elif defined(DEVICE_WAVE)
+#include "device/wave/drv_packet.h"
+#endif
+
+struct drvPacketHeader {
+	uint8_t reserved; //probably dummy
+	uint8_t drvPacketType;
+} __attribute__((__packed__));
+
+struct drvNvPacket {
+	struct drvPacketHeader header;
+	uint32_t size;
+} __attribute__((__packed__));
+
+struct drvPMICPacket {
+	struct drvPacketHeader header;
+	uint32_t unk1;
+	uint32_t unk2;
+	uint32_t value;
+} __attribute__((__packed__));
+
+struct drvRequest {
+	struct drvPacketHeader header;
+	uint8_t *respBuf;
+} __attribute__((__packed__));
+
+void modem_response_ipc(struct modem_io *resp);
+
+#endif

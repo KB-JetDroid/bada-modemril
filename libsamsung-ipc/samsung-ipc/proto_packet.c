@@ -44,7 +44,7 @@
 
 void modem_response_proto(struct modem_io *resp)
 {
-	DEBUG_I("Inside modem_response_proto - TBD\n");
+	DEBUG_I("Inside modem_response_proto - TBD");
 	int32_t retval, count;
 	struct protoPacketHeader *rx_header;
 
@@ -55,7 +55,7 @@ void modem_response_proto(struct modem_io *resp)
 
     struct fifoPacketHeader *fifoHeader;
 
-	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
+	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", resp->magic, resp->cmd, resp->datasize);
 
 	hexdump(resp->data, resp->datasize);
 
@@ -64,44 +64,44 @@ void modem_response_proto(struct modem_io *resp)
     switch (rx_header->type)
     {
 	case PROTO_PACKET_ID_STARTUP:
-		DEBUG_I("PROTO_PACKET_ID_STARTUP packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STARTUP packet received");
 		break;
 	case PROTO_PACKET_ID_CLEANUP:
-		DEBUG_I("PROTO_PACKET_ID_CLEANUP packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_CLEANUP packet received");
 		break;
 	case PROTO_PACKET_ID_STARTNETWORK:
-		DEBUG_I("PROTO_PACKET_ID_STARTNETWORK packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STARTNETWORK packet received");
 		break;
 	case PROTO_PACKET_ID_STOPNETWORK:
-		DEBUG_I("PROTO_PACKET_ID_STOPNETWORK packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STOPNETWORK packet received");
 		break;
 	case PROTO_PACKET_ID_STARTINGNETWORKIND:
-		DEBUG_I("PROTO_PACKET_ID_STARTINGNETWORKIND packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STARTINGNETWORKIND packet received");
 		break;
 	case PROTO_PACKET_ID_STARTNETWORKCNF:
-		DEBUG_I("PROTO_PACKET_ID_STARTNETWORKCNF packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STARTNETWORKCNF packet received");
 		break;
 	case PROTO_PACKET_ID_STARTNETWORKIND:
-		DEBUG_I("PROTO_PACKET_ID_STARTNETWORKIND packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STARTNETWORKIND packet received");
 		break;
 	case PROTO_PACKET_ID_STOPNETWORKCNF:
-		DEBUG_I("PROTO_PACKET_ID_STOPNETWORKCNF packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STOPNETWORKCNF packet received");
 		break;
 	case PROTO_PACKET_ID_STOPNETWORKIND:
-		DEBUG_I("PROTO_PACKET_ID_STOPNETWORKIND packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_STOPNETWORKIND packet received");
 		break;
 	case PROTO_PACKET_ID_SUSPENDNETWORKIND:
-		DEBUG_I("PROTO_PACKET_ID_SUSPENDNETWORKIND packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_SUSPENDNETWORKIND packet received");
 		break;
 	case PROTO_PACKET_ID_RESUMENETWORKIND:
-		DEBUG_I("PROTO_PACKET_ID_RESUMENETWORKIND packet received\n");
+		DEBUG_I("PROTO_PACKET_ID_RESUMENETWORKIND packet received");
 		break;
 	default :
-    	DEBUG_I("Unknown Proto Packet\n");
+    	DEBUG_I("Unknown Proto Packet");
     	break;
     }
 
-    DEBUG_I("Inside modem_response_proto leaving\n");
+    DEBUG_I("Inside modem_response_proto leaving");
 
 }
 

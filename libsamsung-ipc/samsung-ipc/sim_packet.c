@@ -46,7 +46,7 @@
 
 void modem_response_sim(struct modem_io *resp)
 {
-	DEBUG_I("Entering\n");
+	DEBUG_I("Entering");
 	int32_t retval, count;
 	uint32_t sid;
 	struct simPacketHeader *simHeader;
@@ -59,21 +59,21 @@ void modem_response_sim(struct modem_io *resp)
 
     struct fifoPacketHeader *fifoHeader;
 
-	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", resp->magic, resp->cmd, resp->datasize);
+	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", resp->magic, resp->cmd, resp->datasize);
 
 	hexdump(resp->data, resp->datasize);
 
     simHeader = (struct simPacketHeader *)(resp->data);
     sim_packet.simBuf = (uint8_t *)(resp->data + sizeof(struct simPacketHeader));
 
-	DEBUG_I("Sim Packet type = 0x%x\n Sim Packet sub-type = 0x%x\n Sim Packet length = 0x%x\n", simHeader->type, simHeader->subType, simHeader->bufLen);
+	DEBUG_I("Sim Packet type = 0x%x\n Sim Packet sub-type = 0x%x\n Sim Packet length = 0x%x", simHeader->type, simHeader->subType, simHeader->bufLen);
 
 	if(simHeader->type != 0)
 	{
 		switch (simHeader->subType)
 		{
 		case 0x00:
-			DEBUG_I("SIM_PACKET OemSimAtkInjectDisplayTextInd rcvd\n");
+			DEBUG_I("SIM_PACKET OemSimAtkInjectDisplayTextInd rcvd");
 			
 			/*struct oemSimPacketHeader *oem_header;
 			struct oemSimPacket oem_packet;
@@ -81,13 +81,13 @@ void modem_response_sim(struct modem_io *resp)
 			oem_header = (struct oemSimPacketHeader *)(sim_packet.respBuf);
 			oem_packet.oemBuf = (uint8_t *)(sim_packet.respBuf + sizeof(struct oemSimPacketHeader));
 
-			DEBUG_I("Sim oem type = 0x%x\n Sim Packet sub-type = 0x%x\n Oem length = 0x%x\n", oem_header->oemType, oem_header->packetSubType, oem_header->oemBufLen);
+			DEBUG_I("Sim oem type = 0x%x\n Sim Packet sub-type = 0x%x\n Oem length = 0x%x", oem_header->oemType, oem_header->packetSubType, oem_header->oemBufLen);
 
 			hexdump(oem_packet.oemBuf, oem_header->oemBufLen);
 */
 			break;
 		default :
-			DEBUG_I("Unknown SIM subType %d\n", simHeader->subType);
+			DEBUG_I("Unknown SIM subType %d", simHeader->subType);
 			break;
 		}
 	}
@@ -117,7 +117,7 @@ void modem_response_sim(struct modem_io *resp)
 		}
 	}
 
-    DEBUG_I("leaving\n");
+    DEBUG_I("leaving");
 
 }
 
@@ -197,7 +197,7 @@ int sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin)
 int sim_atk_open(uint32_t sid)
 {
 	//TODO: verify ATK session and create/open it and return handler to it?!
-	DEBUG_I("Sending\n");
+	DEBUG_I("Sending");
 	if(sim_send_oem_data(0xA, 0x1B, NULL, 0) != 0) //0xA hSim is hardcoded in bada
 		return -1;
 	return 0;
@@ -206,7 +206,7 @@ int sim_atk_open(uint32_t sid)
 int sim_open_to_modem(uint8_t hSim)
 {
 	//TODO: verify, create and initialize session, send real hSim
-	DEBUG_I("Sending\n");
+	DEBUG_I("Sending");
 	if(sim_send_oem_data(0x4, 0x1, NULL, 0) != 0) //why it starts from 4? hell knows
 		return -1;
 	return 0;

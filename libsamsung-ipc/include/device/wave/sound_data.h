@@ -1,9 +1,8 @@
 /**
  * This file is part of libsamsung-ipc.
  *
- * Copyright (C) 2011-2012 KB <kbjetdroid@gmail.com>
+ * Copyright (C) 2012 Dominik Marszk <dmarszk@gmail.com>
  *
- * Implemented as per the Mocha AP-CP protocol analysis done by Dominik Marszk
  *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,32 +18,11 @@
  * along with libsamsung-ipc.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+ 
+#ifndef __DEVICE_WAVE_SND_DATA_H__
+#define __DEVICE_WAVE_SND_DATA_H__
 
-#ifndef __IPC_H__
-#define __IPC_H__
+#define SOUND_CFG_DATA_SIZE 0x19C
 
-struct ipcPacketHeader {
-	uint8_t reserved; //probably dummy
-	uint8_t ipcPacketType;
-} __attribute__((__packed__));
-
-struct ipcNvPacket {
-	struct ipcPacketHeader header;
-	uint32_t size;
-} __attribute__((__packed__));
-
-struct ipcPMICPacket {
-	struct ipcPacketHeader header;
-	uint32_t unk1;
-	uint32_t unk2;
-	uint32_t value;
-} __attribute__((__packed__));
-
-struct ipcRequest {
-	struct ipcPacketHeader header;
-	uint8_t *respBuf;
-} __attribute__((__packed__));
-
-void modem_response_ipc(struct modem_io *resp);
 
 #endif

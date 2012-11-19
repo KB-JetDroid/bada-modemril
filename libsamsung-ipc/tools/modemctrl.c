@@ -37,7 +37,7 @@
 #include <radio.h>
 
 #include <fm_packet.h>
-#include <ipc_packet.h>
+#include <drv_packet.h>
 #include <tapi_packet.h>
 #include <proto_packet.h>
 #include <sim_packet.h>
@@ -57,8 +57,8 @@ void modem_response_boot(struct ipc_client *client, struct modem_io *resp)
 {
 	DEBUG_I("Inside modem_response_boot\n");
 	int retval, count;
-	struct ipcPacketHeader *rx_header;
-	struct ipcRequest tx_packet;
+	struct drvPacketHeader *rx_header;
+	struct drvRequest tx_packet;
 
 	struct modem_io request;
     void *frame;
@@ -111,8 +111,8 @@ void modem_response_dbg_level(struct ipc_client *client, struct modem_io *resp)
 {
 	DEBUG_I("Inside modem_response_dbg_level\n");
 	int retval, count;
-	struct ipcPacketHeader *rx_header;
-	struct ipcRequest tx_packet;
+	struct drvPacketHeader *rx_header;
+	struct drvRequest tx_packet;
 
 	struct modem_io request;
     void *frame;
@@ -213,7 +213,7 @@ void modem_response_handle(struct ipc_client *client, struct modem_io *resp)
             //modem_response_boot(client, resp);
         break;
         case FIFO_PKT_DRV:
-        	modem_response_ipc(resp);
+        	modem_response_drv(resp);
         break;
         case FIFO_PKT_DEBUG:
         	modem_response_dbg(resp);
@@ -259,8 +259,8 @@ int32_t modem_read_loop(struct ipc_client *client)
         {
             rc = ipc_client_recv(client, &resp);
 
-            if(rc > 0) {
-                DEBUG_E("Can't RECV from modem: please run this again\n");
+            if(rc != 0) {
+                DEBUG_E("Can't RECV from modem, please run this again\n");
                 break;
             }
 
@@ -425,17 +425,20 @@ int main(int argc, char *argv[])
             ipc_client_bootstrap_modem(client);
         } else if(strncmp(argv[optind], "start", 5) == 0) {
             printf("[0] Starting modem on IPC client\n");
-            rc = modem_start(client);
+            rc = ipc_client_open(client);
+			if(rc < 0) {
+                printf("[E] Something went wrong\n");
+                return 1;
+            }
+			client_fd = ipc_client_get_handlers_common_data_fd(client);
             if(rc < 0) {
                 printf("[E] Something went wrong\n");
-                modem_stop(client);
                 return 1;
             }
 			DEBUG_I("Starting modem_read_loop on IPC client\n");
 			
 			modem_read_loop(client);
 
-			modem_stop(client);
             } else {
                 DEBUG_E("Unknown argument: '%s'\n", argv[optind]);
                 print_help();
