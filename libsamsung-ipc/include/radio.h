@@ -40,11 +40,6 @@
 #define IPC_GROUP(m)    (m >> 8)
 #define IPC_INDEX(m)    (m & 0xff)
 
-struct ipc_header {
-    unsigned short length;
-    unsigned char mseq, aseq;
-    unsigned char group, index, type;
-} __attribute__((__packed__));
 
 struct ipc_message_info {
     unsigned char mseq;
@@ -58,27 +53,18 @@ struct ipc_message_info {
 
 struct fifoPacketHeader
 {
-	uint32_t magic; //filled by modemctl
+	uint32_t magic;
 	uint32_t cmd;
 	uint32_t datasize;
 };
 
 struct modem_io {
-	uint32_t magic; //filled by modemctl
+	uint32_t magic;
 	uint32_t cmd;
 	uint32_t datasize;
 	uint8_t *data;
 };
 
-struct ipc_packet {
-    unsigned char mseq;
-    unsigned char aseq;
-    unsigned char group;
-    unsigned char index;
-    unsigned char type;
-    unsigned int length;
-    unsigned char *data;
-};
 
 struct ipc_client;
 struct ipc_handlers;

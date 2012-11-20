@@ -52,7 +52,7 @@
 /*
  * Dummy code to send TAPI packets as per wave's log
  */
-void modem_response_tapi_init(struct modem_io *resp)
+void modem_execute_tapi_init()
 {
 	DEBUG_I("Inside modem_response_tapi_init");
 	int32_t retval, count;

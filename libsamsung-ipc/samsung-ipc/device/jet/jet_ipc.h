@@ -37,15 +37,6 @@
 #define IOCTL_WAKEUP			0x68d7
 #define IOCTL_SILENT_RESET		0x68d8
 
-#define FRAME_START	0x7f
-#define FRAME_END	0x7e
-
-struct hdlc_header {
-	uint16_t length;
-	uint8_t unknown;
-
-	struct ipc_header ipc;
-} __attribute__((__packed__));
 
 struct multiPacketHeader {
 	uint32_t command;

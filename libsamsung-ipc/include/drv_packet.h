@@ -51,6 +51,6 @@ struct drvRequest {
 	uint8_t *respBuf;
 } __attribute__((__packed__));
 
-void modem_response_ipc(struct modem_io *resp);
+void modem_response_drv(struct modem_io *resp);
 
 #endif

@@ -29,16 +29,6 @@
 #define MODEMCTL_PATH			"/dev/modem_ctl"
 #define MODEMPACKET_PATH			"/dev/modem_packet"
 
-#define FRAME_START	0x7f
-#define FRAME_END	0x7e
-
-struct hdlc_header {
-	uint16_t length;
-	uint8_t unknown;
-
-	struct ipc_header ipc;
-} __attribute__((__packed__));
-
 struct multiPacketHeader {
 	uint32_t command;
 	uint32_t packtLen;

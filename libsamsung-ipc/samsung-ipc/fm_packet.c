@@ -59,10 +59,12 @@
 uint32_t dirArray[MAX_OPEN_DIRS];
 uint32_t dirIndex = 1;
 
+#if defined(DEVICE_JET)
 char *mochaRoot = "/KFAT0";
-
-int32_t lastOpen = 0;
-int32_t lastFile = 0;
+#endif
+#if defined(DEVICE_WAVE)
+char *mochaRoot = "/bada_usr/modem/";
+#endif
 
 int32_t (*fileOps[MAX_FILE_OPS])(struct fmRequest *, struct fmResponse *) =
 {
@@ -102,9 +104,9 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	strcat(fName, (const char *)(rx_packet->reqBuf + sizeof(mode)));
 //	DEBUG_I("fName %s, mode = 0x%x", fName, mode);
 
-	if (!strcmp(fName, "/KFAT0/nvm/num/87_19"))
+	/*if (!strcmp(fName, "/KFAT0/nvm/num/87_19"))
 		lastOpen = 1;
-
+*/
 	if(mode & FM_CREATE)
 		flags |= O_CREAT;
 	if(mode & FM_WRITE)
@@ -124,6 +126,7 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 		flags |= O_RDWR;
 #endif
 	retval = open(fName, flags); //0777);
+	free(fName);
 
 	tx_packet->funcRet = retval; //-1; //retval;
 	tx_packet->errorVal = (retval < 0 ? errno : 0); //-1; //retval;
@@ -152,14 +155,6 @@ int32_t FmCloseFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->respBuf = NULL;
 
 //	DEBUG_I("Leaving FmCloseFile fd = %d", fd);
-	if (lastOpen)
-	{
-		lastFile = 1;
-		lastOpen = 0;
-	}
-	else
-		lastFile = 0;
-
 	return 0;
 }
 
@@ -176,6 +171,7 @@ int32_t FmCreateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	DEBUG_I("fName %s", fName);
 
 	retval = creat(fName, 0777);
+	free(fName);
 
 	tx_packet->errorVal = (retval < 0 ? errno : 0); //0; //retval;
 	tx_packet->funcRet = retval; //0; //retval;
@@ -316,6 +312,7 @@ int32_t FmRemoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 //	DEBUG_I("fName %s", fName);
 
 	retval = remove(fName);
+	free(fName);
 
 	tx_packet->errorVal = 0; //retval;
 	tx_packet->funcRet = 0; //retval;
@@ -362,6 +359,7 @@ int32_t FmGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_pac
 //	DEBUG_I("fName %s", fName);
 
 	retval = stat(fName, &sb);
+	free(fName);
 
 	fAttr = (FmFileAttribute *)malloc(sizeof(FmFileAttribute));
 
@@ -532,6 +530,7 @@ int32_t FmOpenDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	strcat(fName, (const char *)(rx_packet->reqBuf));
 	DEBUG_I("fName %s", fName);
 	dir = opendir(fName);
+	free(fName);
 
 	dirArray[dirIndex++] = dir;
 
@@ -605,6 +604,7 @@ int32_t FmCreateDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packe
 
 	if(!retval)
 		DEBUG_I("error creating directory %s", fName);
+	free(fName);
 	tx_packet->errorVal = 0;
 	tx_packet->funcRet = 0;
 
@@ -699,11 +699,5 @@ int32_t modem_response_fm(struct modem_io *resp)
     if(frame != NULL)
         free(frame);
 
-    if(!lastOpen && lastFile)
-    {
-    	lastFile = 0;
-    	return 1;
-    }
-    else
-    	return 0;
+    return 0;
 }

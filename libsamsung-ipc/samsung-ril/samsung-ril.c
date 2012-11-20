@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2010-2011 Joerie de Gram <j.de.gram@gmail.com>
  * Copyright (C) 2011 Paul Kocialkowski <contact@oaulk.fr>
+ * Copyright (C) 2012 Dominik Marszk <dmarszk@gmail.com>
  *
  * samsung-ril is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -177,13 +178,13 @@ void ipc_dispatch(struct modem_io *resp)
 	switch(resp->cmd)
     {
         case FIFO_PKT_FILE:
-        	ret = modem_response_fm(resp);
-        	if (ret)
+        	modem_response_fm(resp);
+        	/*if (ret)
         	{
         		modem_response_tapi_init(resp);
         		sim_atk_open(0);
         		sim_open_to_modem(0);
-        	}
+        	}*/
         break;
         case FIFO_PKT_DVB_H_DebugLevel:
             //modem_response_dbg_level(client, resp);

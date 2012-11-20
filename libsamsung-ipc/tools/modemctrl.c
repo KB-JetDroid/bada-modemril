@@ -198,13 +198,14 @@ void modem_response_handle(struct ipc_client *client, struct modem_io *resp)
 	switch(resp->cmd)
     {
         case FIFO_PKT_FILE:
-        	ret = modem_response_fm(resp);
+        	modem_response_fm(resp);
+			/*
         	if (ret)
         	{
-        		modem_response_tapi_init(resp);
+        		modem_send_tapi_init(resp);
         		sim_atk_open(0);
         		sim_open_to_modem(0);
-        	}
+        	}*/
         break;
         case FIFO_PKT_DVB_H_DebugLevel:
             //modem_response_dbg_level(client, resp);
