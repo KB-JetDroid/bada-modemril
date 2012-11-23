@@ -1,0 +1,66 @@
+/**
+ * This file is part of libsamsung-ipc.
+ *
+ * Copyright (C) 2012 Dominik Marszk <dmarszk@gmail.com>
+ *
+ * libsamsung-ipc is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * libsamsung-ipc is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with libsamsung-ipc.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+
+#include <radio.h>
+#include <syssec.h>
+
+#define LOG_TAG "RIL-SIM"
+#include <utils/Log.h>
+
+const uint8_t fake_imei[] = {0x08, 0x1A, 0x32, 0x54, 0x76, 0x98, 0x12, 0x34, 0x56};
+
+void load_sec_data()
+{
+	ALOGD("Loading dat stuff.");
+	memcpy(cached_bcd_imei, fake_imei, 9);
+	ALOGD("Converting IMEI out of dat stuff to ASCII.");
+	imei_bcd2ascii(cached_imei, cached_bcd_imei);
+}
+
+int syssec_send_imei(void)
+{
+	uint8_t buffer[40];
+	int ret;
+	struct sysSecPacketHeader* pkt_hdr;
+	struct modem_io request;
+	
+	if(cached_bcd_imei[0] == 0x00)
+		load_sec_data();
+	
+	memset(buffer, 0, 40);
+	
+	pkt_hdr = (struct sysSecPacketHeader*) &buffer;
+
+	pkt_hdr->type = SYS_SEC_SETIMEI;
+	pkt_hdr->bufLen = 17;
+	memcpy(buffer + sizeof(struct sysSecPacketHeader) + 8, cached_bcd_imei, 9);	
+	
+	request.magic = 0xCAFECAFE;
+	request.cmd = FIFO_PKT_SECUREBOOT;
+	request.datasize = pkt_hdr->bufLen+sizeof(struct sysSecPacketHeader); // 17+16=33
+	request.data = buffer;
+	
+	ipc_send(&request);
+	return 0;
+}

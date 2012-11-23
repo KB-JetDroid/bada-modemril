@@ -33,7 +33,11 @@
  * All the TAPI Nettext (sms) context structures generic to all Mocha devices will be defined here
  */
 
-void tapi_nettext_handler(uint16_t tapiNettextType, uint32_t tapiNettextLength, uint8_t *tapiNettextData);
+struct tapiNetText {
+	uint32_t handle;
+};
+
+void tapi_nettext_parser(uint16_t tapiNettextType, uint32_t tapiNettextLength, uint8_t *tapiNettextData);
 
 int tapi_nettext_set_mem_available(uint32_t bMemAvail);
 #endif

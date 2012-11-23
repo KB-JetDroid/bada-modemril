@@ -36,11 +36,11 @@
 
 #include <radio.h>
 
-#include <fm_packet.h>
-#include <drv_packet.h>
-#include <tapi_packet.h>
-#include <proto_packet.h>
-#include <sim_packet.h>
+#include <fm.h>
+#include <drv.h>
+#include <tapi.h>
+#include <proto.h>
+#include <sim.h>
 
 #include <dlfcn.h>
 

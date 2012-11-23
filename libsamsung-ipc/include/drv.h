@@ -1,7 +1,9 @@
 /**
  * This file is part of libsamsung-ipc.
  *
- * Copyright (C) 2011 KB <kbjetdroid@gmail.com>
+ * Copyright (C) 2011-2012 KB <kbjetdroid@gmail.com>
+ *
+ * Implemented as per the Mocha AP-CP protocol analysis done by Dominik Marszk
  *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,32 +20,37 @@
  *
  */
 
-#ifndef __TAPI_H__
-#define __TAPI_H__
+#ifndef __DRV_PACKET_H__
+#define __DRV_PACKET_H__
 
-#define TAPI_TYPE_CALL 		0 //53 subtypes
-#define TAPI_TYPE_NETTEXT 	1 //around 10 subtypes
-#define TAPI_TYPE_NETWORK 	2 //23 subtypes
-#define TAPI_TYPE_SS 		3 //48 subtypes
-#define TAPI_TYPE_AT 		4 //34 subtypes
-#define TAPI_TYPE_DMH 		5 //n subtypes, called API_IDs (must be nonzero)
-#define TAPI_TYPE_CONFIG 	6 //n subtypes, called API_IDs (must be nonzero)
+#if defined(DEVICE_JET)
+#include "device/jet/drv.h"
+#elif defined(DEVICE_WAVE)
+#include "device/wave/drv.h"
+#endif
 
-struct tapiPacketHeader {
-	uint16_t tapiService;
-	uint16_t tapiServiceFunction;
-	uint32_t len;
+struct drvPacketHeader {
+	uint8_t reserved; //probably dummy
+	uint8_t drvPacketType;
 } __attribute__((__packed__));
 
-struct tapiPacket {
-	struct tapiPacketHeader header;
-	uint8_t *buf;
+struct drvNvPacket {
+	struct drvPacketHeader header;
+	uint32_t size;
 } __attribute__((__packed__));
 
-void modem_response_tapi(struct modem_io *resp);
+struct drvPMICPacket {
+	struct drvPacketHeader header;
+	uint32_t unk1;
+	uint32_t unk2;
+	uint32_t value;
+} __attribute__((__packed__));
 
-void modem_response_tapi_init(struct modem_io *resp);
+struct drvRequest {
+	struct drvPacketHeader header;
+	uint8_t *respBuf;
+} __attribute__((__packed__));
 
-int tapi_send_packet(struct tapiPacket* tapiReq);
+void modem_response_drv(struct modem_io *resp);
 
 #endif

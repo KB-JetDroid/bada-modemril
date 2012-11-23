@@ -22,6 +22,21 @@
 #include <stdint.h>
 #include <string.h>
 
+
+void imei_bcd2ascii(char* out, const char* in)
+{
+	int i;
+	int outi;
+	outi = 0;
+	/* first byte of in is 0x08, second byte is 0xNA where N is the first digit of imei */
+	out[outi++] = (in[1] >> 4)+0x30;
+	for(i = 2; i < 9; i++)
+	{
+		out[outi++] = (in[i] & 0xF) + 0x30;
+		out[outi++] = ((in[i] >> 4) & 0xF) + 0x30;
+	}
+}
+
 #define isprint(c)	((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
 void hexdump(const uint8_t *buf, int32_t len)
 {

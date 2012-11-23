@@ -22,7 +22,7 @@
 #include <stdlib.h>
 
 #include <radio.h>
-#include <tapi_packet.h>
+#include <tapi.h>
 #include <tapi_nettext.h>
 
 #define LOG_TAG "RIL-TAPI-SMS"
@@ -33,7 +33,7 @@
  *
  */
 
-void tapi_nettext_handler(uint16_t tapiNettextType, uint32_t tapiNettextLength, uint8_t *tapiNettextData)
+void tapi_nettext_parser(uint16_t tapiNettextType, uint32_t tapiNettextLength, uint8_t *tapiNettextData)
 {
 	struct tapiPacket tx_packet;
 

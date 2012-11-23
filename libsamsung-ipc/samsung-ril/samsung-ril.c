@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2010-2011 Joerie de Gram <j.de.gram@gmail.com>
  * Copyright (C) 2011 Paul Kocialkowski <contact@oaulk.fr>
+ * Copyright (C) 2012 KB <kbjetdroid@gmail.com>
  * Copyright (C) 2012 Dominik Marszk <dmarszk@gmail.com>
  *
  * samsung-ril is free software: you can redistribute it and/or modify
@@ -30,32 +31,17 @@
 #include "samsung-ril.h"
 #include "util.h"
 
-#include <fm_packet.h>
-#include <drv_packet.h>
-#include <tapi_packet.h>
-#include <proto_packet.h>
-#include <sim_packet.h>
+#include <fm.h>
+#include <drv.h>
+#include <tapi.h>
+#include <proto.h>
+#include <sim.h>
 
 #define RIL_VERSION_STRING "Samsung RIL"
 
 /**
  * Samsung-RIL TODO:
- *
- * General:
- * - USSD codes
- * - ipc_disp_icon_info: trace on RILJ & emulate RIl_REQUEST_SIGNAL_STRENGTH
- * - airplane mode: trace: sys nodes?
- * - look at /sys nodes for data and airplane
- * - fails at killall zygote? → airplane mode bug?
- * - gen phone res queue → apply to max functions
- * - DTMF burst queue + lock, DTMF_START lock
- *
- * Data-related:
- * - find a reliable way to configure data iface
- * - GPRS: IPC_GPRS_CALL_STATUS, LAST_DATA_CALL_FAIL_CAUSE
- * - check data with orange non-free ril: no gprs_ip_config
- * - data: use IPC_GPRS_CALL_STATUS with global token for possible fail or return anyway and store ip config global?
- * - update global fail cause in global after gprs_call_status, generic error on stored token
+ * Everything? :]
  */
 
 /**
@@ -145,26 +131,23 @@ void RIL_onRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t resp
 
 /**
  * RIL tokens
+ * this should be called after syssec data loading and after receiving system info from modem
  */
 
 void ril_tokens_check(void)
 {
-#if 0
 	if(ril_state.tokens.baseband_version != 0) {
 		if(ril_state.radio_state != RADIO_STATE_OFF) {
 			ril_request_baseband_version(ril_state.tokens.baseband_version);
 			ril_state.tokens.baseband_version = 0;
 		}
 	}
-
 	if(ril_state.tokens.get_imei != 0) {
-		if(ril_state.radio_state != RADIO_STATE_OFF) {
+		if(cached_imei[0] != 0x00) {
 			ril_request_get_imei(ril_state.tokens.get_imei);
 			ril_state.tokens.get_imei = 0;
 		}
 	}
-#endif
-
 }
 
 /**
@@ -210,112 +193,6 @@ void ipc_dispatch(struct modem_io *resp)
         	hexdump(resp->data, resp->datasize);
 
     }
-
-#if 0
-	switch(IPC_COMMAND(info)) {
-		/* GEN */
-		case IPC_GEN_PHONE_RES:
-			ipc_gen_phone_res(info);
-			break;
-		/* PWR */
-		case IPC_PWR_PHONE_PWR_UP:
-			ipc_pwr_phone_pwr_up();
-			break;
-		case IPC_PWR_PHONE_STATE:
-			ipc_pwr_phone_state(info);
-			break;
-		/* DISP */
-		case IPC_DISP_ICON_INFO:
-			ipc_disp_icon_info(info);
-			break;
-		case IPC_DISP_RSSI_INFO:
-			ipc_disp_rssi_info(info);
-			break;
-		/* MISC */
-		case IPC_MISC_ME_SN:
-			ipc_misc_me_sn(info);
-			break;
-		case IPC_MISC_ME_VERSION:
-			ipc_misc_me_version(info);
-			break;
-		case IPC_MISC_ME_IMSI:
-			ipc_misc_me_imsi(info);
-			break;
-		case IPC_MISC_TIME_INFO:
-			ipc_misc_time_info(info);
-			break;
-		/* SAT */
-		case IPC_SAT_PROACTIVE_CMD:
-			respondSatProactiveCmd(info);
-			break;
-		case IPC_SAT_ENVELOPE_CMD:
-			respondSatEnvelopeCmd(info);
-			break;
-		/* SIM */
-		case IPC_SEC_PIN_STATUS:
-			ipc_sec_pin_status(info);
-			break;
-		case IPC_SEC_LOCK_INFO:
-			ipc_sec_lock_info(info);
-			break;
-		case IPC_SEC_RSIM_ACCESS:
-			ipc_sec_rsim_access(info);
-			break;
-		case IPC_SEC_PHONE_LOCK:
-			ipc_sec_phone_lock(info);
-			break;
-		/* NET */
-		case IPC_NET_CURRENT_PLMN:
-			ipc_net_current_plmn(info);
-			break;
-		case IPC_NET_REGIST:
-			ipc_net_regist(info);
-			break;
-		case IPC_NET_PLMN_LIST:
-			ipc_net_plmn_list(info);
-			break;
-		case IPC_NET_MODE_SEL:
-			ipc_net_mode_sel(info);
-			break;
-		/* SMS */
-		case IPC_SMS_INCOMING_MSG:
-			ipc_sms_incoming_msg(info);
-			break;
-		case IPC_SMS_DELIVER_REPORT:
-			ipc_sms_deliver_report(info);
-			break;
-		case IPC_SMS_SVC_CENTER_ADDR:
-			ipc_sms_svc_center_addr(info);
-			break;
-		case IPC_SMS_SEND_MSG:
-			ipc_sms_send_msg(info);
-			break;
-		case IPC_SMS_DEVICE_READY:
-			ipc_sms_device_ready(info);
-			break;
-		/* CALL */
-		case IPC_CALL_INCOMING:
-			ipc_call_incoming(info);
-			break;
-		case IPC_CALL_LIST:
-			ipc_call_list(info);
-			break;
-		case IPC_CALL_STATUS:
-			ipc_call_status(info);
-			break;
-		case IPC_CALL_BURST_DTMF:
-			ipc_call_burst_dtmf(info);
-			break;
-		/* GPRS */
-		case IPC_GPRS_IP_CONFIGURATION:
-			ipc_gprs_ip_configuration(info);
-			break;
-		default:
-			ALOGD("Unhandled command: %s (%04x)", ipc_command_to_str(IPC_COMMAND(info)), IPC_COMMAND(info));
-			break;
-	}
-#endif
-
 }
 
 void srs_dispatch(struct srs_message *message)

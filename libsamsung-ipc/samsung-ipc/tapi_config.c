@@ -22,7 +22,7 @@
 #include <stdlib.h>
 
 #include <radio.h>
-#include <tapi_packet.h>
+#include <tapi.h>
 #include <tapi_config.h>
 
 #define LOG_TAG "RIL-TAPI-CNF"
@@ -33,7 +33,7 @@
  *
  */
 
-void tapi_config_handler(uint16_t tapiConfigType, uint32_t tapiConfigLength, uint8_t *tapiConfigData)
+void tapi_config_parser(uint16_t tapiConfigType, uint32_t tapiConfigLength, uint8_t *tapiConfigData)
 {
 	struct tapiPacket tx_packet;
 

@@ -84,7 +84,6 @@ int ipc_modem_io(void *data, uint32_t cmd)
 int ipc_read_loop(struct ril_client *client)
 {
     struct modem_io resp;
-	struct ipc_message_info info;
 	struct ipc_client *ipc_client;
 	int ipc_client_fd;
 	fd_set fds;

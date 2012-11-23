@@ -25,31 +25,18 @@
 #include "samsung-ril.h"
 #include "util.h"
 
-/**
- * Out: RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED
- *   Modem lets us know it's powered on. Though, it's still in LPM and should
- *   be considered as OFF. Send this to update RILJ radio state (OFF)
- */
+
 void ipc_pwr_phone_pwr_up(void)
 {
-	/* H1 baseband firmware bug workaround: sleep for 25ms to allow for nvram to initialize */
-	usleep(25000);
-
 	ril_state.radio_state = RADIO_STATE_OFF;
 	ril_state.power_mode = POWER_MODE_LPM;
 	RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 }
 
-/**
- * In: IPC_PWR_PHONE_STATE
- *   Noti from the modem giving current power mode (LPM or NORMAL)
- *   LPM = Low Power Mode (airplane mode for instance)
- *
- * Out: RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED
- *   Update radio state according to modem power state
- */
+
 void ipc_pwr_phone_state(struct ipc_message_info *info)
 {
+#if 0
 	uint8_t state = *((uint8_t *) info->data);
 
 	switch(state)
@@ -75,24 +62,27 @@ void ipc_pwr_phone_state(struct ipc_message_info *info)
 			RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 		break;
 	}
-
+#endif
 	ril_tokens_check();
 }
 
 /**
  * In: RIL_REQUEST_RADIO_POWER
  *   Request ON or OFF radio power mode
- *
- * Out: IPC_PWR_PHONE_STATE
- *   Order the modem to get in required power mode
+ *   
  */
 void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 {
 	int power_state = *((int *)data);
 	unsigned short power_data;
-
-	ALOGD("requested power_state is %d", power_state);
-
+	/* TODO: fix it, implement LPM mode? */
+	ALOGD("IMPLEMENT ME! discarding... requested power_state is %d", power_state);
+	if(power_state <= 0)
+	{
+		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+	}
+	return;
+#if 0
 	if(power_state > 0) {
 		ALOGD("Request power to NORMAL");
 		power_data = IPC_PWR_PHONE_STATE_NORMAL;
@@ -113,4 +103,5 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 		ril_state_lpm();
 		RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 	}
+#endif
 }

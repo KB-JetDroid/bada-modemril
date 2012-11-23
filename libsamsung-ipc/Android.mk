@@ -18,11 +18,12 @@ LOCAL_MODULE_TAGS := optional
 samsung-ipc_files := \
 	samsung-ipc/ipc.c \
 	samsung-ipc/util.c \
-	samsung-ipc/fm_packet.c \
-	samsung-ipc/proto_packet.c \
-	samsung-ipc/sim_packet.c \
-	samsung-ipc/drv_packet.c \
-	samsung-ipc/tapi_packet.c \
+	samsung-ipc/fm.c \
+	samsung-ipc/proto.c \
+	samsung-ipc/sim.c \
+	samsung-ipc/drv.c \
+	samsung-ipc/syssec.c \
+	samsung-ipc/tapi.c \
 	samsung-ipc/tapi_call.c \
 	samsung-ipc/tapi_nettext.c \
 	samsung-ipc/tapi_network.c \
@@ -107,7 +108,8 @@ samsung-ril_files := \
 	samsung-ril/client.c \
 	samsung-ril/ipc.c \
 	samsung-ril/srs.c \
-	samsung-ril/util.c \
+	samsung-ril/misc.c \
+	samsung-ril/util.c
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils libutils libril

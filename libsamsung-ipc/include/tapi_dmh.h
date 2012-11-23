@@ -33,6 +33,9 @@
  * All the TAPI DMH context structures generic to all Mocha devices will be defined here
  */
 
-void tapi_dmh_handler(uint16_t tapiDmhType, uint32_t tapiDmhLength, uint8_t *tapiDmhData);
+struct tapiDmh {
+};
+
+void tapi_dmh_parser(uint16_t tapiDmhType, uint32_t tapiDmhLength, uint8_t *tapiDmhData);
 
 #endif

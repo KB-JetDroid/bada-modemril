@@ -191,138 +191,13 @@ int ril_modem_check(void);
 void ipc_dispatch(struct modem_io *resp);
 void srs_dispatch(struct srs_message *message);
 
-/* GEN */
-
-struct ipc_gen_phone_res_expect {
-	unsigned char aseq;
-	unsigned short command;
-	void (*func)(struct ipc_message_info *info);
-	int to_complete;
-	int to_abort;
-};
-
-void ipc_gen_phone_res_expects_init(void);
-void ipc_gen_phone_res_expect_to_func(unsigned char aseq, unsigned short command, 
-		void (*func)(struct ipc_message_info *info));
-void ipc_gen_phone_res_expect_to_complete(unsigned char aseq, unsigned short command);
-void ipc_gen_phone_res_expect_to_abort(unsigned char aseq, unsigned short command);
-void ipc_gen_phone_res(struct ipc_message_info *info);
-
-/* PWR */
-void ipc_pwr_phone_pwr_up(void);
-void ipc_pwr_phone_state(struct ipc_message_info *info);
-void ril_request_radio_power(RIL_Token t, void *data, size_t datalen);
-
-/* DISP */
-void ipc_disp_icon_info(struct ipc_message_info *info);
-void ipc_disp_rssi_info(struct ipc_message_info *info);
 
 /* MISC */
 void ril_request_get_imei(RIL_Token t);
 void ril_request_get_imeisv(RIL_Token t);
-void ipc_misc_me_sn(struct ipc_message_info *info);
 void ril_request_baseband_version(RIL_Token t);
-void ipc_misc_me_version(struct ipc_message_info *info);
 void ril_request_get_imsi(RIL_Token t);
-void ipc_misc_me_imsi(struct ipc_message_info *info);
-void ipc_misc_time_info(struct ipc_message_info *info);
 
-/* SAT */
-void respondSatProactiveCmd(struct ipc_message_info *request);
-void requestSatSendTerminalResponse(RIL_Token t, void *data, size_t datalen);
-void requestSatSendEnvelopeCommand(RIL_Token t, void *data, size_t datalen);
-void respondSatEnvelopeCmd(struct ipc_message_info *request);
-
-/* SIM */
-void ipc_sec_pin_status(struct ipc_message_info *info);
-void ril_request_sim_status(RIL_Token t);
-void ril_request_sim_io(RIL_Token t, void *data, size_t datalen);
-void ipc_sec_rsim_access(struct ipc_message_info *info);
-void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen);
-void ipc_sec_pin_status_complete(struct ipc_message_info *info);
-void ipc_sec_lock_info(struct ipc_message_info *info);
-void ril_request_query_facility_lock(RIL_Token t, void *data, size_t datalen);
-void ipc_sec_phone_lock(struct ipc_message_info *info);
-void ril_request_set_facility_lock(RIL_Token t, void *data, size_t datalen);
-
-/* NET */
-void ril_request_operator(RIL_Token t);
-void ipc_net_current_plmn(struct ipc_message_info *message);
-void ril_request_registration_state(RIL_Token t);
-void ril_request_gprs_registration_state(RIL_Token t);
-void ipc_net_regist(struct ipc_message_info *message);
-void ril_request_query_available_networks(RIL_Token t);
-void ipc_net_plmn_list(struct ipc_message_info *info);
-void ril_request_query_network_selection_mode(RIL_Token t);
-void ril_request_get_preferred_network_type(RIL_Token t);
-void ril_request_set_preffered_network_type(RIL_Token t, void *data, size_t datalen);
-void ipc_net_mode_sel(struct ipc_message_info *info);
-
-/* SMS */
-struct ril_request_sms {
-	char *pdu;
-	int pdu_len;
-	char *smsc;
-	int smsc_len;
-
-	unsigned char aseq;
-};
-
-void ril_request_sms_init(void);
-void ril_request_sms_del(int id);
-void ril_request_sms_clear(int id);
-int ril_request_sms_add(unsigned char aseq,
-			char *pdu, int pdu_len, 
-			char *smsc, int smsc_len);
-int ril_request_sms_get_id(unsigned char aseq);
-int ril_request_sms_get_next(void);
-int ril_request_sms_lock_acquire(void);
-void ril_request_sms_lock_release(void);
-
-void ril_request_send_sms(RIL_Token t, void *data, size_t datalen);
-void ril_request_send_sms_expect_more(RIL_Token t, void *data, size_t datalen);
-int ril_request_send_sms_next(void);
-void ril_request_send_sms_complete(RIL_Token t, char *pdu, char *smsc);
-void ipc_sms_send_msg_complete(struct ipc_message_info *info);
-void ipc_sms_svc_center_addr(struct ipc_message_info *info);
-void ipc_sms_send_msg(struct ipc_message_info *info);
-
-void ipc_sms_tpid_queue_init(void);
-void ipc_sms_tpid_queue_del(int id);
-int ipc_sms_tpid_queue_add(unsigned char sms_tpid);
-int ipc_sms_tpid_queue_get_next(void);
-
-void ipc_sms_incoming_msg(struct ipc_message_info *info);
-void ril_request_sms_acknowledge(RIL_Token t, void *data, size_t datalen);
-void ipc_sms_deliver_report(struct ipc_message_info *info);
-
-void ipc_sms_device_ready(struct ipc_message_info *info);
-
-/* Call */
-void ipc_call_incoming(struct ipc_message_info *info);
-void ipc_call_status(struct ipc_message_info *info);
-void ril_request_dial(RIL_Token t, void *data, size_t datalen);
-void ril_request_get_current_calls(RIL_Token t);
-void ipc_call_list(struct ipc_message_info *info);
-void ril_request_hangup(RIL_Token t);
-void ril_request_answer(RIL_Token t);
-void ril_request_dtmf(RIL_Token t, void *data, int length);
-void ipc_call_burst_dtmf(struct ipc_message_info *info);
-void ril_request_dtmf_start(RIL_Token t, void *data, int length);
-void ril_request_dtmf_stop(RIL_Token t);
-
-/* SND */
-
-void ril_request_set_mute(RIL_Token t, void *data, size_t datalen);
-void srs_snd_set_call_clock_sync(struct srs_message *message);
-void srs_snd_set_call_volume(struct srs_message *message);
-void srs_snd_set_call_audio_path(struct srs_message *message);
-
-/* GPRS */
-
-void ril_request_setup_data_call(RIL_Token t, void *data, int length);
-void ril_request_deactivate_data_call(RIL_Token t, void *data, int length);
-void ipc_gprs_ip_configuration(struct ipc_message_info *info);
 
 
 #endif

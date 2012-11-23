@@ -32,7 +32,7 @@
 #include <getopt.h>
 
 #include <radio.h>
-#include <tapi_packet.h>
+#include <tapi.h>
 #include <tapi_call.h>
 #include <tapi_nettext.h>
 #include <tapi_network.h>
@@ -41,7 +41,7 @@
 #include <tapi_dmh.h>
 #include <tapi_config.h>
 
-#define LOG_TAG "RIL-TAPI"
+#define LOG_TAG "RIL-TAPI-PACKET"
 #include <utils/Log.h>
 
 /*
@@ -178,31 +178,31 @@ void modem_response_tapi(struct modem_io *resp)
     {
 	case TAPI_TYPE_CALL:
 		DEBUG_I("Tapi Call packet received");
-		tapi_call_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_call_parser(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
 	case TAPI_TYPE_NETTEXT:
 		DEBUG_I("Tapi nettext packet received");
-		tapi_nettext_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_nettext_parser(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
 	case TAPI_TYPE_NETWORK:
 		DEBUG_I("Tapi network packet received");
-		tapi_network_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_network_parser(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
 	case TAPI_TYPE_SS:
 		DEBUG_I("Tapi SS packet received");
-		tapi_ss_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_ss_parser(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
 	case TAPI_TYPE_AT:
 		DEBUG_I("Tapi AT packet received");
-		tapi_at_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_at_parser(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
 	case TAPI_TYPE_DMH:
 		DEBUG_I("Tapi DMH packet received");
-		tapi_dmh_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_dmh_parser(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
 	case TAPI_TYPE_CONFIG:
 		DEBUG_I("Tapi Config packet received");
-		tapi_config_handler(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
+		tapi_config_parser(rx_header->tapiServiceFunction, rx_header->len, (resp->data + sizeof(struct tapiPacketHeader)));
 		break;
     default :
     		DEBUG_I("Undefined TAPI Service 0x%x received", rx_header->tapiService);

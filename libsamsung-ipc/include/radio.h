@@ -36,21 +36,6 @@
 
 #define IPC_DEVICE_MAX          IPC_DEVICE_WAVE
 
-#define IPC_COMMAND(f)  ((f->group << 8) | f->index)
-#define IPC_GROUP(m)    (m >> 8)
-#define IPC_INDEX(m)    (m & 0xff)
-
-
-struct ipc_message_info {
-    unsigned char mseq;
-    unsigned char aseq;
-    unsigned char group;
-    unsigned char index;
-    unsigned char type;
-    unsigned int length;
-    unsigned char *data;
-};
-
 struct fifoPacketHeader
 {
 	uint32_t magic;
@@ -65,6 +50,25 @@ struct modem_io {
 	uint8_t *data;
 };
 
+enum ipc_ril_cb_type {
+	NETWORK_SET_SUBSCRIPTION_MODE = 0,
+	NETWORK_RADIO_INFO,
+	NETWORK_SELECT,
+	NETWORK_STARTUP,
+	NETWORK_CELL_INFO,
+	NETWORK_OPT_ERROR,
+	IPC_HANDLER_LAST
+};
+
+extern uint8_t cached_bcd_imei[9];
+extern char cached_imei[33];
+extern char cached_sw_version[33];
+
+typedef int (*ipc_ril_cb)(void* data);
+typedef void (*ipc_client_log_handler_cb)(const char *message, void *user_data);
+
+typedef int (*ipc_io_handler_cb)(void *data, unsigned int size, void *io_data);
+typedef int (*ipc_handler_cb)(void *data);
 
 struct ipc_client;
 struct ipc_handlers;
@@ -74,10 +78,9 @@ extern struct ipc_handlers ipc_default_handlers;
 void ipc_init(void);
 void ipc_shutdown(void);
 
-typedef void (*ipc_client_log_handler_cb)(const char *message, void *user_data);
+void ipc_register_ril_cb(int type, ipc_ril_cb cb);
+int ipc_invoke_ril_cb(int type, void* data);
 
-typedef int (*ipc_io_handler_cb)(void *data, unsigned int size, void *io_data);
-typedef int (*ipc_handler_cb)(void *data);
 
 struct ipc_client* ipc_client_new();
 struct ipc_client *ipc_client_new_for_device(int device_type);

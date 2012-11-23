@@ -34,7 +34,7 @@
 #include <getopt.h>
 
 #include <radio.h>
-#include <sim_packet.h>
+#include <sim.h>
 
 #define LOG_TAG "RIL-SIM"
 #include <utils/Log.h>

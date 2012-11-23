@@ -88,15 +88,18 @@ struct tapiCellInfo {
 	uint8_t _unknown_;
 } __attribute__((__packed__));
 
+struct tapiNetwork {
+	struct tapiNetworkInfo networkInfo;
+	uint8_t networkOrder;
+};
 
-void tapi_network_handler(uint16_t tapiNetworkType, uint32_t tapiNetworkLength, uint8_t *tapiNetworkData);
-
+void tapi_network_parser(uint16_t tapiNetworkType, uint32_t tapiNetworkLength, uint8_t *tapiNetworkData);
 
 //void tapi_network_apiRequest(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_startup(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_setSubscriptionMode(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_radioInfo(uint32_t tapiNetLength, uint8_t *tapiNetData);
-void tapi_network_networkSelect(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_networkSelectInd(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_commonError(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_cellInfo(uint32_t tapiNetLength, uint8_t *tapiNetData);
 

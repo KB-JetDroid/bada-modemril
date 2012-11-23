@@ -33,6 +33,9 @@
  * All the TAPI SS context structures generic to all Mocha devices will be defined here
  */
 
-void tapi_ss_handler(uint16_t tapiSsType, uint32_t tapiSsLength, uint8_t *tapiSsData);
+struct tapiSS {
+};
+
+void tapi_ss_parser(uint16_t tapiSsType, uint32_t tapiSsLength, uint8_t *tapiSsData);
 
 #endif

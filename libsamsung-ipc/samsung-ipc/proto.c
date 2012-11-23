@@ -32,7 +32,7 @@
 #include <getopt.h>
 
 #include <radio.h>
-#include <proto_packet.h>
+#include <proto.h>
 
 #define LOG_TAG "RIL-PRO"
 #include <utils/Log.h>

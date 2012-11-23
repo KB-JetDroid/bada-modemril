@@ -32,7 +32,7 @@
 #include <getopt.h>
 
 #include <radio.h>
-#include <drv_packet.h>
+#include <drv.h>
 
 #define LOG_TAG "RIL-IP"
 #include <utils/Log.h>
@@ -74,7 +74,6 @@ int32_t get_nvm_data(void *data, uint32_t size)
 
 void handleReadNvRequest(struct drvNvPacket* rxNvPacket)
 {
-    uint8_t *payload;
 	struct modem_io request;
 	struct drvRequest tx_packet;
 
@@ -84,23 +83,21 @@ void handleReadNvRequest(struct drvNvPacket* rxNvPacket)
 	tx_packet.header.reserved = 0;
 	tx_packet.respBuf = NULL;
 
-	payload = malloc((rxNvPacket->size) + sizeof(struct drvPacketHeader));
+	request.data = malloc((rxNvPacket->size) + sizeof(struct drvPacketHeader));
 
-	memcpy(payload, &tx_packet, sizeof(struct drvPacketHeader));
+	memcpy(request.data, &tx_packet, sizeof(struct drvPacketHeader));
 
-	get_nvm_data(payload + sizeof(struct drvPacketHeader), rxNvPacket->size);
+	get_nvm_data(request.data + sizeof(struct drvPacketHeader), rxNvPacket->size);
 
 	request.magic = 0xCAFECAFE;
 	request.cmd = FIFO_PKT_DRV;
 	request.datasize = rxNvPacket->size +  sizeof(struct drvPacketHeader);
 
-	request.data = payload;
-
 	ipc_send(&request);
 	free(request.data);
 }
 
-#if defined (DEVICE_JET)
+#if defined(DEVICE_JET)
 void handleJetPmicRequest(struct modem_io *resp)
 {
     uint8_t *payload;

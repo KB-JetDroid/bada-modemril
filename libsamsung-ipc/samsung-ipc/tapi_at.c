@@ -22,7 +22,7 @@
 #include <stdlib.h>
 
 #include <radio.h>
-#include <tapi_packet.h>
+#include <tapi.h>
 #include <tapi_at.h>
 
 #define LOG_TAG "RIL-TAPI-AT"
@@ -33,7 +33,7 @@
  *
  */
 
-void tapi_at_handler(uint16_t tapiAtType, uint32_t tapiAtLength, uint8_t *tapiAtData)
+void tapi_at_parser(uint16_t tapiAtType, uint32_t tapiAtLength, uint8_t *tapiAtData)
 {
 	struct tapiPacket tx_packet;
 

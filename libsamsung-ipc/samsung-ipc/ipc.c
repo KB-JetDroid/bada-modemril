@@ -3,8 +3,9 @@
  *
  * Copyright (C) 2010-2011 Joerie de Gram <j.de.gram@gmail.com>
  *               2011 Simon Busch <morphis@gravedo.de>
+ *				 2011-2012 KB <kbjetdroid@gmail.com>
+ *				 2011-2012 Dominik Marszk <dmarszk@gmail.com>
  *
- * Modified for Jet - KB <kbjetdroid@gmail.com>
  *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,26 +42,57 @@
 
 #include "ipc_private.h"
 
+#define LOG_TAG "RIL-IPC-LIB"
+#include <utils/Log.h>
+
 struct ipc_device_desc devices[IPC_DEVICE_MAX+1];
 
-extern void crespo_ipc_register(void);
-extern void aries_ipc_register();
+ipc_ril_cb ipc_ril_cb_map[IPC_HANDLER_LAST];
+
+uint8_t cached_bcd_imei[9];
+char cached_imei[33];
+char cached_sw_version[33];
+
 extern void jet_ipc_register();
 extern void wave_ipc_register();
 
 void ipc_init(void)
 {
-//    crespo_ipc_register();
-//    aries_ipc_register();
+	int i;
 #if defined(DEVICE_JET)
     jet_ipc_register();
 #elif defined(DEVICE_WAVE)
     wave_ipc_register();
 #endif
+
+	for(i = 0; i < IPC_HANDLER_LAST; i++)
+	{
+		ipc_ril_cb_map[i] = NULL;
+	}
 }
 
 void ipc_shutdown(void)
 {
+}
+
+void ipc_register_ril_cb(int type, ipc_ril_cb cb)
+{
+	if(ipc_ril_cb_map[type])
+	{
+		DEBUG_W("Registering more than one callback for type %d! Overriding it.", (int)type);
+	}
+	ipc_ril_cb_map[type] = cb;
+}
+
+int ipc_invoke_ril_cb(int type, void* data)
+{
+	if(ipc_ril_cb_map[type])
+	{
+		ipc_ril_cb_map[type](data);
+	}
+	else
+		DEBUG_W("Missing IPC RIL CB of type %d", (int) type);
+	return 0;
 }
 
 void log_handler_default(const char *message, void *user_data)

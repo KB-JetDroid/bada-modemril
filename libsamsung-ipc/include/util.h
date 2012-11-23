@@ -26,5 +26,6 @@
 #define _UTIL_H_
 
 void hexdump(const uint8_t *buf, int32_t len);
+void imei_bcd2ascii(char* out, const uint8_t* in);
 
 #endif

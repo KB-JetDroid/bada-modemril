@@ -46,7 +46,7 @@
 #include <pthread.h>
 #include <getopt.h>
 
-#include <fm_packet.h>
+#include <fm.h>
 #include <radio.h>
 #include <dirent.h>
 #include <errno.h>
@@ -56,13 +56,12 @@
 
 #define MAX_OPEN_DIRS 	10
 
-uint32_t dirArray[MAX_OPEN_DIRS];
+DIR* dirArray[MAX_OPEN_DIRS];
 uint32_t dirIndex = 1;
 
 #if defined(DEVICE_JET)
 char *mochaRoot = "/KFAT0";
-#endif
-#if defined(DEVICE_WAVE)
+#elif defined(DEVICE_WAVE)
 char *mochaRoot = "/bada_usr/modem/";
 #endif
 
@@ -657,11 +656,11 @@ int32_t modem_response_fm(struct modem_io *resp)
 	struct fmResponse tx_packet;
 	struct fmArgs args;
 	struct modem_io request;
-    uint8_t *frame;
-    uint8_t *payload;
-    int32_t frame_length;
+	uint8_t *frame;
+	uint8_t *payload;
+	int32_t frame_length;
 
-    get_request_packet(resp->data, &rx_packet);
+	get_request_packet(resp->data, &rx_packet);
 
 	tx_packet.header = rx_packet.header;
 	retval = fileOps[(tx_packet.header->fmPacketType + 0xEFFFFFFF)](&rx_packet, &tx_packet);
