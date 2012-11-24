@@ -80,6 +80,7 @@ void ipc_init(void);
 void ipc_shutdown(void);
 
 void ipc_register_ril_cb(int type, ipc_ril_cb cb);
+void ipc_invoke_ril_cb(int type, void* data);
 
 struct ipc_client* ipc_client_new();
 struct ipc_client *ipc_client_new_for_device(int device_type);
@@ -122,6 +123,11 @@ void *ipc_file_read(struct ipc_client *client, char *file_name, int size, int bl
 
 struct ipc_client *client;
 
+static inline void hex_dump(void *data, int size)
+{
+	ipc_hex_dump(client, data, size);
+}
+
 static inline void ipc_send(struct modem_io *ipc_frame)
 {
 	ipc_client_send(client, ipc_frame);
@@ -133,6 +139,7 @@ static inline int ipc_modem_io(void *data, uint32_t cmd)
 }
 
 #else
+	extern void hex_dump(void *data, int size);
 	extern void ipc_send(struct modem_io *ipc_frame);
 	extern int ipc_modem_io(void *data, uint32_t cmd);
 

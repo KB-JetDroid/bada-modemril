@@ -49,6 +49,11 @@
  *
  */
 
+ /*
+	Most/all packets seems to be replied with tapi packet:
+	service=0, serviceFunc=0, buflen=8, 
+	buf={u16(0), u16(<uninitialized>), u32<bool return value of called tapi function>}
+ */
 /*
  * Dummy code to send TAPI packets as per wave's log
  */
@@ -169,11 +174,6 @@ void ipc_parse_tapi(struct ipc_client* client, struct modem_io *ipc_frame)
 
     rx_header = (struct tapiPacketHeader *)(ipc_frame->data);
 
-	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
-
-	DEBUG_I("Tapi packet type = 0x%x\n  Tapi packet sub-type = 0x%x\n  Tapi packet length = 0x%x", rx_header->tapiService, rx_header->tapiServiceFunction, rx_header->len);
-	ipc_hex_dump(client, ipc_frame->data, rx_header->len);
-
     switch (rx_header->tapiService)
     {
 	case TAPI_TYPE_CALL:
@@ -205,8 +205,8 @@ void ipc_parse_tapi(struct ipc_client* client, struct modem_io *ipc_frame)
 		tapi_config_parser(rx_header->tapiServiceFunction, rx_header->len, (ipc_frame->data + sizeof(struct tapiPacketHeader)));
 		break;
     default :
-    		DEBUG_I("Undefined TAPI Service 0x%x received", rx_header->tapiService);
-    		break;
+		DEBUG_I("Undefined TAPI Service 0x%x received", rx_header->tapiService);
+		break;
     }
 
 	DEBUG_I("Leaving ipc_parse_tapi");

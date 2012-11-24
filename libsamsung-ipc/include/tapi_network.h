@@ -95,13 +95,13 @@ struct tapiNetwork {
 
 void tapi_network_parser(uint16_t tapiNetworkType, uint32_t tapiNetworkLength, uint8_t *tapiNetworkData);
 
-//void tapi_network_apiRequest(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_api_request(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_startup(uint32_t tapiNetLength, uint8_t *tapiNetData);
-void tapi_network_setSubscriptionMode(uint32_t tapiNetLength, uint8_t *tapiNetData);
-void tapi_network_radioInfo(uint32_t tapiNetLength, uint8_t *tapiNetData);
-void tapi_network_networkSelectInd(uint32_t tapiNetLength, uint8_t *tapiNetData);
-void tapi_network_commonError(uint32_t tapiNetLength, uint8_t *tapiNetData);
-void tapi_network_cellInfo(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_set_subscription_mode(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_radio_info(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_network_select_ind(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_common_error(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_cell_info(uint32_t tapiNetLength, uint8_t *tapiNetData);
 
 void tapi_network_init(void);
 
