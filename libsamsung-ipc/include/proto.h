@@ -21,6 +21,8 @@
 #ifndef __PROTO_H__
 #define __PROTO_H__
 
+#include <radio.h>
+
 #define PROTO_PACKET_ID_STARTUP 			1
 #define PROTO_PACKET_ID_CLEANUP 			2
 #define PROTO_PACKET_ID_STARTNETWORK 		3
@@ -44,7 +46,7 @@ struct protoPacket {
 	uint32_t bufLen; //this can't be in header because framebuffer shouldn't contain it
 } __attribute__((__packed__));
 
-void modem_response_proto(struct modem_io *resp);
+void ipc_parse_proto(struct ipc_client* client, struct modem_io *ipc_frame);
 
 int proto_send_packet(struct protoPacket* protoReq);
 int proto_startup(void);

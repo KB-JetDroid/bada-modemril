@@ -33,17 +33,6 @@ void ril_request_get_imei(RIL_Token t)
 		ril_state.tokens.get_imei = t;
 }
 
-void ril_request_get_imeisv(RIL_Token t)
-{
-	//TODO: return it immediately?
-	ril_state.tokens.get_imeisv = t;
-	/*
-	if(ril_state.tokens.get_imeisv != 0) {
-		RIL_onRequestComplete(ril_state.tokens.get_imeisv, RIL_E_SUCCESS, imeisv, sizeof(char *));
-		ril_state.tokens.get_imeisv = 0;
-	}
-	*/
-}
 
 void ril_request_baseband_version(RIL_Token t)
 {

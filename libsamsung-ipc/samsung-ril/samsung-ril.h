@@ -188,7 +188,6 @@ int ril_modem_check(void);
  * Clients dispatch functions
  */
 
-void ipc_dispatch(struct modem_io *resp);
 void srs_dispatch(struct srs_message *message);
 
 

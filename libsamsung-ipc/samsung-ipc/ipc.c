@@ -47,7 +47,7 @@
 
 struct ipc_device_desc devices[IPC_DEVICE_MAX+1];
 
-ipc_ril_cb ipc_ril_cb_map[IPC_HANDLER_LAST];
+ipc_ril_cb ipc_ril_cb_map[IPC_RIL_CB_LAST];
 
 uint8_t cached_bcd_imei[9];
 char cached_imei[33];
@@ -65,7 +65,7 @@ void ipc_init(void)
     wave_ipc_register();
 #endif
 
-	for(i = 0; i < IPC_HANDLER_LAST; i++)
+	for(i = 0; i < IPC_RIL_CB_LAST; i++)
 	{
 		ipc_ril_cb_map[i] = NULL;
 	}
@@ -385,22 +385,22 @@ int32_t ipc_client_power_off(struct ipc_client *client)
     return client->handlers->power_off(client->handlers->power_off_data);
 }
 
-int32_t ipc_client_send(struct ipc_client *client, struct modem_io *request)
+int32_t ipc_client_send(struct ipc_client *client, struct modem_io *ipc_frame)
 {
     if (client == NULL ||
         client->ops == NULL ||
         client->ops->send == NULL)
         return -1;
 
-    return client->ops->send(client, request);
+    return client->ops->send(client, ipc_frame);
 }
 
-int32_t ipc_client_recv(struct ipc_client *client, struct modem_io *response)
+int32_t ipc_client_recv(struct ipc_client *client, struct modem_io *ipc_frame)
 {
     if (client == NULL ||
         client->ops == NULL ||
         client->ops->recv == NULL)
         return -1;
 
-    return client->ops->recv(client, response);
+    return client->ops->recv(client, ipc_frame);
 }

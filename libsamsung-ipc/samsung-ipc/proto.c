@@ -42,9 +42,9 @@
  *
  */
 
-void modem_response_proto(struct modem_io *resp)
+void ipc_parse_proto(struct ipc_client* client, struct modem_io *ipc_frame)
 {
-	DEBUG_I("Inside modem_response_proto - TBD");
+	DEBUG_I("Inside ipc_parse_proto - TBD");
 	int32_t retval, count;
 	struct protoPacketHeader *rx_header;
 
@@ -55,11 +55,11 @@ void modem_response_proto(struct modem_io *resp)
 
     struct fifoPacketHeader *fifoHeader;
 
-	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", resp->magic, resp->cmd, resp->datasize);
+	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
 
-	hexdump(resp->data, resp->datasize);
+	ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
 
-    rx_header = (struct protoPacketHeader *)(resp->data);
+    rx_header = (struct protoPacketHeader *)(ipc_frame->data);
 
     switch (rx_header->type)
     {
@@ -101,7 +101,7 @@ void modem_response_proto(struct modem_io *resp)
     	break;
     }
 
-    DEBUG_I("Inside modem_response_proto leaving");
+    DEBUG_I("Inside ipc_parse_proto leaving");
 
 }
 

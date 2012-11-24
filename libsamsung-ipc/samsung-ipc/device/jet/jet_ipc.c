@@ -140,7 +140,7 @@ int32_t jet_ipc_power_off(void *data)
     return 0;
 }
 
-int32_t send_packet(struct ipc_client *client, struct modem_io *request)
+int32_t send_packet(struct ipc_client *client, struct modem_io *ipc_frame)
 {
 	int32_t retval;
     struct fifoPacketHeader *ipc;
@@ -149,20 +149,20 @@ int32_t send_packet(struct ipc_client *client, struct modem_io *request)
     int32_t frame_length;
 
     /* Frame length: FIFO header + payload length */
-    frame_length = (sizeof(*ipc) + request->datasize);
+    frame_length = (sizeof(*ipc) + ipc_frame->datasize);
 
     frame = (uint8_t*)malloc(frame_length);
 
     /* FIFO header */
     ipc = (struct fifoPacketHeader*)(frame);
 
-    ipc->magic = request->magic;
-    ipc->cmd = request->cmd;
-    ipc->datasize = request->datasize;
+    ipc->magic = ipc_frame->magic;
+    ipc->cmd = ipc_frame->cmd;
+    ipc->datasize = ipc_frame->datasize;
 
     /* FIFO payload */
     payload = (frame + sizeof(*ipc));
-    memcpy(payload, request->data, request->datasize);
+    memcpy(payload, ipc_frame->data, ipc_frame->datasize);
 
 	retval = client->handlers->write(frame, frame_length, client->handlers->write_data);
 
@@ -171,62 +171,62 @@ int32_t send_packet(struct ipc_client *client, struct modem_io *request)
     return 0;
 }
 
-int32_t jet_ipc_send(struct ipc_client *client, struct modem_io *request)
+int32_t jet_ipc_send(struct ipc_client *client, struct modem_io *ipc_frame)
 {
 	int32_t left_data;
-	struct modem_io multi_request;
+	struct modem_io multi_packet;
 	struct multiPacketHeader *multiHeader;
 
-	if (request->datasize > MAX_SINGLE_FRAME_DATA)
+	if (ipc_frame->datasize > MAX_SINGLE_FRAME_DATA)
 	{
 		DEBUG_I("packet to send is larger than 0x1000\n");
 
-		multi_request.magic = 0xCAFECAFE;
-		multi_request.cmd = FIFO_PKT_FIFO_INTERNAL;
-		multi_request.datasize = 0x0C;
+		multi_packet.magic = 0xCAFECAFE;
+		multi_packet.cmd = FIFO_PKT_FIFO_INTERNAL;
+		multi_packet.datasize = 0x0C;
 
 		multiHeader = (struct multiPacketHeader *)malloc(sizeof(struct multiPacketHeader));
 
 		multiHeader->command = 0x02;
-		multiHeader->packtLen = request->datasize;
-		multiHeader->packetType = request->cmd;
+		multiHeader->packtLen = ipc_frame->datasize;
+		multiHeader->packetType = ipc_frame->cmd;
 
-		multi_request.data = (uint8_t *)multiHeader;
+		multi_packet.data = (uint8_t *)multiHeader;
 		free(multiHeader);
 
-		send_packet(client, &multi_request);
+		send_packet(client, &multi_packet);
 
-		left_data = request->datasize;
+		left_data = ipc_frame->datasize;
 
-		multi_request.data = request->data;
+		multi_packet.data = ipc_frame->data;
 
 		while (left_data > 0)
 		{
 			if (left_data > MAX_SINGLE_FRAME_DATA)
 			{
-				multi_request.datasize = MAX_SINGLE_FRAME_DATA;
+				multi_packet.datasize = MAX_SINGLE_FRAME_DATA;
 			}
 			else
 			{
-				multi_request.datasize = left_data;
+				multi_packet.datasize = left_data;
 			}
 
-			send_packet(client, &multi_request);
+			send_packet(client, &multi_packet);
 
-			multi_request.data += MAX_SINGLE_FRAME_DATA;
+			multi_packet.data += MAX_SINGLE_FRAME_DATA;
 
 			left_data -= MAX_SINGLE_FRAME_DATA;
 		}
 	}
 	else
 	{
-		send_packet(client, request);
+		send_packet(client, ipc_frame);
 	}
 
 	return 0;
 }
 
-int32_t jet_ipc_recv(struct ipc_client *client, struct modem_io *response)
+int32_t jet_ipc_recv(struct ipc_client *client, struct modem_io *ipc_frame)
 {
     uint8_t buf[SIZ_PACKET_HEADER];
     uint8_t *data;
@@ -249,12 +249,12 @@ int32_t jet_ipc_recv(struct ipc_client *client, struct modem_io *response)
         num_read = client->handlers->read((void*)data, left, client->handlers->read_data);
 
         if(num_read == left) {
-            response->magic = ipc->magic;
-            response->cmd = ipc->cmd;
-            response->datasize = ipc->datasize;
+            ipc_frame->magic = ipc->magic;
+            ipc_frame->cmd = ipc->cmd;
+            ipc_frame->datasize = ipc->datasize;
 
-            response->data = (uint8_t*)malloc(left);
-            memcpy(response->data, data , response->datasize);
+            ipc_frame->data = (uint8_t*)malloc(left);
+            memcpy(ipc_frame->data, data , ipc_frame->datasize);
 
             return 0;
         }

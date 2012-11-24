@@ -21,6 +21,8 @@
 #ifndef __TAPI_PACKET_H__
 #define __TAPI_PACKET_H__
 
+#include <radio.h>
+
 #define TAPI_TYPE_CALL 		0 //53 subtypes
 #define TAPI_TYPE_NETTEXT 	1 //around 10 subtypes
 #define TAPI_TYPE_NETWORK 	2 //23 subtypes
@@ -40,9 +42,9 @@ struct tapiPacket {
 	uint8_t *buf;
 } __attribute__((__packed__));
 
-void modem_response_tapi(struct modem_io *resp);
+void ipc_parse_tapi(struct ipc_client* client, struct modem_io *ipc_frame);
 
-void modem_response_tapi_init(struct modem_io *resp);
+void modem_execute_tapi_init(void);
 
 int tapi_send_packet(struct tapiPacket* tapiReq);
 

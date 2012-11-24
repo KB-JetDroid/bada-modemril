@@ -27,6 +27,8 @@
 #include "types.h"
 #include "util.h"
 
+#include <radio.h>
+
 enum sysSecPacketTypes {
 	SYS_SEC_SETIMEI = 2,
 };
@@ -43,6 +45,6 @@ struct sysSecPacket {
 	uint8_t *buf;
 } __attribute__((__packed__));
 
-void modem_response_syssec(struct modem_io *resp);
+void ipc_parse_syssec(struct ipc_client* client, struct modem_io *ipc_frame);
 int syssec_send_imei(void);
 #endif

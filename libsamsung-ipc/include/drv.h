@@ -29,6 +29,8 @@
 #include "device/wave/drv.h"
 #endif
 
+#include <radio.h>
+
 struct drvPacketHeader {
 	uint8_t reserved; //probably dummy
 	uint8_t drvPacketType;
@@ -51,6 +53,6 @@ struct drvRequest {
 	uint8_t *respBuf;
 } __attribute__((__packed__));
 
-void modem_response_drv(struct modem_io *resp);
+void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame);
 
 #endif

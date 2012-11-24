@@ -2,6 +2,7 @@
  * This file is part of libsamsung-ipc.
  *
  * Copyright (C) 2011 KB <kbjetdroid@gmail.com>
+ * Copyright (C) 2012 Dominik Marszk <dmarszk@gmail.com>
  *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,14 +99,14 @@ void handleReadNvRequest(struct drvNvPacket* rxNvPacket)
 }
 
 #if defined(DEVICE_JET)
-void handleJetPmicRequest(struct modem_io *resp)
+void handleJetPmicRequest(struct modem_io *ipc_frame)
 {
     uint8_t *payload;
 	int32_t retval;
 	uint8_t params[3];
 	struct drvPMICPacket *pmic_packet;
 
-	pmic_packet = (struct drvPMICPacket *)(resp->data);
+	pmic_packet = (struct drvPMICPacket *)(ipc_frame->data);
 
 	DEBUG_I("PMIC value = 0x%x", pmic_packet->value);
 
@@ -120,7 +121,7 @@ void handleJetPmicRequest(struct modem_io *resp)
 
 	DEBUG_I("ioctl return value = 0x%x", retval);
 
-	ipc_send(resp);
+	ipc_send(ipc_frame);
 }
 #endif
 
@@ -192,17 +193,17 @@ void handleSystemInfoRequest()
 	DEBUG_I("Sent all the sound packages");
 }
 
-void modem_response_drv(struct modem_io *resp)
+void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame)
 {
 	DEBUG_I("enter");
 	int32_t retval;
 	struct drvPacketHeader *rx_header;
 
-	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", resp->magic, resp->cmd, resp->datasize);
+	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
 
-	hexdump(resp->data, resp->datasize);
+	ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
 
-    rx_header = (struct drvPacketHeader *)(resp->data);
+    rx_header = (struct drvPacketHeader *)(ipc_frame->data);
 
 	DEBUG_I("Packet type = 0x%x", rx_header->drvPacketType);
 
@@ -210,12 +211,12 @@ void modem_response_drv(struct modem_io *resp)
     {
 	case READ_NV_BACKUP:
 		DEBUG_I("ReadNvBackup IpcDrv packet received");
-		handleReadNvRequest((struct drvNvPacket *)(resp->data));
+		handleReadNvRequest((struct drvNvPacket *)(ipc_frame->data));
 		break;
 #if defined (DEVICE_JET)
 	case PMIC_PACKET:
 		DEBUG_I("PMIC IpcDrv packet received");
-		handleJetPmicRequest(resp);
+		handleJetPmicRequest(ipc_frame);
 		break;
 #endif
 	case SYSTEM_INFO_REQ:

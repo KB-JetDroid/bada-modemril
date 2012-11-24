@@ -30,11 +30,27 @@
 
 const uint8_t fake_imei[] = {0x08, 0x1A, 0x32, 0x54, 0x76, 0x98, 0x12, 0x34, 0x56};
 
+void ipc_parse_syssec(struct ipc_client* client, struct modem_io *ipc_frame)
+{
+	DEBUG_I("Entering");
+
+	struct sysSecPacketHeader *rx_header;
+
+    rx_header = (struct sysSecPacketHeader*)(ipc_frame->data);
+
+	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
+
+	DEBUG_I("Syssec packet type = 0x%x\n  Syssec packet unk1 = 0x%X\n  packet length = 0x%X, unk2= 0x%X", rx_header->type, rx_header->unknown1, rx_header->bufLen, rx_header->unknown2);
+	ipc_hex_dump(client, ipc_frame->data, rx_header->bufLen);
+	DEBUG_I("Exiting");
+	
+}
+
 void load_sec_data()
 {
-	ALOGD("Loading dat stuff.");
+	DEBUG_I("Loading dat stuff.");
 	memcpy(cached_bcd_imei, fake_imei, 9);
-	ALOGD("Converting IMEI out of dat stuff to ASCII.");
+	DEBUG_I("Converting IMEI out of dat stuff to ASCII.");
 	imei_bcd2ascii(cached_imei, cached_bcd_imei);
 }
 
@@ -58,7 +74,7 @@ int syssec_send_imei(void)
 	
 	request.magic = 0xCAFECAFE;
 	request.cmd = FIFO_PKT_SECUREBOOT;
-	request.datasize = pkt_hdr->bufLen+sizeof(struct sysSecPacketHeader); // 17+16=33
+	request.datasize = pkt_hdr->bufLen + sizeof(struct sysSecPacketHeader); // 17+16=33
 	request.data = buffer;
 	
 	ipc_send(&request);

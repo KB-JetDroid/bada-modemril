@@ -647,9 +647,9 @@ int32_t get_request_packet(void *data, struct fmRequest *rx_packet)
 
 }
 
-int32_t modem_response_fm(struct modem_io *resp)
+int32_t ipc_parse_fm(struct ipc_client* client, struct modem_io *ipc_frame)
 {
-	//DEBUG_I("Entering modem_response_fm");
+	//DEBUG_I("Entering ipc_parse_fm");
 
 	int32_t retval;
 	struct fmRequest rx_packet;
@@ -660,15 +660,15 @@ int32_t modem_response_fm(struct modem_io *resp)
 	uint8_t *payload;
 	int32_t frame_length;
 
-	get_request_packet(resp->data, &rx_packet);
+	get_request_packet(ipc_frame->data, &rx_packet);
 
 	tx_packet.header = rx_packet.header;
 	retval = fileOps[(tx_packet.header->fmPacketType + 0xEFFFFFFF)](&rx_packet, &tx_packet);
 
     frame_length = (sizeof(struct fmPacketHeader) + tx_packet.header->packetLen);
 
-	request.magic = resp->magic;
-	request.cmd = resp->cmd;
+	request.magic = ipc_frame->magic;
+	request.cmd = ipc_frame->cmd;
 	request.datasize = frame_length;
 
 

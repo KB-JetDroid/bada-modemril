@@ -150,50 +150,6 @@ void ril_tokens_check(void)
 	}
 }
 
-/**
- * Clients dispatch functions
- */
-
-void ipc_dispatch(struct modem_io *resp)
-{
-	int32_t ret;
-
-	switch(resp->cmd)
-    {
-        case FIFO_PKT_FILE:
-        	modem_response_fm(resp);
-        	/*if (ret)
-        	{
-        		modem_response_tapi_init(resp);
-        		sim_atk_open(0);
-        		sim_open_to_modem(0);
-        	}*/
-        break;
-        case FIFO_PKT_DVB_H_DebugLevel:
-            //modem_response_dbg_level(client, resp);
-        break;
-        case FIFO_PKT_BOOT:
-            //modem_response_boot(client, resp);
-        break;
-        case FIFO_PKT_DRV:
-        	modem_response_drv(resp);
-        break;
-        case FIFO_PKT_DEBUG:
-        	DEBUG_I("Debug string - %s", (char *)(resp->data));
-        break;
-        case FIFO_PKT_TAPI:
-        	modem_response_tapi(resp);
-        break;
-        case FIFO_PKT_SIM:
-        	modem_response_sim(resp);
-        break;
-        default :
-        	DEBUG_I("Packet type 0x%x not yet handled", resp->cmd);
-        	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", resp->magic, resp->cmd, resp->datasize);
-        	hexdump(resp->data, resp->datasize);
-
-    }
-}
 
 void srs_dispatch(struct srs_message *message)
 {
@@ -236,24 +192,21 @@ void onRequest(int request, void *data, size_t datalen, RIL_Token t)
 	if(ril_modem_check() < 0)
 		RIL_onRequestComplete(t, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
 
-#if 0
 	switch(request) {
+		/* MISC */
+		case RIL_REQUEST_GET_IMEI:
+			ril_request_get_imei(t);
+			break;
+		case RIL_REQUEST_GET_IMSI:
+			ril_request_get_imsi(t);
+			break;
+#if 0
 		/* PWR */
 		case RIL_REQUEST_RADIO_POWER:
 			ril_request_radio_power(t, data, datalen);
 			break;
 		case RIL_REQUEST_BASEBAND_VERSION:
 			ril_request_baseband_version(t);
-			break;
-		/* MISC */
-		case RIL_REQUEST_GET_IMEI:
-			ril_request_get_imei(t);
-			break;
-		case RIL_REQUEST_GET_IMEISV:
-			ril_request_get_imeisv(t);
-			break;
-		case RIL_REQUEST_GET_IMSI:
-			ril_request_get_imsi(t);
 			break;
 		/* SAT */
 		case RIL_REQUEST_STK_SEND_TERMINAL_RESPONSE:
@@ -352,13 +305,12 @@ void onRequest(int request, void *data, size_t datalen, RIL_Token t)
 			/* This doesn't affect anything */
 			RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
 			break;
+#endif
 		default:
 			ALOGE("Request not implemented: %d", request);
 			RIL_onRequestComplete(t, RIL_E_REQUEST_NOT_SUPPORTED, NULL, 0);
 			break;
 	}
-#endif
-
 }
 
 /**

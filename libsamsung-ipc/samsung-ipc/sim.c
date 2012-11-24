@@ -44,7 +44,7 @@
  *
  */
 
-void modem_response_sim(struct modem_io *resp)
+void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 {
 	DEBUG_I("Entering");
 	int32_t retval, count;
@@ -59,12 +59,12 @@ void modem_response_sim(struct modem_io *resp)
 
     struct fifoPacketHeader *fifoHeader;
 
-	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", resp->magic, resp->cmd, resp->datasize);
+	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
 
-	hexdump(resp->data, resp->datasize);
+	ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
 
-    simHeader = (struct simPacketHeader *)(resp->data);
-    sim_packet.simBuf = (uint8_t *)(resp->data + sizeof(struct simPacketHeader));
+    simHeader = (struct simPacketHeader *)(ipc_frame->data);
+    sim_packet.simBuf = (uint8_t *)(ipc_frame->data + sizeof(struct simPacketHeader));
 
 	DEBUG_I("Sim Packet type = 0x%x\n Sim Packet sub-type = 0x%x\n Sim Packet length = 0x%x", simHeader->type, simHeader->subType, simHeader->bufLen);
 
@@ -83,7 +83,7 @@ void modem_response_sim(struct modem_io *resp)
 
 			DEBUG_I("Sim oem type = 0x%x\n Sim Packet sub-type = 0x%x\n Oem length = 0x%x", oem_header->oemType, oem_header->packetSubType, oem_header->oemBufLen);
 
-			hexdump(oem_packet.oemBuf, oem_header->oemBufLen);
+			ipc_hex_dump(oem_packet.oemBuf, oem_header->oemBufLen);
 */
 			break;
 		default :

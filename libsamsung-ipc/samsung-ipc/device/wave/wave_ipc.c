@@ -156,7 +156,7 @@ int32_t wave_ipc_power_off(void *data)
     return 0;
 }
 
-int32_t send_packet(struct ipc_client *client, struct modem_io *request)
+int32_t send_packet(struct ipc_client *client, struct modem_io *ipc_frame)
 {
 	int32_t retval;
     struct fifoPacketHeader *ipc;
@@ -164,69 +164,69 @@ int32_t send_packet(struct ipc_client *client, struct modem_io *request)
     uint8_t *payload;
     int32_t frame_length;
 
-	return client->handlers->write((void*) request, 0, client->handlers->write_data);
+	return client->handlers->write((void*) ipc_frame, 0, client->handlers->write_data);
 
 }
 
-int32_t wave_ipc_send(struct ipc_client *client, struct modem_io *request)
+int32_t wave_ipc_send(struct ipc_client *client, struct modem_io *ipc_frame)
 {
 	int32_t left_data;
-	struct modem_io multi_request;
+	struct modem_io multi_packet;
 	struct multiPacketHeader *multiHeader;
 
-	if (request->datasize > MAX_SINGLE_FRAME_DATA)
+	if (ipc_frame->datasize > MAX_SINGLE_FRAME_DATA)
 	{
 		DEBUG_I("packet to send is larger than 0x1000\n");
 
-		multi_request.magic = 0xCAFECAFE;
-		multi_request.cmd = FIFO_PKT_FIFO_INTERNAL;
-		multi_request.datasize = 0x0C;
+		multi_packet.magic = 0xCAFECAFE;
+		multi_packet.cmd = FIFO_PKT_FIFO_INTERNAL;
+		multi_packet.datasize = 0x0C;
 
 		multiHeader = (struct multiPacketHeader *)malloc(sizeof(struct multiPacketHeader));
 
 		multiHeader->command = 0x02;
-		multiHeader->packtLen = request->datasize;
-		multiHeader->packetType = request->cmd;
+		multiHeader->packtLen = ipc_frame->datasize;
+		multiHeader->packetType = ipc_frame->cmd;
 
-		multi_request.data = (uint8_t *)multiHeader;
+		multi_packet.data = (uint8_t *)multiHeader;
 		free(multiHeader);
 
-		send_packet(client, &multi_request);
+		send_packet(client, &multi_packet);
 
-		left_data = request->datasize;
+		left_data = ipc_frame->datasize;
 
-		multi_request.data = request->data;
+		multi_packet.data = ipc_frame->data;
 
 		while (left_data > 0)
 		{
 			if (left_data > MAX_SINGLE_FRAME_DATA)
 			{
-				multi_request.datasize = MAX_SINGLE_FRAME_DATA;
+				multi_packet.datasize = MAX_SINGLE_FRAME_DATA;
 			}
 			else
 			{
-				multi_request.datasize = left_data;
+				multi_packet.datasize = left_data;
 			}
 
-			send_packet(client, &multi_request);
+			send_packet(client, &multi_packet);
 
-			multi_request.data += MAX_SINGLE_FRAME_DATA;
+			multi_packet.data += MAX_SINGLE_FRAME_DATA;
 
 			left_data -= MAX_SINGLE_FRAME_DATA;
 		}
 	}
 	else
 	{
-		send_packet(client, request);
+		send_packet(client, ipc_frame);
 	}
 
 	return 0;
 }
 
-int32_t wave_ipc_recv(struct ipc_client *client, struct modem_io *response)
+int32_t wave_ipc_recv(struct ipc_client *client, struct modem_io *ipc_frame)
 {
-	response->data = (uint8_t*)malloc(SIZ_PACKET_BUFSIZE);
-    return client->handlers->read((void*)response, 0, client->handlers->read_data);
+	ipc_frame->data = (uint8_t*)malloc(SIZ_PACKET_BUFSIZE);
+    return client->handlers->read((void*)ipc_frame, 0, client->handlers->read_data);
 
 }
 

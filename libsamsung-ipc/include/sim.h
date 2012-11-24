@@ -23,6 +23,8 @@
 #ifndef __SIM_H__
 #define __SIM_H__
 
+#include <radio.h>
+
 #if defined(DEVICE_JET)
 #define SESSION_SUBTYPE_DIFF 0x18
 #elif defined(DEVICE_WAVE)
@@ -56,7 +58,7 @@ struct oemSimPacket{
 	uint8_t *oemBuf;
 } __attribute__((__packed__));
 
-void modem_response_sim(struct modem_io *resp);
+void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame);
 void sim_parse_session_event(uint8_t* buf, uint32_t bufLen);
 
 int sim_send_oem_req(uint8_t* simBuf, uint8_t simBufLen);

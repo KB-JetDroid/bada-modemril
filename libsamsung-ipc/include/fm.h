@@ -247,6 +247,6 @@ int32_t FmRemoveDirFile(struct fmRequest *, struct fmResponse *);
 int32_t FmGetQuotaSpaceFile(struct fmRequest *, struct fmResponse *);
 //int32_t FmInvalidFile(unsigned int mode, const char *fileName);
 
-int32_t modem_response_fm(struct modem_io *resp);
+int32_t ipc_parse_fm(struct ipc_client* client, struct modem_io *ipc_frame);
 
 #endif

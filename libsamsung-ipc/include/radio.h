@@ -57,7 +57,8 @@ enum ipc_ril_cb_type {
 	NETWORK_STARTUP,
 	NETWORK_CELL_INFO,
 	NETWORK_OPT_ERROR,
-	IPC_HANDLER_LAST
+	CP_SYSTEM_START,
+	IPC_RIL_CB_LAST
 };
 
 extern uint8_t cached_bcd_imei[9];
@@ -75,12 +76,13 @@ struct ipc_handlers;
 
 extern struct ipc_handlers ipc_default_handlers;
 
+void ipc_dispatch(struct ipc_client* client, struct modem_io *resp);
+
 void ipc_init(void);
 void ipc_shutdown(void);
 
 void ipc_register_ril_cb(int type, ipc_ril_cb cb);
 int ipc_invoke_ril_cb(int type, void* data);
-
 
 struct ipc_client* ipc_client_new();
 struct ipc_client *ipc_client_new_for_device(int device_type);
@@ -106,17 +108,15 @@ int ipc_client_close(struct ipc_client *client);
 int ipc_client_power_on(struct ipc_client *client);
 int ipc_client_power_off(struct ipc_client *client);
 
-int ipc_client_recv(struct ipc_client *client, struct modem_io *response);
+int ipc_client_recv(struct ipc_client *client, struct modem_io *ipc_frame);
 
 /* Convenience functions for ipc_send */
-int ipc_client_send(struct ipc_client *client, struct modem_io *request);
+int ipc_client_send(struct ipc_client *client, struct modem_io *ipc_frame);
 void ipc_client_send_get(struct ipc_client *client, const unsigned short command, unsigned char mseq);
 void ipc_client_send_exec(struct ipc_client *client, const unsigned short command, unsigned char mseq);
 
 /* Utility functions */
-const char *ipc_command_type_to_str(int command);
-const char *ipc_response_type_to_str(int type);
-const char *ipc_request_type_to_str(int type);
+void ipc_imei_bcd2ascii(char* out, const uint8_t* in);
 void ipc_hex_dump(struct ipc_client *client, void *data, int size);
 void *ipc_mtd_read(struct ipc_client *client, char *mtd_name, int size, int block_size);
 void *ipc_file_read(struct ipc_client *client, char *file_name, int size, int block_size);
@@ -125,9 +125,9 @@ void *ipc_file_read(struct ipc_client *client, char *file_name, int size, int bl
 
 struct ipc_client *client;
 
-static inline void ipc_send(struct modem_io *request)
+static inline void ipc_send(struct modem_io *ipc_frame)
 {
-	ipc_client_send(client, request);
+	ipc_client_send(client, ipc_frame);
 }
 
 static inline int ipc_modem_io(void *data, uint32_t cmd)
@@ -136,7 +136,7 @@ static inline int ipc_modem_io(void *data, uint32_t cmd)
 }
 
 #else
-	extern void ipc_send(struct modem_io *request);
+	extern void ipc_send(struct modem_io *ipc_frame);
 	extern int ipc_modem_io(void *data, uint32_t cmd);
 
 #endif //RIL_SHLIB
