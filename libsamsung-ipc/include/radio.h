@@ -29,12 +29,12 @@
 #include "types.h"
 #include "util.h"
 
-#define IPC_DEVICE_CRESPO       0
-#define IPC_DEVICE_ARIES        1
-#define IPC_DEVICE_JET          2
-#define IPC_DEVICE_WAVE         3
-
-#define IPC_DEVICE_MAX          IPC_DEVICE_WAVE
+enum ipc_device_enum
+{
+	IPC_DEVICE_JET = 0,
+	IPC_DEVICE_WAVE,
+	IPC_DEVICE_LAST
+};
 
 struct fifoPacketHeader
 {
@@ -65,7 +65,7 @@ extern uint8_t cached_bcd_imei[9];
 extern char cached_imei[33];
 extern char cached_sw_version[33];
 
-typedef int (*ipc_ril_cb)(void* data);
+typedef void (*ipc_ril_cb)(void* data);
 typedef void (*ipc_client_log_handler_cb)(const char *message, void *user_data);
 
 typedef int (*ipc_io_handler_cb)(void *data, unsigned int size, void *io_data);
@@ -74,15 +74,12 @@ typedef int (*ipc_handler_cb)(void *data);
 struct ipc_client;
 struct ipc_handlers;
 
-extern struct ipc_handlers ipc_default_handlers;
-
 void ipc_dispatch(struct ipc_client* client, struct modem_io *resp);
 
 void ipc_init(void);
 void ipc_shutdown(void);
 
 void ipc_register_ril_cb(int type, ipc_ril_cb cb);
-int ipc_invoke_ril_cb(int type, void* data);
 
 struct ipc_client* ipc_client_new();
 struct ipc_client *ipc_client_new_for_device(int device_type);

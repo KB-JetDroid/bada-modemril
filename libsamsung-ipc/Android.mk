@@ -109,6 +109,7 @@ samsung-ril_files := \
 	samsung-ril/client.c \
 	samsung-ril/ipc.c \
 	samsung-ril/srs.c \
+	samsung-ril/pwr.c \
 	samsung-ril/misc.c \
 	samsung-ril/util.c
 

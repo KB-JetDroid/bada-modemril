@@ -45,7 +45,7 @@
 #define LOG_TAG "RIL-IPC-LIB"
 #include <utils/Log.h>
 
-struct ipc_device_desc devices[IPC_DEVICE_MAX+1];
+struct ipc_device_desc devices[IPC_DEVICE_LAST];
 
 ipc_ril_cb ipc_ril_cb_map[IPC_RIL_CB_LAST];
 
@@ -84,7 +84,7 @@ void ipc_register_ril_cb(int type, ipc_ril_cb cb)
 	ipc_ril_cb_map[type] = cb;
 }
 
-int ipc_invoke_ril_cb(int type, void* data)
+void ipc_invoke_ril_cb(int type, void* data)
 {
 	if(ipc_ril_cb_map[type])
 	{
@@ -92,7 +92,6 @@ int ipc_invoke_ril_cb(int type, void* data)
 	}
 	else
 		DEBUG_W("Missing IPC RIL CB of type %d", (int) type);
-	return 0;
 }
 
 void log_handler_default(const char *message, void *user_data)
@@ -156,7 +155,7 @@ struct ipc_client* ipc_client_new_for_device(int device_type)
 {
     struct ipc_client *client;
 
-    if (device_type < 0 || device_type > IPC_DEVICE_MAX)
+    if (device_type < 0 || device_type > IPC_DEVICE_LAST)
         return 0;
 
     client = (struct ipc_client*) malloc(sizeof(struct ipc_client));

@@ -54,6 +54,7 @@ struct ril_client *srs_client;
 const struct RIL_Env *ril_env;
 struct ril_state ril_state;
 
+
 /**
  * RIL request token
  */
@@ -171,10 +172,6 @@ void srs_dispatch(struct srs_message *message)
 			break;
 	}
 }
-
-/*
- * RIL main dispatch function
- */
 
 int ril_modem_check(void)
 {
@@ -344,6 +341,11 @@ const char *getVersion(void)
  * RIL init function
  */
 
+void ril_install_ipc_callbacks(void)
+{
+	ipc_register_ril_cb(CP_SYSTEM_START, ipc_cp_system_start);
+}
+ 
 void ril_globals_init(void)
 {
 	memset(&ril_state, 0, sizeof(ril_state));
@@ -380,6 +382,7 @@ const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **a
 	ipc_init();
 	ril_globals_init();
 	ril_state_lpm();
+	ril_install_ipc_callbacks();
 
 	ALOGD("Creating IPC client");
 

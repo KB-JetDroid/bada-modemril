@@ -33,6 +33,17 @@ void ipc_pwr_phone_pwr_up(void)
 	RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 }
 
+void ipc_cp_system_start(void* data)
+{	
+	/*  
+	* It's not ON yet but all initial setup has been done 
+	* TODO: Decide if it should become ON and/or normal mode already
+	* we'd rather avoid using deprecated RADIO_STATE_SIM_NOT_READY
+	*/
+	ril_state.power_mode = POWER_MODE_LPM;
+	ril_state.radio_state = RADIO_STATE_UNAVAILABLE;
+	ril_tokens_check();
+}
 
 void ipc_pwr_phone_state(struct ipc_message_info *info)
 {

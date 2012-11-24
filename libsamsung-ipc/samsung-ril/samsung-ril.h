@@ -190,6 +190,8 @@ int ril_modem_check(void);
 
 void srs_dispatch(struct srs_message *message);
 
+/* PWR */
+void ipc_cp_system_start(void* data);
 
 /* MISC */
 void ril_request_get_imei(RIL_Token t);

@@ -71,6 +71,7 @@ struct ipc_device_desc {
     struct ips_handlers *handlers;
 };
 
+void ipc_invoke_ril_cb(int type, void* data);
 void ipc_client_log(struct ipc_client *client, const char *message, ...);
 void ipc_register_device_client_handlers(int device, struct ipc_ops *client_ops,
 											struct ipc_handlers *handlers);
