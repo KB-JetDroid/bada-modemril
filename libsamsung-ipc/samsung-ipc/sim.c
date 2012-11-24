@@ -126,7 +126,7 @@ void sim_parse_session_event(uint8_t* buf, uint32_t bufLen)
 
 }
 
-int sim_send_oem_req(uint8_t* simBuf, uint8_t simBufLen)
+void sim_send_oem_req(uint8_t* simBuf, uint8_t simBufLen)
 {	
 	//simBuf is expected to contain full oemPacket structure
 	struct modem_io request;
@@ -150,11 +150,9 @@ int sim_send_oem_req(uint8_t* simBuf, uint8_t simBufLen)
 	ipc_send(&request);
 
 	free(fifobuf);
-	//TODO: return nonzero in case of failure
-	return 0;
 }
 
-int sim_send_oem_data(uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32_t oemBufLen)
+void sim_send_oem_data(uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32_t oemBufLen)
 {	
 	SIM_VALIDATE_SID(hSim);
 
@@ -170,12 +168,11 @@ int sim_send_oem_data(uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32
 	if(oemBufLen)
 		memcpy(simBuf + sizeof(struct oemSimPacketHeader), dataBuf, oemBufLen);
 	
-	return sim_send_oem_req(simBuf, simBufLen);
+	sim_send_oem_req(simBuf, simBufLen);
 	free(simBuf);
-
 }
 
-int sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin)
+void sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin)
 {	
 	SIM_VALIDATE_SID(hSim);
 	//TODO: obtain session context, check if session is busy, print exception if it is busy and return failure
@@ -185,29 +182,19 @@ int sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin)
 
 	packetBuf[0] = pinType;
 	memcpy(packetBuf+1, pin, strlen(pin)); //max pin len is 9 digits
-	if(sim_send_oem_data(hSim, 0xB, packetBuf, 10) != 0)
-	{
-		//TODO: mark session non-busy
-		return -1;
-	}
-	free(packetBuf);
-	return 0;
+	sim_send_oem_data(hSim, 0xB, packetBuf, 10);
 }
 
-int sim_atk_open(uint32_t sid)
+void sim_atk_open(uint32_t sid)
 {
 	//TODO: verify ATK session and create/open it and return handler to it?!
 	DEBUG_I("Sending");
-	if(sim_send_oem_data(0xA, 0x1B, NULL, 0) != 0) //0xA hSim is hardcoded in bada
-		return -1;
-	return 0;
+	sim_send_oem_data(0xA, 0x1B, NULL, 0); //0xA hSim is hardcoded in bada
 }
 
-int sim_open_to_modem(uint8_t hSim)
+void sim_open_to_modem(uint8_t hSim)
 {
 	//TODO: verify, create and initialize session, send real hSim
 	DEBUG_I("Sending");
-	if(sim_send_oem_data(0x4, 0x1, NULL, 0) != 0) //why it starts from 4? hell knows
-		return -1;
-	return 0;
+	sim_send_oem_data(0x4, 0x1, NULL, 0); //why it starts from 4? hell knows
 }

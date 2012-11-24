@@ -103,6 +103,6 @@ void tapi_network_networkSelectInd(uint32_t tapiNetLength, uint8_t *tapiNetData)
 void tapi_network_commonError(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_cellInfo(uint32_t tapiNetLength, uint8_t *tapiNetData);
 
-int tapi_network_init(void);
+void tapi_network_init(void);
 
 #endif

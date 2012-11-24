@@ -54,7 +54,7 @@ void load_sec_data()
 	imei_bcd2ascii(cached_imei, cached_bcd_imei);
 }
 
-int syssec_send_imei(void)
+void syssec_send_imei(void)
 {
 	uint8_t buffer[40];
 	int ret;
@@ -78,5 +78,4 @@ int syssec_send_imei(void)
 	request.data = buffer;
 	
 	ipc_send(&request);
-	return 0;
 }

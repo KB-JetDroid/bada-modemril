@@ -127,7 +127,7 @@ void tapi_network_cellInfo(uint32_t tapiNetLength, uint8_t *tapiNetData)
 	ipc_invoke_ril_cb(NETWORK_CELL_INFO, (void*)cellInfo);
 }
 
-int tapi_network_init(void)
+void tapi_network_init(void)
 {
 	struct tapiPacket pkt;
 	pkt.header.len = 0;
@@ -135,5 +135,16 @@ int tapi_network_init(void)
 	pkt.header.tapiServiceFunction = TAPI_NETWORK_INIT;
 	pkt.buf = NULL;
 	
-	return tapi_send_packet(&pkt);
+	tapi_send_packet(&pkt);
+}
+
+void tapi_set_offline_mode(uint8_t mode)
+{
+	struct tapiPacket pkt;
+	pkt.header.len = 1;
+	pkt.header.tapiService = TAPI_TYPE_NETWORK;	
+	pkt.header.tapiServiceFunction = TAPI_NETWORK_SET_OFFLINE_MODE;
+	pkt.buf = &mode;
+	
+	tapi_send_packet(&pkt);
 }

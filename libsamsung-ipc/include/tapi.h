@@ -46,6 +46,6 @@ void ipc_parse_tapi(struct ipc_client* client, struct modem_io *ipc_frame);
 
 void modem_execute_tapi_init(void);
 
-int tapi_send_packet(struct tapiPacket* tapiReq);
+void tapi_send_packet(struct tapiPacket* tapiReq);
 
 #endif

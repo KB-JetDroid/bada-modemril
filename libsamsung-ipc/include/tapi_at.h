@@ -38,5 +38,5 @@ struct tapiAT {
 
 void tapi_at_parser(uint16_t tapiAtType, uint32_t tapiAtLength, uint8_t *tapiAtData);
 
-int tapi_at_init(void);
+void tapi_at_init(void);
 #endif

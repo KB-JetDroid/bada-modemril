@@ -51,7 +51,7 @@ void tapi_at_parser(uint16_t tapiAtType, uint32_t tapiAtLength, uint8_t *tapiAtD
     }
 }
 
-int tapi_at_init(void)
+void tapi_at_init(void)
 {
 	struct tapiPacket pkt;
 	pkt.header.len = 0;
@@ -59,6 +59,6 @@ int tapi_at_init(void)
 	pkt.header.tapiServiceFunction = TAPI_AT_INIT;
 	pkt.buf = NULL;
 	
-	return tapi_send_packet(&pkt);
+	tapi_send_packet(&pkt);
 }
 

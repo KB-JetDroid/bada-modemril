@@ -48,7 +48,7 @@ struct protoPacket {
 
 void ipc_parse_proto(struct ipc_client* client, struct modem_io *ipc_frame);
 
-int proto_send_packet(struct protoPacket* protoReq);
-int proto_startup(void);
+void proto_send_packet(struct protoPacket* protoReq);
+void proto_startup(void);
 
 #endif

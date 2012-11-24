@@ -105,7 +105,7 @@ void ipc_parse_proto(struct ipc_client* client, struct modem_io *ipc_frame)
 
 }
 
-int proto_send_packet(struct protoPacket* protoReq)
+void proto_send_packet(struct protoPacket* protoReq)
 {
 	struct modem_io request;
 	
@@ -124,16 +124,14 @@ int proto_send_packet(struct protoPacket* protoReq)
 	ipc_send(&request);
 
 	free(fifobuf);
-	//TODO: return nonzero in case of failure
-	return 0;
 }
 
-int proto_startup(void)
+void proto_startup(void)
 {
 	struct protoPacket pkt;
 	pkt.header.type = PROTO_PACKET_ID_STARTUP;
 	pkt.header.apiId = 0;
 	pkt.buf = NULL;
 	pkt.bufLen = 0;
-	return proto_send_packet(&pkt);
+	proto_send_packet(&pkt);
 }

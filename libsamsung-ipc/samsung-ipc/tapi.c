@@ -213,7 +213,7 @@ void ipc_parse_tapi(struct ipc_client* client, struct modem_io *ipc_frame)
 
 }
 
-int tapi_send_packet(struct tapiPacket* tapiReq)
+void tapi_send_packet(struct tapiPacket* tapiReq)
 {
 	struct modem_io request;
 	
@@ -232,6 +232,4 @@ int tapi_send_packet(struct tapiPacket* tapiReq)
 	ipc_send(&request);
 
 	free(fifobuf);
-	//TODO: return nonzero in case of failure
-	return 0;
 }
