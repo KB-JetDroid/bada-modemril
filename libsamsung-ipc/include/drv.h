@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef __DRV_PACKET_H__
-#define __DRV_PACKET_H__
+#ifndef __DRV_H__
+#define __DRV_H__
 
 #if defined(DEVICE_JET)
 #include "device/jet/drv.h"
