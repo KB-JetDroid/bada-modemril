@@ -36,6 +36,7 @@
 #define SIM_SESSION_END_ID (SIM_SESSION_START_ID+(SIM_SESSION_COUNT-1))
 
 #define SIM_VALIDATE_SID(hSim) {if(!hSim) {DEBUG_E("SIM_VALIDATE_SID failure!\n"); return;}}
+
 struct simPacketHeader {
 	uint32_t type;
 	uint32_t subType;

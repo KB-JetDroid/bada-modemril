@@ -37,7 +37,6 @@
 
 void ipc_dispatch(struct ipc_client *client, struct modem_io *ipc_frame)
 {
-	int32_t ret;
 	switch(ipc_frame->cmd)
     {
         case FIFO_PKT_FILE:

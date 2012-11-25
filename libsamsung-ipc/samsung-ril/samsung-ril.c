@@ -423,57 +423,15 @@ srs:
 
 	ALOGD("SRS client ready");
 
+	tapi_init();
+	proto_startup();
+	lbs_init();
 end:
 	return &ril_ops;
 }
 
 int main(int argc, char *argv[])
 {
-	int rc;
-
-	ril_globals_init();
-	ril_state_lpm();
-
-	ALOGD("Creating IPC client");
-
-	ipc_packet_client = ril_client_new(&ipc_client_funcs);
-	rc = ril_client_create(ipc_packet_client);
-
-	if(rc < 0) {
-		ALOGE("IPC client creation failed.");
-		goto srs;
-	}
-
-	rc = ril_client_thread_start(ipc_packet_client);
-
-	if(rc < 0) {
-		ALOGE("IPC thread creation failed.");
-		goto srs;
-	}
-
-	ALOGD("IPC client ready");
-
-srs:
-	ALOGD("Creating SRS client");
-
-	srs_client = ril_client_new(&srs_client_funcs);
-	rc = ril_client_create(srs_client);
-
-	if(rc < 0) {
-		ALOGE("SRS client creation failed.");
-		goto end;
-	}
-
-	rc = ril_client_thread_start(srs_client);
-
-	if(rc < 0) {
-		ALOGE("SRS thread creation failed.");
-		goto end;
-	}
-
-	ALOGD("SRS client ready");
-
-end:
 	return 0;
 }
 

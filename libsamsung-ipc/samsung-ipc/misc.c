@@ -116,7 +116,7 @@ void ipc_parse_dbg_level(struct ipc_client *client, struct modem_io *ipc_frame)
 	/* If LPM mode here comes another 0xF (BOOT) packet, we don't care for now */
 	syssec_send_imei();
 	ipc_send_lazy_fw_ver();
-    DEBUG_I("Inside ipc_parse_dbg_level leaving\n");
+	DEBUG_I("Inside ipc_parse_dbg_level leaving\n");
 
 }
 
