@@ -36,6 +36,7 @@
 #include <tapi.h>
 #include <proto.h>
 #include <sim.h>
+#include <lbs.h>
 
 #define RIL_VERSION_STRING "Samsung RIL"
 

@@ -21,6 +21,7 @@ samsung-ipc_files := \
 	samsung-ipc/misc.c \
 	samsung-ipc/util.c \
 	samsung-ipc/fm.c \
+	samsung-ipc/lbs.c \
 	samsung-ipc/proto.c \
 	samsung-ipc/sim.c \
 	samsung-ipc/drv.c \

@@ -43,7 +43,7 @@ void lbs_init(void)
 	lbs_send_init(1);
 }
 
-uint8_t lbsSendBuf[0x100C]
+uint8_t lbsSendBuf[0x100C];
 
 void lbs_send_packet(uint32_t type, uint32_t size, uint32_t subType, void* buf)
 {	
@@ -55,7 +55,7 @@ void lbs_send_packet(uint32_t type, uint32_t size, uint32_t subType, void* buf)
 	
 	/* BIG WTF at the lengths below, shitload of uninitialized, redundant data 
 	 * OHAI retarded Samsung devs */
-	if((type >= 0 && type <= 6) || (type >= 21 && type <= 30)) //common 1
+	if(type <= 6 || (type >= 21 && type <= 30)) //common 1
 		pkt.datasize = 0x100C;
 	else if((type >= 7 && type <= 12) || 
 			(type >= 31 && type <= 35)) //supl 2
@@ -76,7 +76,7 @@ void lbs_send_packet(uint32_t type, uint32_t size, uint32_t subType, void* buf)
 		DEBUG_E("Unknown LBS packet type, abandoning...");
 		return;
 	}
-	if(size > pkt.dataSize - sizeof(struct lbsPacketHeader))
+	if(size > pkt.datasize - sizeof(struct lbsPacketHeader))
 	{
 		DEBUG_E("Too big LBS packet, type %d, len %d", type, size);
 		return;
@@ -85,7 +85,7 @@ void lbs_send_packet(uint32_t type, uint32_t size, uint32_t subType, void* buf)
 	hdr->type = type;
 	hdr->size = size;
 	hdr->subType = subType;
-	memcpy(sendBuf + sizeof(struct lbsPacketHeader), buf, size);
+	memcpy((char*)(sendBuf) + sizeof(struct lbsPacketHeader), buf, size);
 	
 	pkt.magic = 0xCAFECAFE;
 	pkt.cmd = FIFO_PKT_LBS;

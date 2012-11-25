@@ -31,7 +31,7 @@ struct lbsPacketHeader {
 } __attribute__((__packed__));
 
 void lbs_init(void);
-void lbs_send_init(void);
+void lbs_send_init(uint32_t var);
 void lbs_send_packet(uint32_t type, uint32_t size, uint32_t subType, void* buf);
 
 #endif
