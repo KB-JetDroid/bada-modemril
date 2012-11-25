@@ -56,7 +56,7 @@ void tapi_nettext_set_mem_available(uint32_t bMemAvail)
 	struct tapiPacket pkt;
 	pkt.header.len = 4;
 	pkt.header.tapiService = TAPI_TYPE_NETTEXT;	
-	pkt.header.tapiServiceFunction = TAPI_NETTEXT_SETMEMAVAIL;
+	pkt.header.tapiServiceFunction = TAPI_NETTEXT_SET_MEM_AVAIL;
 	pkt.buf = malloc(4);
 	(*(uint32_t*)pkt.buf) = bMemAvail;
 	

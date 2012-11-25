@@ -52,7 +52,7 @@
  /*
 	Most/all packets seems to be replied with tapi packet:
 	service=0, serviceFunc=0, buflen=8, 
-	buf={u16(0), u16(<uninitialized>), u32<bool return value of called tapi function>}
+	buf={u16(0), u16(<uninitialized>), u32<return value of called tapi function, usually 0>}
  */
 /*
  * Dummy code to send TAPI packets as per wave's log

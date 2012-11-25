@@ -132,9 +132,8 @@ void tapi_network_network_select_ind(uint32_t tapiNetLength, uint8_t *tapiNetDat
 
 void tapi_network_radio_info(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
-	DEBUG_I("got radioinfo of len=%d", tapiNetLength);
 	uint8_t* radioInfo = malloc(tapiNetLength);
-	memcpy(radioInfo, tapiNetData, tapiNetLength);	
+	memcpy(radioInfo, tapiNetData, tapiNetLength);
 	ipc_invoke_ril_cb(NETWORK_RADIO_INFO, (void*)radioInfo);
 	free(radioInfo);
 }
