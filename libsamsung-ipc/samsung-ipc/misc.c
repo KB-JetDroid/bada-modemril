@@ -28,12 +28,36 @@
 #include <fm.h>
 #include <sim.h>
 #include <radio.h>
+#include <syssec.h>
 
 #include "ipc_private.h"
 
 #define LOG_TAG "RIL-IPC-MISC"
 #include <utils/Log.h>
 
+void ipc_send_debug_level(uint32_t debug_level)
+{
+	struct modem_io pkt;
+	pkt.magic = 0xCAFECAFE;
+	pkt.cmd = FIFO_PKT_DVB_H_DebugLevel;
+	pkt.data = (uint8_t*)&debug_level;
+	pkt.datasize = 4;
+	ipc_send(&pkt);
+}
+
+const char* fakeAppsVer = "S8500XXKK5";
+void ipc_send_lazy_fw_ver(void)
+{
+	uint8_t buf[0x18];
+	struct modem_io pkt;
+	pkt.magic = 0xCAFECAFE;
+	pkt.cmd = FIFO_PKT_BOOT;
+	pkt.data = buf;
+	*(uint32_t*)(&buf) = 0xC;
+	strcpy((char*)buf+4, fakeAppsVer);
+	pkt.datasize = 0x18;
+	ipc_send(&pkt);
+}
 
 void ipc_parse_boot(struct ipc_client *client, struct modem_io *ipc_frame)
 {
@@ -87,74 +111,11 @@ void ipc_parse_boot(struct ipc_client *client, struct modem_io *ipc_frame)
 void ipc_parse_dbg_level(struct ipc_client *client, struct modem_io *ipc_frame)
 {
 	DEBUG_I("Inside ipc_parse_dbg_level\n");
-	int retval, count;
-	struct drvPacketHeader *rx_header;
-	struct drvRequest tx_packet;
 
-	struct modem_io request;
-    void *frame;
-    uint8_t *payload;
-    int32_t frame_length;
-
-    struct fifoPacketHeader *ipc;
-
-    char data[4][0x33] = {
-    			  {0x01,0,0,0},
-    			  {0x0B,0,0,0,1,0,0,0},
-    			  {0x02,0,0,0,0,0,0,0,0x11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'3','7','3','2','4','6','1','1','2',0,0,0,0,0,0,0,0},
-    			  {0x0C,0,0,0,'t','e','s','t',0x20,'F','W',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    };
-
-    static struct modem_io sysDataToCP [4] = {
-    		{
-    			.magic = 0xCAFECAFE,
-    			.cmd = 0x2E,
-    			.datasize = 0x04,
-    			//.data = data1,
-    		},
-    		{
-    			.magic = 0xCAFECAFE,
-    			.cmd = 0x0F,
-    			.datasize = 0x08,
-    			//.data = data2,
-    		},
-    		{
-    			.magic = 0xCAFECAFE,
-    			.cmd = 0x96,
-    			.datasize = 0x33,
-    			//.data = data3,
-    		},
-    		{
-    			.magic = 0xCAFECAFE,
-    			.cmd = 0x0F,
-    			.datasize = 0x24,
-    			//.data = data4,
-    		},
-    };
-
-	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
-
-	ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
-
-	for(count = 0; count < 4; count++)
-	{
-		DEBUG_I("sending frame no. %d\n", count);
-		payload = malloc(sysDataToCP[count].datasize);
-
-		memcpy(payload, data[count], sysDataToCP[count].datasize);
-		DEBUG_I("Copying data %d\n", count);
-
-		request.magic = sysDataToCP[count].magic;
-		request.cmd = sysDataToCP[count].cmd;
-		request.datasize = sysDataToCP[count].datasize;
-
-		request.data = payload;
-		DEBUG_I("Before sending\n");
-
-		ipc_client_send(client, &request);
-		DEBUG_I("sent frame no. %d\n", count);
-
-	}
+	ipc_send_debug_level(1);
+	/* If LPM mode here comes another 0xF (BOOT) packet, we don't care for now */
+	syssec_send_imei();
+	ipc_send_lazy_fw_ver();
     DEBUG_I("Inside ipc_parse_dbg_level leaving\n");
 
 }
@@ -162,7 +123,7 @@ void ipc_parse_dbg_level(struct ipc_client *client, struct modem_io *ipc_frame)
 void ipc_parse_system(struct ipc_client *client, struct modem_io *ipc_frame)
 {
 	DEBUG_I("start");
-	int desc_size;
+	uint32_t desc_size;
 	int suffix_size;
 	desc_size = strlen((const char*)ipc_frame->data);
 	if(desc_size > 32 || desc_size > ipc_frame->datasize)
