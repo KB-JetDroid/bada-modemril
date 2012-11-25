@@ -156,7 +156,8 @@ typedef enum
  */
 
 #if defined(DEVICE_WAVE)
-
+	FIFO_DATA_SRVC = 0x9B,
+	FIFO_DIAG_SRVC = 0x9D,
 #endif
 
 	FIFO_PKT_MAX
