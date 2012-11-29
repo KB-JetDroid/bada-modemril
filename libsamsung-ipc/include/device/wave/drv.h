@@ -77,7 +77,7 @@ enum IpcPacketType {
 	FOTA_UNK1			= 0x5D, //sent by CP
 	FOTA_UNK2			= 0x5E, //FOTA_related	0x0, requested by IpcPacket with header 		= 93 (0x5D)
 	WLAN_MAC			= 0x5F, //95 WlanMAC		0x6, byte[6] WLAN MAC address from NV
-	BATT_GAUGE_CHANGE_IND		= 0x62, //98 BattGaugeChangeInd, writing data from packet into batt driver struct and signaling DrvTask
+	BATT_GAUGE_CHANGE_IND		= 0x62, //98 0x1, u8 = battery_percent BattGaugeChangeInd, writing data from packet into batt driver struct and signaling DrvTask
 };
 
 #endif
