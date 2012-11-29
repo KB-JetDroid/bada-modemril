@@ -48,7 +48,7 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 {
 	DEBUG_I("Entering");
 	int32_t retval, count;
-	uint32_t sid;
+	uint32_t diffedSubtype;
 	struct simPacketHeader *simHeader;
 	struct simPacket sim_packet;
 
@@ -107,10 +107,10 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 					case 1:
 					case 2: //in this subtype
 						//TODO: these 2 subtypes are somewhat special - apps does switch some bool if they are used, not sure what way they are special.
-						sim_parse_event(sim_packet.simBuf, simHeader->bufLen); //sid is stored in buf too
+						sim_parse_event(sim_packet.simBuf, simHeader->bufLen);
 						break;
 					default:
-						sim_parse_event(sim_packet.simBuf, simHeader->bufLen); //sid is stored in buf too
+						sim_parse_event(sim_packet.simBuf, simHeader->bufLen); 
 						break;
 				}
 			}

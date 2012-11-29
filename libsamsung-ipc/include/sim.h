@@ -61,10 +61,7 @@ enum
 	SIM_EVENT_CLOSE_CHANNEL = 24,
 	SIM_EVENT_END = 25,	
 };
-enum
-{
-	
-};
+
 struct simPacketHeader {
 	uint32_t type;
 	uint32_t subType;
