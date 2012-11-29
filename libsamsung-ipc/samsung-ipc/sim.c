@@ -95,18 +95,22 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 	{
 		if(simHeader->subType >= SESSION_SUBTYPE_DIFF)
 		{
-			sid = simHeader->subType-SESSION_SUBTYPE_DIFF;
-			if(sid < SIM_SESSION_COUNT)
+			diffedSubtype = simHeader->subType-SESSION_SUBTYPE_DIFF;
+			if(diffedSubtype >= SESSION_SUBTYPE_DIFF)
 			{
-				switch(sid)
+				//do_nothing
+			}
+			else
+			{
+				switch(diffedSubtype)
 				{
 					case 1:
-					case 2: //in this session first packet with sim info is being send
-						//TODO: these 2 sids are somewhat special - apps does switch some bool if they are used, not sure what way they are special.
-						sim_parse_session_event(sim_packet.simBuf, simHeader->bufLen); //sid is stored in buf too
+					case 2: //in this subtype
+						//TODO: these 2 subtypes are somewhat special - apps does switch some bool if they are used, not sure what way they are special.
+						sim_parse_event(sim_packet.simBuf, simHeader->bufLen); //sid is stored in buf too
 						break;
 					default:
-						sim_parse_session_event(sim_packet.simBuf, simHeader->bufLen); //sid is stored in buf too
+						sim_parse_event(sim_packet.simBuf, simHeader->bufLen); //sid is stored in buf too
 						break;
 				}
 			}
@@ -121,7 +125,7 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 
 }
 
-void sim_parse_session_event(uint8_t* buf, uint32_t bufLen)
+void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 {
 
 }

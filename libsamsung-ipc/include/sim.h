@@ -26,9 +26,9 @@
 #include <radio.h>
 
 #if defined(DEVICE_JET)
-#define SESSION_SUBTYPE_DIFF 0x18
+#define SIM_SUBTYPE_DIFF 0x18
 #elif defined(DEVICE_WAVE)
-#define SESSION_SUBTYPE_DIFF 0x1D
+#define SIM_SUBTYPE_DIFF 0x1D
 #endif
 
 #define SIM_SESSION_COUNT 0x20
@@ -37,10 +37,51 @@
 
 #define SIM_VALIDATE_SID(hSim) {if(!hSim) {DEBUG_E("SIM_VALIDATE_SID failure!\n"); return;}}
 
+enum
+{
+	SIM_EVENT_BEGIN = 0,
+	SIM_EVENT_SIM_OPEN = 1,
+	SIM_EVENT_VERIFY_PIN1_IND = 2,
+	SIM_EVENT_GET_SIM_OPEN_DATA = 3,
+	SIM_EVENT_SIM_CLOSE = 4,
+	SIM_EVENT_FILE_INFO = 5,
+	SIM_EVENT_CHV_INFO = 6,
+	SIM_EVENT_READ_FILE = 7,
+	SIM_EVENT_UPDATE_FILE = 8,
+	SIM_EVENT_OP_CHV_ = 9,
+	SIM_EVENT_VERIFY_CHV = 10,
+	SIM_EVENT_CHANGE_CHV = 11,
+	SIM_EVENT_DISABLE_CHV = 12,
+	SIM_EVENT_ENABLE_CHV = 13,
+	SIM_EVENT_UNBLOCK_CHV = 14,
+	SIM_EVENT_DISABLE_FDN = 15,
+	SIM_EVENT_ENABLE_FDN = 16,
+	SIM_EVENT_READ_RECORD_FILE_ALL = 17,
+	SIM_EVENT_OPEN_CHANNEL = 23,
+	SIM_EVENT_CLOSE_CHANNEL = 24,
+	SIM_EVENT_END = 25,	
+};
+enum
+{
+	
+};
 struct simPacketHeader {
 	uint32_t type;
 	uint32_t subType;
 	uint32_t bufLen;
+} __attribute__((__packed__));
+
+struct simEventPacketHeader {
+	uint32_t sid;
+	uint8_t eventType;
+	uint8_t eventStatus;
+	uint8_t unused; //does always(appearantly) match subtype
+	uint32_t bufLen;
+} __attribute__((__packed__));
+
+struct simEventPacket {
+	struct simEventPacketHeader header;
+	uint8_t *eventBuf;
 } __attribute__((__packed__));
 
 struct simPacket {
@@ -60,7 +101,7 @@ struct oemSimPacket{
 } __attribute__((__packed__));
 
 void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame);
-void sim_parse_session_event(uint8_t* buf, uint32_t bufLen);
+void sim_parse_event(uint8_t* buf, uint32_t bufLen);
 
 void sim_send_oem_req(uint8_t* simBuf, uint8_t simBufLen);
 void sim_send_oem_data(uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32_t oemBufLen);
