@@ -93,10 +93,10 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 	}
 	else
 	{
-		if(simHeader->subType >= SESSION_SUBTYPE_DIFF)
+		if(simHeader->subType >= SIM_SUBTYPE_DIFF)
 		{
-			diffedSubtype = simHeader->subType-SESSION_SUBTYPE_DIFF;
-			if(diffedSubtype >= SESSION_SUBTYPE_DIFF)
+			diffedSubtype = simHeader->subType - SIM_SUBTYPE_DIFF;
+			if(diffedSubtype >= SIM_SUBTYPE_DIFF)
 			{
 				//do_nothing
 			}
