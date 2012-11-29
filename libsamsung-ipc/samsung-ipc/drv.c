@@ -46,11 +46,13 @@
 #ifdef DEVICE_JET
 #include <device/jet/sound_data.h>
 char *nvmFile = "/efs/bml4";
-char *fwVersion = "S800MPOJB1";
+char *fuelGaugeDev = "/dev/ipc_fuelgauge"; 
+char *fake_apps_version = "S800MPOJB1";
 #elif defined(DEVICE_WAVE)
 #include <device/wave/sound_data.h>
 char *nvmFile = "/dev/mtdblock0";
-char *fwVersion = "S8500JPKA1";
+char *fuelGaugeDev = "/dev/ipc_fuelgauge"; 
+char *fake_apps_version = "S8530JPKA1";
 #endif
 
 
@@ -183,7 +185,7 @@ void handleSystemInfoRequest()
 	request.cmd = FIFO_PKT_DRV;
 	request.datasize = 0x14 +  sizeof(struct drvPacketHeader);
 
-	memcpy(payload + sizeof(struct drvPacketHeader), fwVersion, sizeof(*fwVersion));
+	memcpy(payload + sizeof(struct drvPacketHeader), fake_apps_version, sizeof(*fake_apps_version));
 
 	request.data = payload;
 

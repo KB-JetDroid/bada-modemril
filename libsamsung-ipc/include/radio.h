@@ -64,6 +64,7 @@ enum ipc_ril_cb_type {
 extern uint8_t cached_bcd_imei[9];
 extern char cached_imei[33];
 extern char cached_sw_version[33];
+extern char* fake_apps_version;
 
 typedef void (*ipc_ril_cb)(void* data);
 typedef void (*ipc_client_log_handler_cb)(const char *message, void *user_data);

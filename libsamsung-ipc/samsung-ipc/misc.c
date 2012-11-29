@@ -45,7 +45,6 @@ void ipc_send_debug_level(uint32_t debug_level)
 	ipc_send(&pkt);
 }
 
-const char* fakeAppsVer = "S8500XXKK5";
 void ipc_send_lazy_fw_ver(void)
 {
 	uint8_t buf[0x18];
@@ -54,7 +53,7 @@ void ipc_send_lazy_fw_ver(void)
 	pkt.cmd = FIFO_PKT_BOOT;
 	pkt.data = buf;
 	*(uint32_t*)(&buf) = 0xC;
-	strcpy((char*)buf+4, fakeAppsVer);
+	strcpy((char*)buf+4, fake_apps_version);
 	pkt.datasize = 0x18;
 	ipc_send(&pkt);
 }
