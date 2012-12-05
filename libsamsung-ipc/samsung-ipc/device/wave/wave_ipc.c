@@ -40,6 +40,7 @@
 int32_t wave_modem_bootstrap(struct ipc_client *client)
 {
     int32_t modemctl_fd = -1;
+	int32_t status;
 
     DEBUG_I("open %s\n", MODEMCTL_PATH);
 
@@ -50,12 +51,18 @@ int32_t wave_modem_bootstrap(struct ipc_client *client)
     	return 1;
     }
 
-    DEBUG_I("send amss_run_request\n");
 	
-	/* force status to POWER_ON as it's been done by FOTA */
-	ioctl(modemctl_fd, IOCTL_MODEM_FORCE_STATUS, 3);
-    ioctl(modemctl_fd, IOCTL_MODEM_AMSSRUNREQ);
-
+	ioctl(modemctl_fd, IOCTL_MODEM_GET_STATUS, &status);
+	if(status != 0)		
+		DEBUG_I("Modem already booted, bootstraping again not supported\n");
+	else
+	{	
+		DEBUG_I("send amss_run_request\n");
+		
+		/* force status to POWER_ON as it's been done by FOTA */
+		ioctl(modemctl_fd, IOCTL_MODEM_SET_STATUS, 3);
+		ioctl(modemctl_fd, IOCTL_MODEM_AMSSRUNREQ);
+	}
     DEBUG_I("closing %s\n", MODEMCTL_PATH);
 
     close(modemctl_fd);
