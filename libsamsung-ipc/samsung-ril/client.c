@@ -20,7 +20,7 @@
 
 #include <pthread.h>
 
-#define LOG_TAG "RIL"
+#define LOG_TAG "Mocha-RIL"
 #include <utils/Log.h>
 
 #include "samsung-ril.h"

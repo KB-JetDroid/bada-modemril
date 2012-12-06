@@ -34,7 +34,7 @@
 #include <radio.h>
 #include <lbs.h>
 
-#define LOG_TAG "RIL-LBS"
+#define LOG_TAG "Mocha-RIL-LBS"
 #include <utils/Log.h>
 
 

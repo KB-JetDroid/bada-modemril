@@ -36,7 +36,7 @@
 #include <radio.h>
 #include <sim.h>
 
-#define LOG_TAG "RIL-SIM"
+#define LOG_TAG "Mocha-RIL-SIM"
 #include <utils/Log.h>
 
 /*

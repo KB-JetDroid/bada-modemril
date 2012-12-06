@@ -23,7 +23,7 @@
 #include <tapi.h>
 #include <tapi_ss.h>
 
-#define LOG_TAG "RIL-TAPI-SS"
+#define LOG_TAG "Mocha-RIL-TAPI-SS"
 #include <utils/Log.h>
 
 /*

@@ -22,7 +22,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define LOG_TAG "RIL-GPRS"
+#define LOG_TAG "Mocha-RIL-GPRS"
 #include <utils/Log.h>
 #include <cutils/properties.h>
 

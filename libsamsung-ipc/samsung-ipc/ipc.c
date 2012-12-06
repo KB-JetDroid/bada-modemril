@@ -42,7 +42,7 @@
 
 #include "ipc_private.h"
 
-#define LOG_TAG "RIL-IPC-LIB"
+#define LOG_TAG "Mocha-RIL-IPC-LIB"
 #include <utils/Log.h>
 
 struct ipc_device_desc devices[IPC_DEVICE_LAST];

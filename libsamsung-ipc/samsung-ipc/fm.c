@@ -51,10 +51,14 @@
 #include <dirent.h>
 #include <errno.h>
 
-#define LOG_TAG "RIL_FM"
+#define LOG_TAG "Mocha-RIL_FM"
 #include <utils/Log.h>
 
 #define MAX_OPEN_DIRS 	10
+
+#define PATH_MAX_LEN (92)
+/* Has to be used with lock held! */
+char nameBuf[PATH_MAX_LEN];
 
 DIR* dirArray[MAX_OPEN_DIRS];
 uint32_t dirIndex = 1;
@@ -62,7 +66,7 @@ uint32_t dirIndex = 1;
 #if defined(DEVICE_JET)
 char *mochaRoot = "/KFAT0";
 #elif defined(DEVICE_WAVE)
-char *mochaRoot = "/bada_user/modem";
+char *mochaRoot = "/mnt/bada_user/modem";
 #endif
 
 int32_t (*fileOps[MAX_FILE_OPS])(struct fmRequest *, struct fmResponse *) =
@@ -93,14 +97,12 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
 //	DEBUG_I("Inside FmOpenFile");
 	int32_t retval = 0;
-	char *fName;
 	int32_t mode;
 	uint32_t flags = O_RDONLY;
 
 	mode = *(int32_t *)(rx_packet->reqBuf);
-	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)(rx_packet->reqBuf) + sizeof(mode)));
-	strcpy(fName, mochaRoot);
-	strcat(fName, (const char *)(rx_packet->reqBuf + sizeof(mode)));
+	strcpy(nameBuf, mochaRoot);
+	strcat(nameBuf, (const char *)(rx_packet->reqBuf + sizeof(mode)));
 //	DEBUG_I("fName %s, mode = 0x%x", fName, mode);
 
 	/*if (!strcmp(fName, "/KFAT0/nvm/num/87_19"))
@@ -124,8 +126,7 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	else if(mode & FM_NOUPDATE_TIME)
 		flags |= O_RDWR;
 #endif
-	retval = open(fName, flags); //0777);
-	free(fName);
+	retval = open(nameBuf, flags); //0777);
 
 	tx_packet->funcRet = retval; //-1; //retval;
 	tx_packet->errorVal = (retval < 0 ? errno : 0); //-1; //retval;
@@ -162,15 +163,11 @@ int32_t FmCreateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	DEBUG_I("Inside FmCreateFile");
 	int32_t retval = 0;
 	struct stat sb;
-	char *fName;
+	strcpy(nameBuf, mochaRoot);
+	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
+	DEBUG_I("fName %s", nameBuf);
 
-	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)rx_packet->reqBuf));
-	strcpy(fName, mochaRoot);
-	strcat(fName, (const char *)(rx_packet->reqBuf));
-	DEBUG_I("fName %s", fName);
-
-	retval = creat(fName, 0777);
-	free(fName);
+	retval = creat(nameBuf, 0777);
 
 	tx_packet->errorVal = (retval < 0 ? errno : 0); //0; //retval;
 	tx_packet->funcRet = retval; //0; //retval;
@@ -303,15 +300,12 @@ int32_t FmRemoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
 	//DEBUG_I("Inside FmRemoveFile");
 	int32_t retval = 0;
-	char *fName;
+	
+	strcpy(nameBuf, mochaRoot);
+	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
+//	DEBUG_I("fName %s", nameBuf);
 
-	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)rx_packet->reqBuf));
-	strcpy(fName, mochaRoot);
-	strcat(fName, (const char *)(rx_packet->reqBuf));
-//	DEBUG_I("fName %s", fName);
-
-	retval = remove(fName);
-	free(fName);
+	retval = remove(nameBuf);
 
 	tx_packet->errorVal = 0; //retval;
 	tx_packet->funcRet = 0; //retval;
@@ -350,15 +344,12 @@ int32_t FmGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_pac
 //	DEBUG_I("Inside FmGetFileAttrFile");
 	int32_t retval = 0;
 	struct stat sb;
-	char *fName;
 
-	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)rx_packet->reqBuf));
-	strcpy(fName, mochaRoot);
-	strcat(fName, (const char *)(rx_packet->reqBuf));
-//	DEBUG_I("fName %s", fName);
+	strcpy(nameBuf, mochaRoot);
+	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
+//	DEBUG_I("fName %s", nameBuf);
 
-	retval = stat(fName, &sb);
-	free(fName);
+	retval = stat(nameBuf, &sb);
 
 	fAttr = (FmFileAttribute *)malloc(sizeof(FmFileAttribute));
 
@@ -522,14 +513,12 @@ int32_t FmOpenDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	int32_t retval = 0;
 	DIR * dir;
 	uint8_t *payload;
-	char *fName;
+	
+	strcpy(nameBuf, mochaRoot);
+	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
+	DEBUG_I("fName %s", nameBuf);
+	dir = opendir(nameBuf);
 
-	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)rx_packet->reqBuf));
-	strcpy(fName, mochaRoot);
-	strcat(fName, (const char *)(rx_packet->reqBuf));
-	DEBUG_I("fName %s", fName);
-	dir = opendir(fName);
-	free(fName);
 
 	dirArray[dirIndex++] = dir;
 
@@ -592,18 +581,16 @@ int32_t FmCreateDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packe
 {
 	DEBUG_I("Inside FmCreateDirFile");
 	int32_t retval = 0;
-	char *fName;
 
-	fName = (char *)malloc(sizeof(*mochaRoot) + strlen((char *)rx_packet->reqBuf));
-	strcpy(fName, mochaRoot);
-	strcat(fName, (const char *)(rx_packet->reqBuf));
-	DEBUG_I("fName %s", fName);
+	strcpy(nameBuf, mochaRoot);
+	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
+	DEBUG_I("fName %s", nameBuf);
 
-	retval = mkdir(fName, 0777);
+	retval = mkdir(nameBuf, 0777);
 
 	if(!retval)
-		DEBUG_I("error creating directory %s", fName);
-	free(fName);
+		DEBUG_I("error creating directory %s", nameBuf);
+		
 	tx_packet->errorVal = 0;
 	tx_packet->funcRet = 0;
 

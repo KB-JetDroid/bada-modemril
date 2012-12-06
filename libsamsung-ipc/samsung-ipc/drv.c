@@ -35,7 +35,7 @@
 #include <radio.h>
 #include <drv.h>
 
-#define LOG_TAG "RIL-IP"
+#define LOG_TAG "Mocha-RIL-IPC_DRV"
 #include <utils/Log.h>
 
 /*

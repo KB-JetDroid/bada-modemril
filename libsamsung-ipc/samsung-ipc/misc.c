@@ -32,7 +32,7 @@
 
 #include "ipc_private.h"
 
-#define LOG_TAG "RIL-IPC-MISC"
+#define LOG_TAG "Mocha-RIL-IPC-MISC"
 #include <utils/Log.h>
 
 void ipc_send_debug_level(uint32_t debug_level)

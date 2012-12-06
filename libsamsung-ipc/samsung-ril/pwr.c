@@ -19,7 +19,7 @@
  *
  */
 
-#define LOG_TAG "RIL-PWR"
+#define LOG_TAG "Mocha-RIL-PWR"
 #include <utils/Log.h>
 
 #include "samsung-ril.h"
@@ -28,6 +28,7 @@
 
 void ipc_pwr_phone_pwr_up(void)
 {
+	ALOGD("ipc_pwr_phone_pwr_up");
 	ril_state.radio_state = RADIO_STATE_OFF;
 	ril_state.power_mode = POWER_MODE_LPM;
 	RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
@@ -87,11 +88,16 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 	int power_state = *((int *)data);
 	unsigned short power_data;
 	/* TODO: fix it, implement LPM mode? */
-	ALOGD("IMPLEMENT ME! discarding... requested power_state is %d", power_state);
-	if(power_state <= 0)
-	{
-		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+	ALOGD("ril_request_radio_power: IMPLEMENT ME! requested power_state is %d", power_state);
+	if(power_state <= 0) {
+		ALOGD("Request power to LPM");
+		// LPM
+		RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
+	} else {	
+		ALOGD("Request power to NORMAL");
 	}
+	
+	RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 	return;
 #if 0
 	if(power_state > 0) {

@@ -19,7 +19,7 @@
  *
  */
 
-#define LOG_TAG "RIL-IPC"
+#define LOG_TAG "Mocha-RIL-IPC"
 #include <utils/Log.h>
 
 #include "samsung-ril.h"
@@ -31,7 +31,7 @@
 
 void ipc_log_handler(const char *message, void *user_data)
 {
-	ALOGD("ipc: %s", message);
+	ALOGI("ipc: %s", message);
 }
 
 /**

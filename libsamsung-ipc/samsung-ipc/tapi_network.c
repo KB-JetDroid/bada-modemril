@@ -28,7 +28,7 @@
 #include <tapi.h>
 #include <tapi_network.h>
 
-#define LOG_TAG "RIL-TAPI-NET"
+#define LOG_TAG "Mocha-RIL-TAPI-NET"
 #include <utils/Log.h>
 
 /*

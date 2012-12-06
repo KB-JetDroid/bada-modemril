@@ -34,7 +34,7 @@
 #include "ipc_private.h"
 #include "wave_ipc.h"
 
-#define LOG_TAG "RIL_WaveIPC"
+#define LOG_TAG "Mocha-RIL_WaveIPC"
 #include <utils/Log.h>
 
 int32_t wave_modem_bootstrap(struct ipc_client *client)
@@ -84,7 +84,7 @@ int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
 
     fd = open(MODEMPACKET_PATH, O_RDWR);
 
-    DEBUG_I("packet fd = 0x%x\n", fd);
+    DEBUG_I("IO filename=%s fd = 0x%x\n", MODEMPACKET_PATH, fd);
 
     if(fd < 0) {
         return 1;

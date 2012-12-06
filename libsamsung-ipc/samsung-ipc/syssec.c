@@ -25,7 +25,7 @@
 #include <radio.h>
 #include <syssec.h>
 
-#define LOG_TAG "RIL-SIM"
+#define LOG_TAG "Mocha-RIL-SIM"
 #include <utils/Log.h>
 
 const uint8_t fake_imei[] = {0x08, 0x1A, 0x32, 0x54, 0x76, 0x98, 0x12, 0x34, 0x56};

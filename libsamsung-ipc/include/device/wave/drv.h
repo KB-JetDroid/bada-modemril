@@ -30,6 +30,7 @@ enum IpcPacketType {
 	MODEM_RESET 		= 0x4, //0x4 ModemReset?		0x4 (always NULL)
 	UNKNOWN1 			= 0xA, //0xA Unknown			echo the packet we got, requested by IpcPacket with header 	= 10
 	NV_BACKUP_WRITTEN 	= 0xB, //0xB NvBackupWritten	0x4 (always NULL), sent in case of success overwriting of 0x1E700000, buffer to write is probably sent from CP in IpcPacket with header 	= 0x2
+	BATT_GAUGE_LEVEL_CHANGE_IND = 0x14, //0x4, uint32_t batt_level - for nearly full batt its 0x50
 	PMIC_RTC_WRITE_REQ	= 0x15,	//						0x1, single byte to write
 	PMIC_RTC_READ_REQ	= 0x16,	//						0x0?
 	PMIC_RTC_WRITE_RESP	= 0x17, //0x17 PmicThing		0x4, return code of writing register
@@ -67,8 +68,8 @@ enum IpcPacketType {
 	PS_STOP_RESP		= 0x52, //0x52 // 				0x1, result of proximity_sensor_detect_stop, requested by IpcPacket with header = 81
 	PS_IS_CLOSE_REQ		= 0x53, // requested by CP
 	PS_IS_CLOSE_RESP	= 0x54, //0x54 //PS_IS_CLOSE	0x1, result of proximity_sensor_is_close, requested by IpcPacket with header = 83
-	WAKE_UP_AP			= 0x55, //0x55 //WakeUp??		0x4 (always NULL) No idea, send from complicate math from 2 subs: PhsStatus and from BmWakeUp (right before 0xF packet AP_GOES_AWAKE to FIFO)
-	BATT_STATE_CP		= 0x55, //85 BatteryState
+	BATT_GAUGE_STATUS_REQ	= 0x55, //0x55  0x4 (always NULL) Sent during wakeup, send from complicate math from 2 subs: PhsStatus and from BmWakeUp (right before 0xF packet AP_GOES_AWAKE to FIFO)
+	BATT_GAUGE_STATUS_RESP	= 0x55, //85 BatteryState
 	TSP_UNK1_REQ		= 0x56,
 	TSP_UNK1_RESP		= 0x57, //TSP_related??	0x2, , requested by IpcPacket with header 		= 86 followed by probably 3 bytes
 	TA_INFO				= 0x58, //TA_Info		0x2, short int with some USB connector status (not dived into that yet, but normal value seems to be 1 or 2) requested by IpcPacket with header = 88
@@ -77,7 +78,7 @@ enum IpcPacketType {
 	FOTA_UNK1			= 0x5D, //sent by CP
 	FOTA_UNK2			= 0x5E, //FOTA_related	0x0, requested by IpcPacket with header 		= 93 (0x5D)
 	WLAN_MAC			= 0x5F, //95 WlanMAC		0x6, byte[6] WLAN MAC address from NV
-	BATT_GAUGE_CHANGE_IND		= 0x62, //98 0x1, u8 = battery_percent BattGaugeChangeInd, writing data from packet into batt driver struct and signaling DrvTask
+	BATT_GAUGE_STATUS_CHANGE_IND		= 0x62, //98 0x1, u8 = battery_percent BattGaugeChangeInd, writing data from packet into batt driver struct and signaling DrvTask
 };
 
 #endif

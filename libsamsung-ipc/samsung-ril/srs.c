@@ -28,7 +28,7 @@
 #include <netinet/in.h>
 #include <cutils/sockets.h>
 
-#define LOG_TAG "RIL-SRS"
+#define LOG_TAG "Mocha-RIL-SRS"
 #include <utils/Log.h>
 
 #include "samsung-ril.h"

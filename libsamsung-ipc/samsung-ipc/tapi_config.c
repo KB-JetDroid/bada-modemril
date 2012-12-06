@@ -25,7 +25,7 @@
 #include <tapi.h>
 #include <tapi_config.h>
 
-#define LOG_TAG "RIL-TAPI-CNF"
+#define LOG_TAG "Mocha-RIL-TAPI-CNF"
 #include <utils/Log.h>
 
 /*

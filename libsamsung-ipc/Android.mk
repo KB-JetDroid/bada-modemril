@@ -13,7 +13,7 @@ BUILD_IPC-MODEMCTRL := true
 DEBUG := true
 
 LOCAL_MODULE := libsamsung-ipc
-LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_TAGS := optional debug
 
 samsung-ipc_files := \
 	samsung-ipc/ipc.c \
@@ -25,6 +25,7 @@ samsung-ipc_files := \
 	samsung-ipc/proto.c \
 	samsung-ipc/sim.c \
 	samsung-ipc/drv.c \
+	samsung-ipc/tm.c \
 	samsung-ipc/syssec.c \
 	samsung-ipc/tapi.c \
 	samsung-ipc/tapi_call.c \
@@ -69,16 +70,12 @@ ifeq ($(BUILD_IPC-MODEMCTRL),true)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := ipc-modemctrl
-LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_TAGS := optional debug
 
 modemctrl_files := tools/modemctrl.c
 
-ifeq ($(TARGET_DEVICE),jet)
-	LOCAL_CFLAGS += -DDEVICE_JET
-endif
-ifeq ($(TARGET_DEVICE),wave)
-	LOCAL_CFLAGS += -DDEVICE_WAVE
-endif
+DEBUG := true
+
 ifeq ($(DEBUG),true)
 	LOCAL_CFLAGS += -DDEBUG
 	LOCAL_CFLAGS += -DDEBUG_INFO
@@ -92,6 +89,7 @@ LOCAL_STATIC_LIBRARIES := libsamsung-ipc
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
+	liblog \
 	libutils
 
 ifeq ($(TARGET_ARCH),arm)
@@ -106,6 +104,14 @@ endif
 
 include $(CLEAR_VARS)
 
+DEBUG := true
+
+ifeq ($(DEBUG),true)
+	LOCAL_CFLAGS += -DDEBUG
+	LOCAL_CFLAGS += -DDEBUG_INFO
+	LOCAL_CFLAGS += -DLOG_STDOUT
+endif
+
 samsung-ril_files := \
 	samsung-ril/samsung-ril.c \
 	samsung-ril/client.c \
@@ -118,7 +124,7 @@ samsung-ril_files := \
 LOCAL_SHARED_LIBRARIES := \
 	libcutils libutils libril
 
-#LOCAL_STATIC_LIBRARIES := libsamsung-ipc
+LOCAL_STATIC_LIBRARIES := libsamsung-ipc
 
 # for asprinf
 LOCAL_CFLAGS := -D_GNU_SOURCE
@@ -137,7 +143,7 @@ LOCAL_C_INCLUDES := external/bada-modemril/libsamsung-ipc/include
 LOCAL_C_INCLUDES += hardware/ril/libsamsung-ipc/include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/samsung-ipc
-LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_TAGS := optional debug
 
 LOCAL_PRELINK_MODULE := false
 
@@ -146,15 +152,16 @@ LOCAL_SRC_FILES := $(samsung-ipc_files) $(samsung-ril_files)
 ifeq (foo,foo)
 	# build shared library
 	LOCAL_SHARED_LIBRARIES += \
-		libcutils libnetutils libutils
+		libcutils libnetutils libutils liblog
 	LOCAL_LDLIBS += -lpthread
 	LOCAL_CFLAGS += -DRIL_SHLIB
-	LOCAL_MODULE:= libsamsung-ril
+	LOCAL_MODULE := libsamsung-ril
 	include $(BUILD_SHARED_LIBRARY)
 else
 	# build executable
 	LOCAL_SHARED_LIBRARIES += \
+		liblog \
 		libril
-	LOCAL_MODULE:= samsung-ril
+	LOCAL_MODULE := samsung-ril
 	include $(BUILD_EXECUTABLE)
 endif

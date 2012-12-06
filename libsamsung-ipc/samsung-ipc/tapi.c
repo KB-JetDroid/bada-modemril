@@ -41,7 +41,7 @@
 #include <tapi_dmh.h>
 #include <tapi_config.h>
 
-#define LOG_TAG "RIL-TAPI-PACKET"
+#define LOG_TAG "Mocha-RIL-TAPI-PACKET"
 #include <utils/Log.h>
 
 /*

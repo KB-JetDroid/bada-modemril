@@ -19,7 +19,7 @@
  *
  */
 
-#define LOG_TAG "RIL-SAT"
+#define LOG_TAG "Mocha-RIL-SAT"
 #include <utils/Log.h>
 
 #include "samsung-ril.h"

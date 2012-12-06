@@ -32,7 +32,6 @@
 #include <radio.h>
 
 struct drvPacketHeader {
-	uint8_t reserved; //probably dummy
 	uint8_t drvPacketType;
 } __attribute__((__packed__));
 

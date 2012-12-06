@@ -31,7 +31,7 @@
 #include <misc.h>
 
 
-#define LOG_TAG "RIL-IPC-PARSER"
+#define LOG_TAG "Mocha-RIL-IPC-PARSER"
 #include <utils/Log.h>
 
 

@@ -19,7 +19,7 @@
  *
  */
 
-#define LOG_TAG "RIL-SIM"
+#define LOG_TAG "Mocha-RIL-SIM"
 #include <utils/Log.h>
 
 #include "samsung-ril.h"

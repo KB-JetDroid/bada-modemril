@@ -21,10 +21,11 @@
  *
  */
 
+#define LOG_TAG "Mocha-RIL"
+
 #include <time.h>
 #include <pthread.h>
 
-#define LOG_TAG "RIL"
 #include <utils/Log.h>
 #include <telephony/ril.h>
 
@@ -187,6 +188,7 @@ int ril_modem_check(void)
 
 void onRequest(int request, void *data, size_t datalen, RIL_Token t)
 {
+	ALOGV("Request from RILD ID - %d", request);
 	if(ril_modem_check() < 0)
 		RIL_onRequestComplete(t, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
 
@@ -198,7 +200,6 @@ void onRequest(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_GET_IMSI:
 			ril_request_get_imsi(t);
 			break;
-#if 0
 		/* PWR */
 		case RIL_REQUEST_RADIO_POWER:
 			ril_request_radio_power(t, data, datalen);
@@ -206,6 +207,7 @@ void onRequest(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_BASEBAND_VERSION:
 			ril_request_baseband_version(t);
 			break;
+#if 0
 		/* SAT */
 		case RIL_REQUEST_STK_SEND_TERMINAL_RESPONSE:
 			requestSatSendTerminalResponse(t, data, datalen);
@@ -385,7 +387,7 @@ const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **a
 	ril_state_lpm();
 	ril_install_ipc_callbacks();
 
-	ALOGD("Creating IPC client");
+	ALOGI("Creating IPC client");
 
 	ipc_packet_client = ril_client_new(&ipc_client_funcs);
 	rc = ril_client_create(ipc_packet_client);
@@ -402,10 +404,10 @@ const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **a
 		goto srs;
 	}
 
-	ALOGD("IPC client ready");
+	ALOGI("IPC client ready");
 
 srs:
-	ALOGD("Creating SRS client");
+	ALOGI("Creating SRS client");
 
 	srs_client = ril_client_new(&srs_client_funcs);
 	rc = ril_client_create(srs_client);
@@ -422,7 +424,7 @@ srs:
 		goto end;
 	}
 
-	ALOGD("SRS client ready");
+	ALOGI("SRS client ready");
 
 	tapi_init();
 	proto_startup();

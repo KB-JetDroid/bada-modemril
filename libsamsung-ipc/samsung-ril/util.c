@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define LOG_TAG "RIL-UTIL"
+#define LOG_TAG "Mocha-RIL-UTIL"
 #include <utils/Log.h>
 
 /**

@@ -34,7 +34,7 @@
 #include <radio.h>
 #include <proto.h>
 
-#define LOG_TAG "RIL-PRO"
+#define LOG_TAG "Mocha-RIL-PRO"
 #include <utils/Log.h>
 
 /*
