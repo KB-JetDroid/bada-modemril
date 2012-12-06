@@ -83,7 +83,7 @@ void handleReadNvRequest(struct drvNvPacket* rxNvPacket)
 	DEBUG_I("size = 0x%x", rxNvPacket->size);
 
 	tx_packet.header.drvPacketType = NV_BACKUP_DATA;
-	tx_packet.header.reserved = 0;
+	//tx_packet.header.reserved = 0;
 	tx_packet.respBuf = NULL;
 
 	request.data = malloc((rxNvPacket->size) + sizeof(struct drvPacketHeader));
@@ -137,7 +137,7 @@ void handleSystemInfoRequest()
 	
 	/* TODO: for WAVE add USB TA info sending here */
 	tx_packet.header.drvPacketType = SOUND_CONFIG;
-	tx_packet.header.reserved = 0;
+	//tx_packet.header.reserved = 0;
 	tx_packet.respBuf = NULL;
 
 	payload = malloc(SOUND_CFG_DATA_SIZE + sizeof(struct drvPacketHeader));
@@ -174,7 +174,7 @@ void handleSystemInfoRequest()
 	free(payload);
 
 	tx_packet.header.drvPacketType = HIDDEN_SW_VER;
-	tx_packet.header.reserved = 0;
+	//tx_packet.header.reserved = 0;
 	tx_packet.respBuf = NULL;
 
 	payload = malloc((0x14) + sizeof(struct drvPacketHeader));
