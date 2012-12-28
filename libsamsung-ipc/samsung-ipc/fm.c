@@ -51,7 +51,7 @@
 #include <dirent.h>
 #include <errno.h>
 
-#define LOG_TAG "Mocha-RIL_FM"
+#define LOG_TAG "Mocha-RIL-FM"
 #include <utils/Log.h>
 
 #define MAX_OPEN_DIRS 	10
@@ -361,14 +361,13 @@ int32_t FmGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_pac
 
 	fAttr = (FmFileAttribute *)malloc(sizeof(FmFileAttribute));
 
+	
 	tx_packet->funcRet = retval; //(retval < 0 ? 0 : 1); //0;
 	tx_packet->errorVal = (retval < 0 ? errno : 0); // ENOENT; retval; //0;
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(FmFileAttribute); //0x08; //0x100;
 
-#if 1
 	if(retval >= 0)
 	{
-#if 1
 		fAttr->oldFileSize = sb.st_size;
 		fAttr->startAddr = 0;
 		fAttr->attribute = sb.st_mode;
@@ -388,13 +387,12 @@ int32_t FmGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_pac
 		fAttr->stModifiedDataTime.second = fmTime.second;
 		fAttr->u64EntryUniqID = sb.st_ino;
 		fAttr->uReservedField = 0;
-#endif
 		fAttr->fileSize = sb.st_size;
 		fAttr->allocatedSize = sb.st_size;
 	}
 	else
 	{
-#if 1
+		DEBUG_I("%s: error! %s", __func__, strerror(errno));
 		fAttr->oldFileSize = 0;
 		fAttr->startAddr = 0;
 		fAttr->attribute = 0;
@@ -414,11 +412,9 @@ int32_t FmGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_pac
 		fAttr->stModifiedDataTime.second = fmTime.second;
 		fAttr->u64EntryUniqID = 0;
 		fAttr->uReservedField = 0;
-#endif
 		fAttr->fileSize = 0;
 		fAttr->allocatedSize = 0;
 	}
-#endif
 
 	//memcpy(tx_packet->respBuf, &fAttr, sizeof(FmFileAttribute));
 	tx_packet->respBuf = (uint8_t *)fAttr;
@@ -469,7 +465,8 @@ int32_t FmFGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_pa
 		fAttr->allocatedSize = sb.st_size;
 	}
 	else
-	{
+	{	
+		DEBUG_I("%s: error! %s", __func__, strerror(errno));
 		fAttr->oldFileSize = 0;
 		fAttr->startAddr = 0;
 		fAttr->attribute = 0;
@@ -596,11 +593,11 @@ int32_t FmCreateDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packe
 
 	retval = mkdir(nameBuf, 0777);
 
-	if(!retval)
-		DEBUG_I("error creating directory %s", nameBuf);
+	if(retval < 0)
+		DEBUG_I("error creating directory %s, error: %s", nameBuf, strerror(errno));
 		
-	tx_packet->errorVal = 0;
-	tx_packet->funcRet = 0;
+	tx_packet->errorVal = retval;
+	tx_packet->funcRet = (retval < 0 ? errno : 0);
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
