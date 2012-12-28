@@ -103,7 +103,7 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	mode = *(int32_t *)(rx_packet->reqBuf);
 	strcpy(nameBuf, mochaRoot);
 	strcat(nameBuf, (const char *)(rx_packet->reqBuf + sizeof(mode)));
-//	DEBUG_I("fName %s, mode = 0x%x", fName, mode);
+	DEBUG_I("%s: fName %s, mode = 0x%x", __func__, fName, mode);
 
 	/*if (!strcmp(fName, "/KFAT0/nvm/num/87_19"))
 		lastOpen = 1;
@@ -128,6 +128,8 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 #endif
 	retval = open(nameBuf, flags); //0777);
 
+	if(retval < 0)
+		DEBUG_I("%s: error! %s", __func__, strerror(errno));
 	tx_packet->funcRet = retval; //-1; //retval;
 	tx_packet->errorVal = (retval < 0 ? errno : 0); //-1; //retval;
 
@@ -147,7 +149,10 @@ int32_t FmCloseFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	fd = *(int32_t *)(rx_packet->reqBuf);
 
 	retval = close(fd);
-
+	
+	if(retval < 0)
+		DEBUG_I("%s: error! %s", __func__, strerror(errno));
+	
 	tx_packet->errorVal = (retval < 0 ? errno : 0); //0; //retval;
 	tx_packet->funcRet = retval; //0; //retval;
 
@@ -165,10 +170,13 @@ int32_t FmCreateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	struct stat sb;
 	strcpy(nameBuf, mochaRoot);
 	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
-	DEBUG_I("fName %s", nameBuf);
+	DEBUG_I("%s: fName %s", __func__, nameBuf);
 
 	retval = creat(nameBuf, 0777);
-
+	
+	if(retval < 0)
+		DEBUG_I("%s: error! %s", __func__, strerror(errno));
+		
 	tx_packet->errorVal = (retval < 0 ? errno : 0); //0; //retval;
 	tx_packet->funcRet = retval; //0; //retval;
 
@@ -303,7 +311,7 @@ int32_t FmRemoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	
 	strcpy(nameBuf, mochaRoot);
 	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
-//	DEBUG_I("fName %s", nameBuf);
+	DEBUG_I("%s: fName %s", __func__, nameBuf);
 
 	retval = remove(nameBuf);
 
@@ -347,7 +355,7 @@ int32_t FmGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_pac
 
 	strcpy(nameBuf, mochaRoot);
 	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
-//	DEBUG_I("fName %s", nameBuf);
+	DEBUG_I("%s: fName %s", __func__, nameBuf);
 
 	retval = stat(nameBuf, &sb);
 
@@ -516,7 +524,7 @@ int32_t FmOpenDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	
 	strcpy(nameBuf, mochaRoot);
 	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
-	DEBUG_I("fName %s", nameBuf);
+	DEBUG_I("%s: fName %s", __func__, nameBuf);
 	dir = opendir(nameBuf);
 
 
@@ -584,7 +592,7 @@ int32_t FmCreateDirFile(struct fmRequest *rx_packet, struct fmResponse *tx_packe
 
 	strcpy(nameBuf, mochaRoot);
 	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
-	DEBUG_I("fName %s", nameBuf);
+	DEBUG_I("%s: fName %s", __func__, nameBuf);
 
 	retval = mkdir(nameBuf, 0777);
 
