@@ -68,9 +68,17 @@ int32_t get_nvm_data(void *data, uint32_t size)
 	fd = open(nvmFile, O_RDONLY);
 
 	DEBUG_I("file %s open status = %d", nvmFile, fd);
+	if(fd < 0)
+	{
+		DEBUG_I("%s: error! %s", __func__, strerror(errno));
+		return -1;
+	}
+	
 	retval = read(fd, data, size);
 	DEBUG_I("file %s read status = %d", nvmFile, retval);
-
+	if(retval < 0)
+		DEBUG_I("%s: error! %s", __func__, strerror(errno));
+		
 	if (fd > 0)
 		close(fd);
 	return 0;

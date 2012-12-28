@@ -436,7 +436,7 @@ int32_t FmFGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_pa
 
 	fAttr = malloc(sizeof(FmFileAttribute));
 
-	tx_packet->funcRet = (retval < 0 ? 0 : 1); //0;
+	tx_packet->funcRet = retval; //0;
 	tx_packet->errorVal = (retval < 0 ? errno : 0); // ENOENT; retval; //0;
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(FmFileAttribute); //0x08; //0x100;
 
