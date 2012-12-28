@@ -51,7 +51,7 @@ char *batteryDev = "/sys/devices/platform/i2c-gpio.6/i2c-6/6-0066/max8998-charge
 char *fake_apps_version = "S800MPOJB1";
 #elif defined(DEVICE_WAVE)
 #include <device/wave/sound_data.h>
-char *nvmFile = "/dev/mtdblock0";
+char *nvmFile = "/dev/block/mtdblock0";
 char *batteryDev = "/sys/devices/platform/i2c-gpio.6/i2c-6/6-0066/max8998-charger/power_supply/"; 
 char *fake_apps_version = "S8530JPKA1";
 #endif
@@ -208,7 +208,7 @@ void handleFuelGaugeStatus(uint8_t percentage)
 {
 	char buf[60];
 	int32_t fd, len;
-	sprintf(buf, "%s/capacity", batteryDev);
+	sprintf(buf, "%s%s", batteryDev, "capacity");
 	fd = open(buf, O_RDWR);
 	if(fd < 0)
 	{
