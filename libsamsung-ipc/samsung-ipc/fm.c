@@ -103,7 +103,7 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	mode = *(int32_t *)(rx_packet->reqBuf);
 	strcpy(nameBuf, mochaRoot);
 	strcat(nameBuf, (const char *)(rx_packet->reqBuf + sizeof(mode)));
-	DEBUG_I("%s: fName %s, mode = 0x%x", __func__, fName, mode);
+	DEBUG_I("%s: fName %s, mode = 0x%x", __func__, nameBuf, mode);
 
 	/*if (!strcmp(fName, "/KFAT0/nvm/num/87_19"))
 		lastOpen = 1;
