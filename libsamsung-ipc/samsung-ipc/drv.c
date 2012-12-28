@@ -34,6 +34,7 @@
 
 #include <radio.h>
 #include <drv.h>
+#include <errno.h>
 
 #define LOG_TAG "Mocha-RIL-IPC_DRV"
 #include <utils/Log.h>
@@ -46,12 +47,12 @@
 #ifdef DEVICE_JET
 #include <device/jet/sound_data.h>
 char *nvmFile = "/efs/bml4";
-char *fuelGaugeDev = "/dev/ipc_fuelgauge"; 
+char *batteryDev = "/sys/devices/platform/i2c-gpio.6/i2c-6/6-0066/max8998-charger/power_supply/"; 
 char *fake_apps_version = "S800MPOJB1";
 #elif defined(DEVICE_WAVE)
 #include <device/wave/sound_data.h>
 char *nvmFile = "/dev/mtdblock0";
-char *fuelGaugeDev = "/dev/ipc_fuelgauge"; 
+char *batteryDev = "/sys/devices/platform/i2c-gpio.6/i2c-6/6-0066/max8998-charger/power_supply/"; 
 char *fake_apps_version = "S8530JPKA1";
 #endif
 
@@ -195,6 +196,24 @@ void handleSystemInfoRequest()
 	DEBUG_I("Sent all the sound packages");
 }
 
+void handleFuelGaugeStatus(uint8_t percentage)
+{
+	char buf[60];
+	int32_t fd, len;
+	sprintf(buf, "%s/capacity", batteryDev);
+	fd = open(buf, O_RDWR);
+	if(fd < 0)
+	{
+		DEBUG_E("%s: Failed to open %s.", __func__, buf);
+		return;
+	}
+	sprintf(buf, "%d", percentage);
+	len = strlen(buf);
+	if(write(fd, buf, strlen(buf)) != len)	
+		DEBUG_E("%s: Failed to write battery capacity, error: %s", __func__, strerror(errno));
+	close(fd);
+}
+
 void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame)
 {
 	DEBUG_I("enter");
@@ -225,8 +244,12 @@ void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame)
 		DEBUG_I("SYSTEM_INFO_REQ IpcDrv packet received");
 		handleSystemInfoRequest();
 		break;
+	case BATT_GAUGE_STATUS_CHANGE_IND:	
+		DEBUG_I("BATT_GAUGE_STATUS_CHANGE_IND IpcDrv packet received");
+		handleFuelGaugeStatus(*((uint8_t*)ipc_frame->data));
+		break;
 	default:
-		DEBUG_I("IpcDrv Packet type 0x%x is not yet handled", rx_header->drvPacketType);
+		DEBUG_I("IpcDrv Packet type 0x%X is not yet handled", rx_header->drvPacketType);
 
 		break;
     }

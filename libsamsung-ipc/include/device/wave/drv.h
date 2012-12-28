@@ -26,9 +26,9 @@
 enum IpcPacketType {
 	READ_NV_BACKUP 		= 0x1, // ReadNvBackup 			0x4 long len
 	WRITE_NV_BACKUP 	= 0x2, // WriteNvBackup 		dynamic, first 4 byte is long len, followed by buffer to write
-	NV_BACKUP_DATA 		= 0x3, //0x3 NvBackupRead		dynamic, contains N bytes from 0x1E700000, requested by IpcPacket with header 	= 0x1, followed by length
+	NV_BACKUP_DATA 		= 0x3, //0x3 NvBackupRead		dynamic, contains N bytes from 0x1E700000, requested by IpcPacket with type 0x1, followed by length
 	MODEM_RESET 		= 0x4, //0x4 ModemReset?		0x4 (always NULL)
-	UNKNOWN1 			= 0xA, //0xA Unknown			echo the packet we got, requested by IpcPacket with header 	= 10
+	UNKNOWN1 			= 0xA, //0xA Unknown			echo the packet we got, requested by IpcPacket with type 0xA
 	NV_BACKUP_WRITTEN 	= 0xB, //0xB NvBackupWritten	0x4 (always NULL), sent in case of success overwriting of 0x1E700000, buffer to write is probably sent from CP in IpcPacket with header 	= 0x2
 	BATT_GAUGE_LEVEL_CHANGE_IND = 0x14, //0x4, uint32_t batt_level - for nearly full batt its 0x50
 	PMIC_RTC_WRITE_REQ	= 0x15,	//						0x1, single byte to write
@@ -68,8 +68,8 @@ enum IpcPacketType {
 	PS_STOP_RESP		= 0x52, //0x52 // 				0x1, result of proximity_sensor_detect_stop, requested by IpcPacket with header = 81
 	PS_IS_CLOSE_REQ		= 0x53, // requested by CP
 	PS_IS_CLOSE_RESP	= 0x54, //0x54 //PS_IS_CLOSE	0x1, result of proximity_sensor_is_close, requested by IpcPacket with header = 83
-	BATT_GAUGE_STATUS_REQ	= 0x55, //0x55  0x4 (always NULL) Sent during wakeup, send from complicate math from 2 subs: PhsStatus and from BmWakeUp (right before 0xF packet AP_GOES_AWAKE to FIFO)
-	BATT_GAUGE_STATUS_RESP	= 0x55, //85 BatteryState
+	BATT_GAUGE_STATUS_REQ	= 0x55, //0x55  0x4 (always NULL) sent during wakeup, requesting level of battery
+	BATT_GAUGE_STATUS_RESP	= 0x55, //85 BatteryState, in percent maybe
 	TSP_UNK1_REQ		= 0x56,
 	TSP_UNK1_RESP		= 0x57, //TSP_related??	0x2, , requested by IpcPacket with header 		= 86 followed by probably 3 bytes
 	TA_INFO				= 0x58, //TA_Info		0x2, short int with some USB connector status (not dived into that yet, but normal value seems to be 1 or 2) requested by IpcPacket with header = 88

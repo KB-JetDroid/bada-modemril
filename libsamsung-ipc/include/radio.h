@@ -124,6 +124,11 @@ void *ipc_file_read(struct ipc_client *client, char *file_name, int size, int bl
 
 struct ipc_client *client;
 
+static inline void *mtd_read(char *mtd_name, int size, int block_size)
+{
+	return ipc_mtd_read(client, mtd_name, size, block_size);
+}
+
 static inline void hex_dump(void *data, int size)
 {
 	ipc_hex_dump(client, data, size);
