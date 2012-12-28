@@ -35,11 +35,11 @@ enum IpcPacketType {
 	PMIC_RTC_READ_REQ	= 0x16,	//						0x0?
 	PMIC_RTC_WRITE_RESP	= 0x17, //0x17 PmicThing		0x4, return code of writing register
 	PMIC_RTC_READ_RESP	= 0x18, //0x18 PmicThing		0xC, {uint32_t value_read_from_register, uint32_t unk1, uint32_t unk2}
-	SYSTEM_INFO_REQ		= 0x19, //						0x0? cause sending TA_CHANGE packet, 4 SOUND_CONFIG packets and HIDDEN_SW_VER packet
+	SYSTEM_INFO_REQ		= 0x19, //						0x0? cause sending TA_CHANGE packet if there's USB connected, 4 SOUND_CONFIG packets and HIDDEN_SW_VER packet
 	TA_CHANGE_CP		= 0x1A, //						0x2 {uint16_t type} typeEnum {0x8, 0x9, 0xA, 0xC, 0xD, 0xE} cause AP to control charging
 	TA_CHANGE_AP		= 0x1A, //0x1A TA_Change		0x4 (1=insert, 2=remove, 0xB=unknown), not sure->{sent only if some condition is met, this condition is set to true by TA_Remove_NotifyCP}
 	SOUND_CONFIG 		= 0x1D, //0x1D SoundConfig	0x19C (412), send 4 in row, in response to SYSTEM_INFO_REQ
-	DIAG_TRACE 			= 0x28, //0x28 DiagTrace?		dynamic, probably used only in debuggingn val of sub_4007DC04(0, data_from_cp), requested by CP in IpcPacket with header = 0x15 (followed by data)
+	DIAG_TRACE 			= 0x28, //0x28 DiagTrace?		dynamic, probably used only in debugging or in case of some serious failure
 	UNKNOWN2 			= 0x29, //41 Unknown, possibly dummy, AP should response with exactly the same IPC packet (same type and buffer)
 	SET_LCD_STATE 		= 0x2D, //45 SetLcdState	0x1, bool on (1 = wakeup, 0 = goto sleep)
 	VIB_STOP 			= 0x2E, //46 VibStop		0x1, unknown

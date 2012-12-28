@@ -63,6 +63,7 @@ struct ril_state ril_state;
 
 struct ril_request_token ril_requests_tokens[0x100];
 int ril_request_id = 0;
+int networkInitialised = 0;
 
 void ril_requests_tokens_init(void)
 {
@@ -182,7 +183,10 @@ int ril_modem_check(void)
 
 	if(ipc_packet_client->state != RIL_CLIENT_READY)
 		return -1;
-
+	
+	if(!networkInitialised)
+		return -1;
+		
 	return 0;
 }
 
@@ -379,9 +383,21 @@ static const RIL_RadioFunctions ril_ops = {
 	getVersion
 };
 
+void *networkInitThread(void* arg)
+{
+	/* Wait 5 seconds for modem to initialize before requesting network subsystems init */
+	usleep(5000000);
+	tapi_init();
+	proto_startup();
+	lbs_init();
+	networkInitialised = 1; /* Mark that packets had been sent, so we can start serving RILD requests. */
+	return 0;
+}
+
 const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **argv)
 {
 	int rc;
+    pthread_t networkInit;
 
 	ril_env = env;
 
@@ -408,7 +424,10 @@ const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **a
 	}
 
 	ALOGI("IPC client ready");
-
+	if(pthread_create(&networkInit, NULL, networkInitThread, NULL) == 0)
+		ALOGI("Network init thread started!");
+	else
+		ALOGE("Network init thread startup failure!");
 srs:
 	ALOGI("Creating SRS client");
 
@@ -429,9 +448,6 @@ srs:
 
 	ALOGI("SRS client ready");
 
-	tapi_init();
-	proto_startup();
-	lbs_init();
 end:
 	return &ril_ops;
 }

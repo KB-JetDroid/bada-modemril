@@ -53,7 +53,7 @@ void ipc_dispatch(struct ipc_client *client, struct modem_io *ipc_frame)
             ipc_parse_dbg_level(client, ipc_frame);
         break;
         case FIFO_PKT_BOOT:
-            //ipc_parse_boot(client, ipc_frame);
+            ipc_parse_boot(client, ipc_frame);
         break;
 		case FIFO_PKT_SYSTEM:
 			ipc_parse_system(client, ipc_frame);

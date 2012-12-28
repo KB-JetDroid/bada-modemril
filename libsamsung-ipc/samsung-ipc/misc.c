@@ -62,47 +62,7 @@ void ipc_parse_boot(struct ipc_client *client, struct modem_io *ipc_frame)
 {
 	DEBUG_I("Inside ipc_parse_boot\n");
 	int retval, count;
-	struct drvPacketHeader *rx_header;
-	struct drvRequest tx_packet;
-
-	struct modem_io request;
-    void *frame;
-    uint8_t *payload;
-    int frame_length;
-
-    struct fifoPacketHeader *ipc;
-
-    char data[4][0x04] = {
-    			  {0x06,0,0,0},
-    };
-
-    static struct modem_io sysDataToCP [1] = {
-    		{
-    			.magic = 0xCAFECAFE,
-    			.cmd = 0x96,
-    			.datasize = 0x04,
-    		},
-    };
-
-	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
-
-	ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
-
-	for(count = 0; count < 1; count++)
-	{
-		payload = malloc(sysDataToCP[count].datasize);
-
-		memcpy(payload, data[count], sysDataToCP[count].datasize);
-
-		request.magic = sysDataToCP[count].magic;
-		request.cmd = sysDataToCP[count].cmd;
-		request.datasize = sysDataToCP[count].datasize;
-
-		request.data = payload;
-
-		ipc_client_send(client, &request);
-
-	}
+	
     DEBUG_I("Inside ipc_parse_boot leaving\n");
 
 }
@@ -121,7 +81,7 @@ void ipc_parse_dbg_level(struct ipc_client *client, struct modem_io *ipc_frame)
 
 void ipc_parse_system(struct ipc_client *client, struct modem_io *ipc_frame)
 {
-	DEBUG_I("start");
+	DEBUG_I("received SYSTEM packet with AMSS version");
 	uint32_t desc_size;
 	int suffix_size;
 	desc_size = strlen((const char*)ipc_frame->data);

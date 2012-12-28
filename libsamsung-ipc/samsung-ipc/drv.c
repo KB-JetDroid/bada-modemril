@@ -144,7 +144,7 @@ void handleSystemInfoRequest()
 	
 	DEBUG_I("enter");
 	
-	/* TODO: for WAVE add USB TA info sending here */
+	/* TODO: for WAVE add USB TA info sending if there's USB connected (it's not being send if USB is disconnected) */
 	tx_packet.header.drvPacketType = SOUND_CONFIG;
 	//tx_packet.header.reserved = 0;
 	tx_packet.respBuf = NULL;

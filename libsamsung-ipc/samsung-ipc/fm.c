@@ -23,9 +23,9 @@
  * TODO: Optimize this file
  * 		 Implement following functions properly:
  * 		 	FmMoveFile
- * 		 	FmGetFileAttrFile
- * 		 	FmFGetFileAttrFile
- * 		 	FmSetFileAttrFile
+ * 		 	FmGetFileAttributes
+ * 		 	FmFGetFileAttributes
+ * 		 	FmSetFileAttributes
  * 		 	FmTruncateFile
  * 		 	FmReadDirFile
  * 		 	FmRemoveDirFile
@@ -81,9 +81,9 @@ int32_t (*fileOps[MAX_FILE_OPS])(struct fmRequest *, struct fmResponse *) =
 	&FmTellFile,
 	&FmRemoveFile,
 	&FmMoveFile,
-	&FmGetFileAttrFile,
-	&FmFGetFileAttrFile,
-	&FmSetFileAttrFile,
+	&FmGetFileAttributes,
+	&FmFGetFileAttributes,
+	&FmSetFileAttributes,
 	&FmTruncateFile,
 	&FmOpenDirFile,
 	&FmCloseDirFile,
@@ -337,7 +337,6 @@ int32_t FmMoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 /*
  * FIXME: Put proper timestamp in FileAttribute structure
  */
-FmFileAttribute *fAttr;
 TmDateTime fmTime = {
 		.year = 2011,
 		.month = 12,
@@ -347,12 +346,13 @@ TmDateTime fmTime = {
 		.second = 45,
 };
 
-int32_t FmGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-//	DEBUG_I("Inside FmGetFileAttrFile");
+//	DEBUG_I("Inside FmGetFileAttributes");
 	int32_t retval = 0;
 	struct stat sb;
-
+	FmFileAttribute *fAttr;
+	
 	strcpy(nameBuf, mochaRoot);
 	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
 	DEBUG_I("%s: fName %s", __func__, nameBuf);
@@ -419,16 +419,17 @@ int32_t FmGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_pac
 	//memcpy(tx_packet->respBuf, &fAttr, sizeof(FmFileAttribute));
 	tx_packet->respBuf = (uint8_t *)fAttr;
 
-//	DEBUG_I("Leaving FmGetFileAttrFile");
+//	DEBUG_I("Leaving FmGetFileAttributes");
 	return 0;
 }
 
-int32_t FmFGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmFGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	DEBUG_I("Inside FmFGetFileAttrFile");
+	DEBUG_I("Inside FmFGetFileAttributes");
 	int32_t retval = 0;
 	struct stat sb;
 	int32_t fd;
+	FmFileAttribute *fAttr;
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
 
@@ -496,11 +497,11 @@ int32_t FmFGetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_pa
 	return retval;
 }
 
-int32_t FmSetFileAttrFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
+int32_t FmSetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	DEBUG_I("Inside FmSetFileAttrFile - TBD");
+	DEBUG_I("Inside FmSetFileAttributes - TBD");
 
-	DEBUG_I("Leaving FmSetFileAttrFile");
+	DEBUG_I("Leaving FmSetFileAttributes");
 	return 0;
 }
 
@@ -662,7 +663,6 @@ int32_t ipc_parse_fm(struct ipc_client* client, struct modem_io *ipc_frame)
 	request.magic = ipc_frame->magic;
 	request.cmd = ipc_frame->cmd;
 	request.datasize = frame_length;
-
 
     frame = (uint8_t*)malloc(frame_length);
 
