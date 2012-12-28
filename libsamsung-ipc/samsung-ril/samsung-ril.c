@@ -190,7 +190,10 @@ void onRequest(int request, void *data, size_t datalen, RIL_Token t)
 {
 	ALOGV("Request from RILD ID - %d", request);
 	if(ril_modem_check() < 0)
+	{
+		ALOGE("ril_modem_check() < 0 - replying RIL_E_RADIO_NOT_AVAILABLE");
 		RIL_onRequestComplete(t, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
+	}
 
 	switch(request) {
 		/* MISC */
