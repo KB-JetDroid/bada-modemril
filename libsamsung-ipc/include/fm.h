@@ -55,18 +55,6 @@ struct fmResponse {
 	uint8_t *respBuf;
 };
 
-struct fmArgs {
-	uint32_t mode;
-	char *fileName;
-	uint32_t fileHandle;
-	void *readBuf;
-	void *writeBuf;
-	uint32_t size;
-	uint32_t numRead;
-	uint32_t offset;
-	uint32_t origin;
-};
-
 /*
  * Access Modes
  */
@@ -239,12 +227,12 @@ int32_t FmGetFileAttributes(struct fmRequest *, struct fmResponse *);
 int32_t FmFGetFileAttributes(struct fmRequest *, struct fmResponse *);
 int32_t FmSetFileAttributes(struct fmRequest *, struct fmResponse *);
 int32_t FmTruncateFile(struct fmRequest *, struct fmResponse *);
-int32_t FmOpenDirFile(struct fmRequest *, struct fmResponse *);
-int32_t FmCloseDirFile(struct fmRequest *, struct fmResponse *);
-int32_t FmReadDirFile(struct fmRequest *, struct fmResponse *);
-int32_t FmCreateDirFile(struct fmRequest *, struct fmResponse *);
-int32_t FmRemoveDirFile(struct fmRequest *, struct fmResponse *);
-int32_t FmGetQuotaSpaceFile(struct fmRequest *, struct fmResponse *);
+int32_t FmOpenDir(struct fmRequest *, struct fmResponse *);
+int32_t FmCloseDir(struct fmRequest *, struct fmResponse *);
+int32_t FmReadDir(struct fmRequest *, struct fmResponse *);
+int32_t FmCreateDir(struct fmRequest *, struct fmResponse *);
+int32_t FmRemoveDir(struct fmRequest *, struct fmResponse *);
+int32_t FmGetQuotaSpace(struct fmRequest *, struct fmResponse *);
 //int32_t FmInvalidFile(unsigned int mode, const char *fileName);
 
 int32_t ipc_parse_fm(struct ipc_client* client, struct modem_io *ipc_frame);
