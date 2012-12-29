@@ -37,7 +37,7 @@ typedef unsigned int		ADDR;
 
 //PACKETTYPE 0x6 FmPacket
 struct fmPacketHeader {
-	uint32_t fmPacketType; 	//(stored as type-0xEFFFFFFF, just take first byte substract 1 to get actual type)
+	uint32_t fmPacketType; 	//stored as type-0xEFFFFFFF, add 0xEFFFFFFF to map to the FM operation id
 	uint32_t reserved1; 		//dummy, unused?
 	uint32_t packetLen; 		//equal to n, equal to packetLength-16 (headersize)
 	uint32_t reqCounter; 	// has to be the same in responsepacket, probably fm request counter
@@ -212,6 +212,28 @@ typedef struct
 #define FM_INVALID 			20
 
 #define MAX_FILE_OPS 		20
+
+typedef enum
+{
+	FM_INVALID_PARAMETER	= 0x10003,
+	FM_FILE_MAX_OPEN_ERROR	= 0x20003,
+	FM_FILE_MAX_EXIST_ERROR	= 0x30003,
+	FM_ENTRY_EXIST_ERROR	= 0x40003,
+	FM_VOLUME_FULL_ERROR 	= 0x50003,
+	FM_ENTRY_NOT_FOUND_ERROR	= 0x60003,
+	FM_INVALID_FILE_HANDLE	= 0x70003,
+	FM_FILE_NOT_ERROR		= 0x80003,
+	FM_PERMISSION_ERROR		= 0x90003,
+	FM_FILE_OPENED_ERROR 	= 0xA0003,
+	FM_INVALID_SIGNATURE_ERROR	= 0xB0003,
+	FM_ALREADY_MOUNTED_ERROR	= 0xC0003,
+	FM_EOF_ERROR			= 0xD0003,
+	FM_DEVICE_ERROR			= 0xF0003,
+	FM_INVALID_PATH_ERROR	= 0x130003,
+	FM_ECC_ERROR 			= 0x140003,	
+} FmErrorType;
+
+int32_t FmGetLastError();
 
 int32_t FmOpenFile(struct fmRequest *, struct fmResponse *);
 int32_t FmCloseFile(struct fmRequest *, struct fmResponse *);

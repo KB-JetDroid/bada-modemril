@@ -320,7 +320,7 @@ int32_t FmRemoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	retval = remove(nameBuf);
 
 	tx_packet->errorVal = (retval < 0 ? errno : 0);
-	tx_packet->funcRet = (retval < 0 ? errno : 0);
+	tx_packet->funcRet = (retval < 0 ? 0 : 1);
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
@@ -609,8 +609,8 @@ int32_t FmCreateDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	if(retval < 0)
 		DEBUG_I("error creating directory %s, error: %s", nameBuf, strerror(errno));
 		
-	tx_packet->errorVal = (retval < 0 ? 0 : 1); /* false/true */
-	tx_packet->funcRet = (retval < 0 ? errno : 0);
+	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* false/true */
+	tx_packet->errorVal = (retval < 0 ? errno : 0);
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
