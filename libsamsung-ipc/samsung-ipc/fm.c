@@ -33,7 +33,6 @@
  * 		 	FmRemoveDir
  * 		 	FmGetQuotaSpaceFile
  *
- *	convert errno to respective Mocha error number
  */
 
 #include <stdlib.h>
@@ -97,6 +96,29 @@ int32_t (*fileOps[MAX_FILE_OPS])(struct fmRequest *, struct fmResponse *) =
 	&FmGetQuotaSpace
 };
 
+int32_t FmGetLastError()
+{
+	int32_t ret;
+	switch(errno)
+	{
+		case EACCES:
+			ret = FM_PERMISSION_ERROR;
+		break;
+		case ENOENT:
+			ret = FM_ENTRY_NOT_FOUND_ERROR;
+		break;
+		case EEXIST:
+		case ENOTDIR:
+			ret = FM_INVALID_PATH_ERROR; /* FM_ENTRY_EXIST_ERROR might be more appropiate here, though Mocha appears to use INVALID_PATH */
+		break;
+		default:
+			DEBUG_I("%s: Not handled errtype %d", __func__, errno);
+			ret = 0xDEADFACE;
+		break;
+	}
+	return ret;
+}
+
 int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
 //	DEBUG_I("Inside FmOpenFile");
@@ -135,7 +157,8 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	if(retval < 0)
 		DEBUG_I("%s: error! %s", __func__, strerror(errno));
 	tx_packet->funcRet = retval;
-	tx_packet->errorVal = (retval < 0 ? errno : 0);
+	tx_packet->errorVal = (retval < 0 ? (errno == ENOENT ? 0 : FmGetLastError()) : 0);
+	/* For some reason Mocha doesn't set error code if there's no specified file, just returns -1 */
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
@@ -157,7 +180,7 @@ int32_t FmCloseFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	if(retval < 0)
 		DEBUG_I("%s: error! %s", __func__, strerror(errno));
 	
-	tx_packet->errorVal = (retval < 0 ? errno : 0); //0; //retval;
+	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0); //0; //retval;
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* returns true on success */
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
@@ -181,7 +204,7 @@ int32_t FmCreateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	if(retval < 0)
 		DEBUG_I("%s: error! %s", __func__, strerror(errno));
 		
-	tx_packet->errorVal = (retval < 0 ? errno : 0);
+	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = retval; /* returns fd */
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
@@ -208,7 +231,7 @@ int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 	memcpy(readBuf, &numRead, sizeof(numRead));
 
-	tx_packet->errorVal = (numRead < 0 ? errno : 0);
+	tx_packet->errorVal = (numRead < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (numRead < 0 ? 0 : 1); /* false/true */
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + numRead; //0x08; //0x100;
@@ -233,7 +256,7 @@ int32_t FmWriteFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 	numWrite = write(fd, writeBuf, size);
 
-	tx_packet->errorVal = (numWrite < 0 ? errno : 0);
+	tx_packet->errorVal = (numWrite < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (numWrite < 0 ? 0 : 1); /* false/true */
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
@@ -253,7 +276,7 @@ int32_t FmFlushFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 	retval = fsync(fd);
 
-	tx_packet->errorVal = (retval < 0 ? errno : 0);
+	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* false/true */
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
@@ -278,7 +301,7 @@ int32_t FmSeekFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 	retval = lseek(fd, offset, origin);
 
-	tx_packet->errorVal = (retval < 0 ? errno : 0);
+	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* true/false */
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
@@ -298,7 +321,7 @@ int32_t FmTellFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 	retval = lseek(fd, 0, SEEK_CUR); //ftell(fd);
 
-	tx_packet->errorVal = (retval < 0 ? errno : 0);
+	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = retval;
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
@@ -319,7 +342,7 @@ int32_t FmRemoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 	retval = remove(nameBuf);
 
-	tx_packet->errorVal = (retval < 0 ? errno : 0);
+	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (retval < 0 ? 0 : 1);
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
@@ -367,7 +390,7 @@ int32_t FmGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_p
 
 	
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* returns true on success */
-	tx_packet->errorVal = (retval < 0 ? errno : 0);
+	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(FmFileAttribute); //0x08; //0x100;
 
 	if(retval >= 0)
@@ -442,7 +465,7 @@ int32_t FmFGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_
 	fAttr = malloc(sizeof(FmFileAttribute));
 
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* returns true on success */
-	tx_packet->errorVal = (retval < 0 ? errno : 0);
+	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(FmFileAttribute); //0x08; //0x100;
 
 	if(retval >= 0)
@@ -538,7 +561,7 @@ int32_t FmOpenDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 			dirIndex = 0;
 	} else {		
 		DEBUG_I("%s: failed to open %s, error: %s", __func__, nameBuf, strerror(errno));
-		tx_packet->errorVal = errno;
+		tx_packet->errorVal = FmGetLastError();
 		tx_packet->funcRet = -1;
 	}
 
@@ -560,7 +583,7 @@ int32_t FmCloseDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	fd = *(int32_t *)(rx_packet->reqBuf);
 	retval = closedir(dirArray[fd]);
 
-	tx_packet->errorVal = (retval < 0 ? errno : 0);
+	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* false/true */
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
@@ -610,7 +633,7 @@ int32_t FmCreateDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 		DEBUG_I("error creating directory %s, error: %s", nameBuf, strerror(errno));
 		
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* false/true */
-	tx_packet->errorVal = (retval < 0 ? errno : 0);
+	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
