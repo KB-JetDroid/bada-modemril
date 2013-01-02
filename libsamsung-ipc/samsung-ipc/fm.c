@@ -107,6 +107,9 @@ int32_t FmGetLastError()
 		case ENOENT:
 			ret = FM_ENTRY_NOT_FOUND_ERROR;
 		break;
+		case EBADF:
+			ret = FM_INVALID_FILE_HANDLE;
+		break;
 		case EEXIST:
 		case ENOTDIR:
 			ret = FM_INVALID_PATH_ERROR; /* FM_ENTRY_EXIST_ERROR might be more appropiate here, though Mocha appears to use INVALID_PATH */
@@ -163,7 +166,7 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-//	DEBUG_I("Leaving FmOpenFile fd = %d", retval);
+	DEBUG_I("Leaving FmOpenFile fd = %d", retval);
 	return 0;
 }
 
@@ -186,7 +189,7 @@ int32_t FmCloseFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
 	tx_packet->respBuf = NULL;
 
-//	DEBUG_I("Leaving FmCloseFile fd = %d", fd);
+	DEBUG_I("Leaving FmCloseFile fd = %d", fd);
 	return 0;
 }
 
@@ -210,13 +213,12 @@ int32_t FmCreateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-	DEBUG_I("Leaving FmCreateFile");
+	DEBUG_I("Leaving FmCreateFile, fd: %d", retval);
 	return 0;
 }
 
 int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-//	DEBUG_I("Inside FmReadFile");
 	int32_t numRead;
 	int32_t fd;
 	uint32_t size;
@@ -228,7 +230,10 @@ int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	readBuf = (uint8_t *)malloc(size + sizeof(numRead));
 
 	numRead = read(fd, (readBuf+ sizeof(numRead)), size);
-
+	
+	if(numRead < 0)
+		DEBUG_I("%s: error! %s, fd: %d", __func__, strerror(errno), fd);
+		
 	memcpy(readBuf, &numRead, sizeof(numRead));
 
 	tx_packet->errorVal = (numRead < 0 ? FmGetLastError() : 0);
@@ -237,7 +242,6 @@ int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + numRead; //0x08; //0x100;
 	tx_packet->respBuf = readBuf;
 
-//	DEBUG_I("Leaving FmReadFile");
 	return 0;
 }
 
@@ -255,14 +259,17 @@ int32_t FmWriteFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	writeBuf = (uint8_t *)((rx_packet->reqBuf) + sizeof(fd) + sizeof(size));
 
 	numWrite = write(fd, writeBuf, size);
-
+	
+	if(numWrite < 0)
+		DEBUG_I("%s: error! %s, fd: %d", __func__, strerror(errno), fd);
+		
 	tx_packet->errorVal = (numWrite < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (numWrite < 0 ? 0 : 1); /* false/true */
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-//	DEBUG_I("Leaving FmWriteFile");
+	DEBUG_I("Leaving FmWriteFile");
 	return 0;
 }
 
