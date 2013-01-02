@@ -70,7 +70,8 @@ void log_write(int type, uint8_t* buf, int size)
 			a += 0x30;
 		else
 			a += 0x37;	
-		write(log_fd, &a, 1);	
+		write(log_fd, &a, 1);
+		write(log_fd, " ", 1);
 	}
 	write(log_fd, "\n", 1);
 }
@@ -121,7 +122,9 @@ int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
 
     fd = open(MODEMPACKET_PATH, O_RDWR);
 #if DEBUG
-	log_fd = open(LOG_PATH, O_RDWR | O_CREAT | O_TRUNC);
+	remove(LOG_PATH);
+	log_fd = open(LOG_PATH, O_RDWR | O_CREAT);
+    DEBUG_I("log filename=%s fd = 0x%x\n", LOG_PATH, log_fd);
 #endif
 
     DEBUG_I("IO filename=%s fd = 0x%x\n", MODEMPACKET_PATH, fd);
