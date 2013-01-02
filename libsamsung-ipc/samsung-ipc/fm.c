@@ -159,6 +159,9 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 	if(retval < 0)
 		DEBUG_I("%s: error! %s", __func__, strerror(errno));
+	else
+		retval |= 0x61000; /* These flags are always present in node returned by Mocha, 
+							  we'll mask them out if CP use them anyway */
 	tx_packet->funcRet = retval;
 	tx_packet->errorVal = (retval < 0 ? (errno == ENOENT ? 0 : FmGetLastError()) : 0);
 	/* For some reason Mocha doesn't set error code if there's no specified file, just returns -1 */
