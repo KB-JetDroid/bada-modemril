@@ -177,8 +177,10 @@ int srs_server_open(struct srs_server *srs_server)
 		t++;
 	}
 	
-	if(server_fd < 0)
+	if(server_fd < 0) {
+		ALOGE("Could not create srs_server, error: %s", strerror(errno));
 		return -1;
+	}
 
 	srs_server->server_fd = server_fd;
 
