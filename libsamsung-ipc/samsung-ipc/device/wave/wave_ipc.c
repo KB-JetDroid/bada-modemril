@@ -121,7 +121,7 @@ int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
 
     fd = open(MODEMPACKET_PATH, O_RDWR);
 #if DEBUG
-	log_fd = open(LOG_PATH, O_RDWR);
+	log_fd = open(LOG_PATH, O_RDWR | O_CREAT | O_TRUNC);
 #endif
 
     DEBUG_I("IO filename=%s fd = 0x%x\n", MODEMPACKET_PATH, fd);
