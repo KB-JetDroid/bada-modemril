@@ -225,6 +225,7 @@ int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	uint8_t *readBuf;
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
+	fd &= 0xFFF;
 	size = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd));
 
 	readBuf = (uint8_t *)malloc(size + sizeof(numRead));
@@ -242,6 +243,7 @@ int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + numRead; //0x08; //0x100;
 	tx_packet->respBuf = readBuf;
 
+	DEBUG_I("Leaving FmReadFile fd = %d", fd);
 	return 0;
 }
 
@@ -254,6 +256,7 @@ int32_t FmWriteFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	uint8_t *writeBuf;
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
+	fd &= 0xFFF;
 	size = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd));
 
 	writeBuf = (uint8_t *)((rx_packet->reqBuf) + sizeof(fd) + sizeof(size));
@@ -269,7 +272,7 @@ int32_t FmWriteFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-	DEBUG_I("Leaving FmWriteFile");
+	DEBUG_I("Leaving FmWriteFile fd = %d", fd);
 	return 0;
 }
 
@@ -280,6 +283,7 @@ int32_t FmFlushFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	int32_t fd;
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
+	fd &= 0xFFF;
 
 	retval = fsync(fd);
 
@@ -301,6 +305,7 @@ int32_t FmSeekFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	uint32_t offset, origin;
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
+	fd &= 0xFFF;
 	offset = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd));
 	origin = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd) + sizeof(offset));
 
@@ -325,6 +330,7 @@ int32_t FmTellFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	int32_t fd;
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
+	fd &= 0xFFF;
 
 	retval = lseek(fd, 0, SEEK_CUR); //ftell(fd);
 
@@ -466,6 +472,7 @@ int32_t FmFGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_
 	FmFileAttribute *fAttr;
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
+	fd &= 0xFFF;
 
 	retval = fstat(fd, &sb);
 
@@ -608,6 +615,7 @@ int32_t FmReadDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	int32_t fd;
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
+	fd &= 0xFFF;
 	//dir = readdir((DIR *)dirArray[fd]);
 
 	// TODO :

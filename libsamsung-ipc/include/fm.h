@@ -38,7 +38,7 @@ typedef unsigned int		ADDR;
 //PACKETTYPE 0x6 FmPacket
 struct fmPacketHeader {
 	uint32_t fmPacketType; 	//stored as type-0xEFFFFFFF, add 0xEFFFFFFF to map to the FM operation id
-	uint32_t reserved1; 		//dummy, unused?
+	uint32_t reserved1; 		//dummy, unused? always equal 1
 	uint32_t packetLen; 		//equal to n, equal to packetLength-16 (headersize)
 	uint32_t reqCounter; 	// has to be the same in responsepacket, probably fm request counter
 };
