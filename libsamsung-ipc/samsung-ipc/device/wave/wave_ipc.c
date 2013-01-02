@@ -37,6 +37,45 @@
 #define LOG_TAG "Mocha-RIL_WaveIPC"
 #include <utils/Log.h>
 
+#if DEBUG
+int32_t log_fd;
+#define LOG_PATH "/mnt/bada_user/modem/ipc_log.txt"	
+
+void log_write(int type, uint8_t* buf, int size)
+{
+	int i;
+	char a;
+	if(type == 0)
+	{
+		write(log_fd, "tx_frame: ", 10); 
+	}
+	else if(type == 1)
+	{
+		write(log_fd, "rx_frame: ", 10); 
+	}
+	else 
+	{
+		write(log_fd, "unknown: ", 9); 
+	}
+	for(i = 0; i < size; i++)
+	{
+		a = ((buf[i] >> 4) & 0xF);
+		if(a < 0xA)
+			a += 0x30;
+		else
+			a += 0x37;
+		write(log_fd, &a, 1);
+		a = ((buf[i] >> 0) & 0xF);
+		if(a < 0xA)
+			a += 0x30;
+		else
+			a += 0x37;	
+		write(log_fd, &a, 1);	
+	}
+	write(log_fd, "\n", 1);
+}
+#endif
+
 int32_t wave_modem_bootstrap(struct ipc_client *client)
 {
     int32_t modemctl_fd = -1;
@@ -50,7 +89,6 @@ int32_t wave_modem_bootstrap(struct ipc_client *client)
     	DEBUG_I("failed to open %s\n", MODEMCTL_PATH);
     	return 1;
     }
-
 	
 	ioctl(modemctl_fd, IOCTL_MODEM_GET_STATUS, &status);
 	if(status != 0)		
@@ -74,7 +112,6 @@ int32_t wave_modem_bootstrap(struct ipc_client *client)
 
 int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
 {
-
     int32_t fd = -1;
 
     if(io_data == NULL)
@@ -83,6 +120,9 @@ int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
     fd = *((int32_t *) io_data);
 
     fd = open(MODEMPACKET_PATH, O_RDWR);
+#if DEBUG
+	log_fd = open(LOG_PATH, O_RDWR);
+#endif
 
     DEBUG_I("IO filename=%s fd = 0x%x\n", MODEMPACKET_PATH, fd);
 
@@ -234,7 +274,6 @@ int32_t wave_ipc_recv(struct ipc_client *client, struct modem_io *ipc_frame)
 {
 	ipc_frame->data = (uint8_t*)malloc(SIZ_PACKET_BUFSIZE);
     return client->handlers->read((void*)ipc_frame, 0, client->handlers->read_data);
-
 }
 
 int32_t wave_ipc_read(void *data, unsigned int size, void *io_data)
@@ -257,6 +296,10 @@ int32_t wave_ipc_read(void *data, unsigned int size, void *io_data)
 
     if(rc < 0)
         return -1;
+	
+#if DEBUG
+	log_write(1, data, size);
+#endif
 
     return 0;
 }
@@ -278,6 +321,10 @@ int32_t wave_ipc_write(void *data, unsigned int size, void *io_data)
 
     if(rc < 0)
         return -1;
+		
+#if DEBUG
+	log_write(0, data, size);
+#endif
 
     return 0;
 }
