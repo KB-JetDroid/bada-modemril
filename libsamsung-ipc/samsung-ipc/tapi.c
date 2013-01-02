@@ -57,12 +57,12 @@
  
 void tapi_init(void)
 {	
-	DEBUG_I("enter");
-	/* prepare some contexts for Network, SS, NetText, AT, Proto here or in these functions? */
+	DEBUG_I("enter tapi_init");
+	/* TODO: prepare some contexts for Network, SS, NetText, AT here or in these functions? */
 	tapi_network_init();
 	tapi_nettext_set_mem_available(1);
 	tapi_at_init();
-	DEBUG_I("exit");
+	DEBUG_I("exit tapi_init");
 }
 
 void ipc_parse_tapi(struct ipc_client* client, struct modem_io *ipc_frame)

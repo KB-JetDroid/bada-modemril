@@ -119,7 +119,6 @@ void tapi_network_set_subscription_mode(uint32_t tapiNetLength, uint8_t *tapiNet
 	DEBUG_I("mode:%d\n", subscriptionMode);
 	//TODO: bounce-back packet to CP, with the same type, subtype and mode
 	ipc_invoke_ril_cb(NETWORK_SET_SUBSCRIPTION_MODE, (void*)tapiNetData);
-	
 }
 
 void tapi_network_network_select_ind(uint32_t tapiNetLength, uint8_t *tapiNetData)
