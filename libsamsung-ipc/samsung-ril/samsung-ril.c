@@ -182,20 +182,22 @@ int ril_modem_check(void)
 		return -1;
 
 	if(ipc_packet_client->state != RIL_CLIENT_READY)
-		return -1;
+		return -2;
 	
 	if(!networkInitialised)
-		return -1;
+		return -3;
 		
 	return 0;
 }
 
 void onRequest(int request, void *data, size_t datalen, RIL_Token t)
 {
+	int check;
 	ALOGV("Request from RILD ID - %d", request);
-	if(ril_modem_check() < 0)
+	check = ril_modem_check();
+	if(check < 0)
 	{
-		ALOGE("ril_modem_check() < 0 - replying RIL_E_RADIO_NOT_AVAILABLE");
+		ALOGE("ril_modem_check() returned %d => replying RIL_E_RADIO_NOT_AVAILABLE", check);
 		RIL_onRequestComplete(t, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
 	}
 
@@ -389,7 +391,7 @@ void *networkInitThread(void* arg)
 	usleep(5000000);
 	tapi_init();
 	proto_startup();
-	lbs_init();
+//	lbs_init();
 	networkInitialised = 1; /* Mark that packets had been sent, so we can start serving RILD requests. */
 	return 0;
 }
