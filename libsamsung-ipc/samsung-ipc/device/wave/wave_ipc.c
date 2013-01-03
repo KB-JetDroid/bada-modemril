@@ -37,7 +37,7 @@
 #define LOG_TAG "Mocha-RIL_WaveIPC"
 #include <utils/Log.h>
 
-#if DEBUG
+#ifdef DEBUG
 int32_t log_fd;
 #define LOG_PATH "/mnt/bada_user/modem/ipc_log.txt"	
 
@@ -121,7 +121,7 @@ int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
     fd = *((int32_t *) io_data);
 
     fd = open(MODEMPACKET_PATH, O_RDWR);
-#if DEBUG
+#ifdef DEBUG
 	remove(LOG_PATH);
 	log_fd = open(LOG_PATH, O_RDWR | O_CREAT);
     DEBUG_I("log filename=%s fd = 0x%x\n", LOG_PATH, log_fd);
@@ -300,7 +300,7 @@ int32_t wave_ipc_read(void *data, unsigned int size, void *io_data)
     if(rc < 0)
         return -1;
 	
-#if DEBUG
+#ifdef DEBUG
 	log_write(1, data, size);
 #endif
 
@@ -325,7 +325,7 @@ int32_t wave_ipc_write(void *data, unsigned int size, void *io_data)
     if(rc < 0)
         return -1;
 		
-#if DEBUG
+#ifdef DEBUG
 	log_write(0, data, size);
 #endif
 
