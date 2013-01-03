@@ -180,11 +180,15 @@ int32_t FmCloseFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	int32_t fd;
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
-
+	fd &= 0xFFF;
+	
 	retval = close(fd);
 	
 	if(retval < 0)
 		DEBUG_I("%s: error! %s", __func__, strerror(errno));
+	else
+		retval |= 0x61000; /* These flags are always present in node returned by Mocha, 
+							  we'll mask them out if CP use them anyway */
 	
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0); //0; //retval;
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* returns true on success */
