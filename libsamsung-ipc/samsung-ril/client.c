@@ -69,7 +69,7 @@ int ril_client_create(struct ril_client *client)
 	for(c = 5 ; c > 0 ; c--) {
 		ALOGD("Creating RIL client inners, try #%d", 6-c);
 
-		rc = client->create(client);
+		rc = client->funcs.create(client);
 
 		if(rc < 0)
 			ALOGD("RIL client inners creation failed!");
@@ -97,7 +97,7 @@ int ril_client_destroy(struct ril_client *client)
 	for(c = 5 ; c > 0 ; c--) {
 		ALOGD("Destroying RIL client inners, try #%d", 6-c);
 
-		rc = client->destroy(client);
+		rc = client->funcs.destroy(client);
 
 		if(rc < 0)
 			ALOGD("RIL client inners destroying failed!");
@@ -134,7 +134,7 @@ void *ril_client_thread(void *data)
 	for(c = 5 ; c > 0 ; c--) {
 		client->state = RIL_CLIENT_READY;
 
-		rc = client->read_loop(client);
+		rc = client->funcs.read_loop(client);
 
 		if(rc < 0) {
 			client->state = RIL_CLIENT_ERROR;
