@@ -46,91 +46,209 @@
  * Everything? :]
  */
 
-/**
- * RIL global vars
- */
-
-struct ril_client *ipc_packet_client;
-struct ril_client *srs_client;
-
-const struct RIL_Env *ril_env;
-struct ril_state ril_state;
-
 
 /**
- * RIL request token
+ * RIL data
  */
 
-struct ril_request_token ril_requests_tokens[0x100];
-int ril_request_id = 0;
-int networkInitialised = 0;
+struct ril_data ril_data;
 
-void ril_requests_tokens_init(void)
+/**
+ * RIL requests
+ */
+
+int ril_request_id_get(void)
 {
-	memset(ril_requests_tokens, 0, sizeof(struct ril_request_token) * 0x100);
+	ril_data.request_id++;
+	ril_data.request_id %= 0xff;
+
+	return ril_data.request_id;
 }
 
-int ril_request_id_new(void)
+int ril_request_id_set(int id)
 {
-	ril_request_id++;
-	ril_request_id %= 0x100;
-	return ril_request_id;
+	id %= 0xff;
+
+	while(ril_data.request_id < id) {
+		ril_data.request_id++;
+		ril_data.request_id %= 0xff;
+	}
+
+	return ril_data.request_id;
 }
 
-int ril_request_reg_id(RIL_Token token)
+int ril_request_register(RIL_Token t, int id)
 {
-	int id = ril_request_id_new();
+	struct ril_request_info *request;
+	struct list_head *list_end;
+	struct list_head *list;
 
-	ril_requests_tokens[id].token = token;
-	ril_requests_tokens[id].canceled = 0;
+	request = calloc(1, sizeof(struct ril_request_info));
+	if(request == NULL)
+		return -1;
 
-	return id;
+	request->token = t;
+	request->id = id;
+	request->canceled = 0;
+
+	list_end = ril_data.requests;
+	while(list_end != NULL && list_end->next != NULL)
+		list_end = list_end->next;
+
+	list = list_head_alloc((void *) request, list_end, NULL);
+
+	if(ril_data.requests == NULL)
+		ril_data.requests = list;
+
+	return 0;
 }
 
-int ril_request_get_id(RIL_Token token)
+void ril_request_unregister(struct ril_request_info *request)
 {
-	int i;
+	struct list_head *list;
 
-	for(i=0 ; i < 0x100 ; i++)
-		if(ril_requests_tokens[i].token == token)
-			return i;
+	if(request == NULL)
+		return;
 
-	// If the token isn't registered yet, register it
-	return ril_request_reg_id(token);
+	list = ril_data.requests;
+	while(list != NULL) {
+		if(list->data == (void *) request) {
+			memset(request, 0, sizeof(struct ril_request_info));
+			free(request);
+
+			if(list == ril_data.requests)
+				ril_data.requests = list->next;
+
+			list_head_free(list);
+
+			break;
+		}
+list_continue:
+		list = list->next;
+	}
+}
+
+struct ril_request_info *ril_request_info_find_id(int id)
+{
+	struct ril_request_info *request;
+	struct list_head *list;
+
+	list = ril_data.requests;
+	while(list != NULL) {
+		request = (struct ril_request_info *) list->data;
+		if(request == NULL)
+			goto list_continue;
+
+		if(request->id == id)
+			return request;
+
+list_continue:
+		list = list->next;
+	}
+
+	return NULL;
+}
+
+struct ril_request_info *ril_request_info_find_token(RIL_Token t)
+{
+	struct ril_request_info *request;
+	struct list_head *list;
+
+	list = ril_data.requests;
+	while(list != NULL) {
+		request = (struct ril_request_info *) list->data;
+		if(request == NULL)
+			goto list_continue;
+
+		if(request->token == t)
+			return request;
+
+list_continue:
+		list = list->next;
+	}
+
+	return NULL;
+}
+
+int ril_request_set_canceled(RIL_Token t, int canceled)
+{
+	struct ril_request_info *request;
+
+	request = ril_request_info_find_token(t);
+	if(request == NULL)
+		return -1;
+
+	request->canceled = canceled ? 1 : 0;
+
+	return 0;
+}
+
+int ril_request_get_canceled(RIL_Token t)
+{
+	struct ril_request_info *request;
+
+	request = ril_request_info_find_token(t);
+	if(request == NULL)
+		return -1;
+
+	return request->canceled;
 }
 
 RIL_Token ril_request_get_token(int id)
 {
-	return ril_requests_tokens[id].token;
+	struct ril_request_info *request;
+
+	request = ril_request_info_find_id(id);
+	if(request == NULL)
+		return (RIL_Token) 0x00;
+
+	return request->token;
 }
 
-int ril_request_get_canceled(RIL_Token token)
+int ril_request_get_id(RIL_Token t)
 {
-	int id;
+	struct ril_request_info *request;
+	int id, rc;
 
-	id = ril_request_get_id(token);
+	request = ril_request_info_find_token(t);
+	if(request != NULL)
+		return request->id;
 
-	if(ril_requests_tokens[id].canceled > 0)
-		return 1;
-	else
-		return 0;
+	id = ril_request_id_get();
+	rc = ril_request_register(t, id);
+	if(rc < 0)
+		return -1;
+
+	return id;	
 }
 
-void ril_request_set_canceled(RIL_Token token, int canceled)
+void ril_request_complete(RIL_Token t, RIL_Errno e, void *data, size_t length)
 {
-	int id;
+	struct ril_request_info *request;
+	int canceled = 0;
 
-	id = ril_request_get_id(token);
+	request = ril_request_info_find_token(t);
+	if(request == NULL)
+		goto complete;
 
-	ril_requests_tokens[id].canceled = canceled;
+	canceled = ril_request_get_canceled(t);
+	ril_request_unregister(request);
+
+	if(canceled)
+		return;
+
+complete:
+	ril_data.env->OnRequestComplete(t, e, data, length);
 }
 
-void RIL_onRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t responselen)
+void ril_request_unsolicited(int request, void *data, size_t length)
 {
-	if(!ril_request_get_canceled(t))
-		RIL_onRequestCompleteReal(t, e, response, responselen);
-	else
-		RIL_onRequestCompleteReal(t, RIL_E_CANCELLED, response, responselen);
+	ril_data.env->OnUnsolicitedResponse(request, data, length);
+}
+
+void ril_request_timed_callback(RIL_TimedCallback callback, void *data, const struct timeval *time)
+{
+	ril_data.env->RequestTimedCallback(callback, data, time);
 }
 
 /**
@@ -140,16 +258,16 @@ void RIL_onRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t resp
 
 void ril_tokens_check(void)
 {
-	if(ril_state.tokens.baseband_version != 0) {
-		if(ril_state.radio_state != RADIO_STATE_OFF) {
-			ril_request_baseband_version(ril_state.tokens.baseband_version);
-			ril_state.tokens.baseband_version = 0;
+	if(ril_data.tokens.baseband_version != 0) {
+		if(ril_data.state.radio_state != RADIO_STATE_OFF) {
+			ril_request_baseband_version(ril_data.tokens.baseband_version);
+			ril_data.tokens.baseband_version = 0;
 		}
 	}
-	if(ril_state.tokens.get_imei != 0) {
+	if(ril_data.tokens.get_imei != 0) {
 		if(cached_imei[0] != 0x00) {
-			ril_request_get_imei(ril_state.tokens.get_imei);
-			ril_state.tokens.get_imei = 0;
+			ril_request_get_imei(ril_data.tokens.get_imei);
+			ril_data.tokens.get_imei = 0;
 		}
 	}
 }
@@ -157,6 +275,11 @@ void ril_tokens_check(void)
 
 void srs_dispatch(struct srs_message *message)
 {
+	if(message == NULL)
+		return;
+		
+	RIL_LOCK();
+	
 	switch(message->command) {
 		case SRS_CONTROL_PING:
 			srs_control_ping(message);
@@ -174,25 +297,29 @@ void srs_dispatch(struct srs_message *message)
 			ALOGD("Unhandled command: (%04x)", message->command);
 			break;
 	}
+	
+	RIL_UNLOCK();
 }
 
 int ril_modem_check(void)
 {
-	if(ipc_packet_client == NULL)
+	if(ril_data.ipc_packet_client == NULL)
 		return -1;
 
-	if(ipc_packet_client->state != RIL_CLIENT_READY)
+	if(ril_data.ipc_packet_client->state != RIL_CLIENT_READY)
 		return -2;
 	
-	if(!networkInitialised)
+	if(!ril_data.state.network_initialised)
 		return -3;
 		
 	return 0;
 }
 
-void onRequest(int request, void *data, size_t datalen, RIL_Token t)
+void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 {
 	int check;
+
+	RIL_LOCK();
 	ALOGV("Request from RILD ID - %d", request);
 	check = ril_modem_check();
 	if(check < 0)
@@ -320,31 +447,26 @@ void onRequest(int request, void *data, size_t datalen, RIL_Token t)
 			RIL_onRequestComplete(t, RIL_E_REQUEST_NOT_SUPPORTED, NULL, 0);
 			break;
 	}
+	
+	RIL_UNLOCK();
 }
 
-/**
- * RILJ related functions
- */
-
-RIL_RadioState currentState()
+RIL_RadioState ril_on_state_request(void)
 {
-	return ril_state.radio_state;
+	return ril_data.state.radio_state;
 }
 
-int onSupports(int requestCode)
+int ril_on_supports(int request)
 {
-	switch(requestCode) {
-		default:
-			return 1;
-	}
+	return 1;
 }
 
-void onCancel(RIL_Token t)
+void ril_on_cancel(RIL_Token t)
 {
 	ril_request_set_canceled(t, 1);
 }
 
-const char *getVersion(void)
+const char *ril_get_version(void)
 {
 	return RIL_VERSION_STRING;
 }
@@ -358,31 +480,24 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(CP_SYSTEM_START, ipc_cp_system_start);
 }
  
-void ril_globals_init(void)
+void ril_data_init(void)
 {
-	memset(&ril_state, 0, sizeof(ril_state));
-	memset(&(ril_state.tokens), 0, sizeof(struct ril_tokens));
+	memset(&ril_data, 0, sizeof(ril_data));
 
-	ril_requests_tokens_init();
-//	ipc_gen_phone_res_expects_init();
-//	ril_request_sms_init();
-//	ipc_sms_tpid_queue_init();
+	pthread_mutex_init(&ril_data.mutex, NULL);
 }
 
-void ril_state_lpm(void)
-{
-	ril_state.radio_state = RADIO_STATE_OFF;
-	ril_state.power_mode = POWER_MODE_LPM;
-}
-
+/**
+ * RIL interface
+ */
 
 static const RIL_RadioFunctions ril_ops = {
-	RIL_VERSION,
-	onRequest,
-	currentState,
-	onSupports,
-	onCancel,
-	getVersion
+	SAMSUNG_RIL_VERSION,
+	ril_on_request,
+	ril_on_state_request,
+	ril_on_supports,
+	ril_on_cancel,
+	ril_get_version
 };
 
 void *networkInitThread(void* arg)
@@ -392,20 +507,26 @@ void *networkInitThread(void* arg)
 	tapi_init();
 	proto_startup();
 //	lbs_init();
-	networkInitialised = 1; /* Mark that packets had been sent, so we can start serving RILD requests. */
+	ril_data.state.network_initialised = 1; /* Mark that packets had been sent, so we can start serving RILD requests. */
 	return 0;
 }
 
 const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **argv)
 {
+	struct ril_client *ipc_packet_client;
+	struct ril_client *srs_client;
 	int rc;
     pthread_t networkInit;
 
-	ril_env = env;
+	if(env == NULL)
+		return NULL;
 
+	ril_data_init();
+	ril_data.env = (struct RIL_Env *) env;
+
+	RIL_LOCK();
+	
 	ipc_init();
-	ril_globals_init();
-	ril_state_lpm();
 	ril_install_ipc_callbacks();
 
 	ALOGI("Creating IPC client");
@@ -425,13 +546,15 @@ const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **a
 		goto srs;
 	}
 
+	ril_data.ipc_packet_client = ipc_packet_client;
 	ALOGI("IPC client ready");
+	
 	if(pthread_create(&networkInit, NULL, networkInitThread, NULL) == 0)
 		ALOGI("Network init thread started!");
 	else
 		ALOGE("Network init thread startup failure!");
 srs:
-	ALOGI("Creating SRS client");
+	ALOGD("Creating SRS client");
 
 	srs_client = ril_client_new(&srs_client_funcs);
 	rc = ril_client_create(srs_client);
@@ -448,14 +571,14 @@ srs:
 		goto end;
 	}
 
-	ALOGI("SRS client ready");
+	ril_data.srs_client = srs_client;
+	ALOGD("SRS client ready");
 
 end:
+	ril_data.state.radio_state = RADIO_STATE_OFF;
+	ril_data.state.power_state = POWER_STATE_LPM;
+
+	RIL_UNLOCK();
+
 	return &ril_ops;
 }
-
-int main(int argc, char *argv[])
-{
-	return 0;
-}
-

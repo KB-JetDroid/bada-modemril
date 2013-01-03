@@ -31,7 +31,7 @@
 
 void ipc_log_handler(const char *message, void *user_data)
 {
-	ALOGI("ipc: %s", message);
+	ALOGD("ipc: %s", message);
 }
 
 /**
@@ -41,42 +41,42 @@ void ipc_log_handler(const char *message, void *user_data)
 void ipc_send(struct modem_io *request)
 {
 	struct ipc_client *ipc_client;
-	if(ipc_packet_client == NULL) {
+	if(ril_data.ipc_packet_client == NULL) {
 		ALOGE("ipc_packet_client is null, aborting!");
 		return;
 	}
 
-	if(ipc_packet_client->object == NULL) {
-		ALOGE("ipc_packet_client object is null, aborting!");
+	if(ril_data.ipc_packet_client->data == NULL) {
+		ALOGE("ipc_packet_client data is null, aborting!");
 		return;
 	}
 
-	ipc_client = ((struct ipc_client_object *) ipc_packet_client->object)->ipc_client;
+	ipc_client = ((struct ipc_client_data *) ril_data.ipc_packet_client->data)->ipc_client;
 
-	RIL_CLIENT_LOCK(ipc_packet_client);
+	RIL_CLIENT_LOCK(ril_data.ipc_packet_client);
 	ipc_client_send(ipc_client, request);
-	RIL_CLIENT_UNLOCK(ipc_packet_client);
+	RIL_CLIENT_UNLOCK(ril_data.ipc_packet_client);
 }
 
 int ipc_modem_io(void *data, uint32_t cmd)
 {
 	int retval;
 	struct ipc_client *ipc_client;
-	if(ipc_packet_client == NULL) {
+	if(ril_data.ipc_packet_client == NULL) {
 		ALOGE("ipc_packet_client is null, aborting!");
 		return -1;
 	}
 
-	if(ipc_packet_client->object == NULL) {
-		ALOGE("ipc_packet_client object is null, aborting!");
+	if(ril_data.ipc_packet_client->data == NULL) {
+		ALOGE("ipc_packet_client data is null, aborting!");
 		return -1;
 	}
 
-	ipc_client = ((struct ipc_client_object *) ipc_packet_client->object)->ipc_client;
+	ipc_client = ((struct ipc_client_data *) ril_data.ipc_packet_client->data)->ipc_client;
 
-	RIL_CLIENT_LOCK(ipc_packet_client);
+	RIL_CLIENT_LOCK(ril_data.ipc_packet_client);
 	retval = ipc_client_modem_operations(ipc_client, data, cmd);
-	RIL_CLIENT_UNLOCK(ipc_packet_client);
+	RIL_CLIENT_UNLOCK(ril_data.ipc_packet_client);
 
 	return retval;
 }
@@ -93,13 +93,13 @@ int ipc_read_loop(struct ril_client *client)
 		return -1;
 	}
 
-	if(client->object == NULL) {
-		ALOGE("client object is NULL, aborting!");
+	if(client->data == NULL) {
+		ALOGE("client data is NULL, aborting!");
 		return -1;
 	}
 
-	ipc_client = ((struct ipc_client_object *) client->object)->ipc_client;
-	ipc_client_fd = ((struct ipc_client_object *) client->object)->ipc_client_fd;
+	ipc_client = ((struct ipc_client_data *) client->data)->ipc_client;
+	ipc_client_fd = ((struct ipc_client_data *) client->data)->ipc_client_fd;
 
 	FD_ZERO(&fds);
 	FD_SET(ipc_client_fd, &fds);
@@ -136,16 +136,16 @@ int ipc_read_loop(struct ril_client *client)
 
 int ipc_create(struct ril_client *client)
 {
-	struct ipc_client_object *client_object;
+	struct ipc_client_data *client_object;
 	struct ipc_client *ipc_client;
 	int ipc_client_fd;
 	int rc;
 
-	client_object = malloc(sizeof(struct ipc_client_object));
-	memset(client_object, 0, sizeof(struct ipc_client_object));
+	client_object = malloc(sizeof(struct ipc_client_data));
+	memset(client_object, 0, sizeof(struct ipc_client_data));
 	client_object->ipc_client_fd = -1;
 
-	client->object = client_object;
+	client->data = client_object;
 
 	ipc_client = (struct ipc_client *) client_object->ipc_client;
 
@@ -219,17 +219,17 @@ int ipc_destroy(struct ril_client *client)
 		return 0;
 	}
 
-	if(client->object == NULL) {
-		ALOGE("client object was already destroyed");
+	if(client->data == NULL) {
+		ALOGE("client data was already destroyed");
 		return 0;
 	}
 
-	ipc_client_fd = ((struct ipc_client_object *) client->object)->ipc_client_fd;
+	ipc_client_fd = ((struct ipc_client_data *) client->data)->ipc_client_fd;
 
 	if(ipc_client_fd)
 		close(ipc_client_fd);
 
-	ipc_client = ((struct ipc_client_object *) client->object)->ipc_client;
+	ipc_client = ((struct ipc_client_data *) client->data)->ipc_client;
 
 	if(ipc_client != NULL) {
 		ipc_client_destroy_handlers_common_data(ipc_client);
@@ -238,7 +238,7 @@ int ipc_destroy(struct ril_client *client)
 		ipc_client_free(ipc_client);
 	}
 
-	free(client->object);
+	free(client->data);
 
 	return 0;
 }

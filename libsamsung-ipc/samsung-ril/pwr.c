@@ -29,9 +29,9 @@
 void ipc_pwr_phone_pwr_up(void)
 {
 	ALOGD("ipc_pwr_phone_pwr_up");
-	ril_state.radio_state = RADIO_STATE_OFF;
-	ril_state.power_mode = POWER_MODE_LPM;
+	ril_data.state.radio_state = RADIO_STATE_OFF;
 	RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
+	ril_data.state.power_state = POWER_STATE_LPM;
 }
 
 void ipc_cp_system_start(void* data)
@@ -41,8 +41,8 @@ void ipc_cp_system_start(void* data)
 	* TODO: Decide if it should become ON and/or normal mode already
 	* we'd rather avoid using deprecated RADIO_STATE_SIM_NOT_READY
 	*/
-	ril_state.power_mode = POWER_MODE_LPM;
-	ril_state.radio_state = RADIO_STATE_UNAVAILABLE;
+	ril_data.state.power_state = POWER_STATE_LPM;
+	ril_data.state.radio_state = RADIO_STATE_UNAVAILABLE;
 	ril_tokens_check();
 }
 
@@ -55,16 +55,16 @@ void ipc_pwr_phone_state(struct ipc_message_info *info)
 	{
 		/* This shouldn't append for LPM (no respond message) */
 		case IPC_PWR_R(IPC_PWR_PHONE_STATE_LPM):
-			ril_state.power_mode = POWER_MODE_LPM;
-			ril_state.radio_state = RADIO_STATE_OFF;
+			ril_data.state.power_state = POWER_STATE_LPM;
+			ril_data.state.radio_state = RADIO_STATE_OFF;
 			ALOGD("Got power to LPM");
 			RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 		break;
 		case IPC_PWR_R(IPC_PWR_PHONE_STATE_NORMAL):
 			usleep(3000);
 
-			ril_state.power_mode = POWER_MODE_NORMAL;
-			ril_state.radio_state = RADIO_STATE_SIM_NOT_READY;
+			ril_data.state.power_state = POWER_STATE_NORMAL;
+			ril_data.state.radio_state = RADIO_STATE_SIM_NOT_READY;
 			ALOGD("Got power to NORMAL");
 
 			/* 
@@ -105,7 +105,7 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 		power_data = IPC_PWR_PHONE_STATE_NORMAL;
 		ipc_send(IPC_PWR_PHONE_STATE, IPC_TYPE_EXEC, (void *) &power_data, sizeof(power_data), reqGetId(t));
 
-		ril_state.tokens.radio_power = t;
+		ril_data.state.radio_power = t;
 
 		/* Don't tell the RIL we're not off anymore: wait for the message */
 	} else {
@@ -117,7 +117,7 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 
 		/* We're not going to get any message to make sure we're in LPM so tell RILJ we're off anyway */
 		ril_globals_init();
-		ril_state_lpm();
+		ril_data.state_lpm();
 		RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 	}
 #endif

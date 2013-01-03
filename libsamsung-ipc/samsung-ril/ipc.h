@@ -33,7 +33,7 @@
 #define ipc_send_exec(command, mseq) \
 	ipc_send(command, IPC_TYPE_EXEC, NULL, 0, mseq)
 
-struct ipc_client_object {
+struct ipc_client_data {
 	struct ipc_client *ipc_client;
 	int ipc_client_fd;
 };

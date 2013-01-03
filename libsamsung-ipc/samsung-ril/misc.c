@@ -30,17 +30,17 @@ void ril_request_get_imei(RIL_Token t)
 	if(cached_imei[0] != 0x00)
 		RIL_onRequestComplete(t, RIL_E_SUCCESS, cached_imei, sizeof(cached_imei));
 	else
-		ril_state.tokens.get_imei = t;
+		ril_data.tokens.get_imei = t;
 }
 
 
 void ril_request_baseband_version(RIL_Token t)
 {
 
-	if(ril_state.radio_state != RADIO_STATE_OFF) {	
+	if(ril_data.state.radio_state != RADIO_STATE_OFF) {	
 		RIL_onRequestComplete(t, RIL_E_SUCCESS, cached_sw_version, sizeof(cached_sw_version));
 	} else {		
-		ril_state.tokens.baseband_version = t;
+		ril_data.tokens.baseband_version = t;
 	}
 }
 
