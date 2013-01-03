@@ -38,13 +38,13 @@ struct ril_client *ril_client_new(struct ril_client_funcs *client_funcs)
 	memset(ril_client, 0, sizeof(struct ril_client));
 
 	if(client_funcs->create)
-		ril_client->create = client_funcs->create;
+		ril_client->funcs.create = client_funcs->create;
 
 	if(client_funcs->destroy)
-		ril_client->destroy = client_funcs->destroy;
+		ril_client->funcs.destroy = client_funcs->destroy;
 
 	if(client_funcs->read_loop)
-		ril_client->read_loop = client_funcs->read_loop;
+		ril_client->funcs.read_loop = client_funcs->read_loop;
 
 	pthread_mutex_init(&(ril_client->mutex), NULL);
 
