@@ -42,7 +42,25 @@
 int32_t log_fd;
 #define LOG_PATH "/mnt/bada_user/modem/ipc_log.txt"
 
-void log_write(int type, uint8_t* buf, int size)
+void hexdump_byte(uint8_t byte, int fd)
+{
+	char a;
+	a = (byte >> 4) & 0xF;
+	if(a < 0xA)
+		a += 0x30;
+	else
+		a += 0x37;
+	write(fd, &a, 1);
+	a = (byte >> 0) & 0xF;
+	if(a < 0xA)
+		a += 0x30;
+	else
+		a += 0x37;	
+	write(fd, &a, 1);
+	write(fd, " ", 1);
+}
+
+void log_write(int type, struct modem_io* mio, int size)
 {
 	int i;
 	char a;
@@ -58,21 +76,13 @@ void log_write(int type, uint8_t* buf, int size)
 	{
 		write(log_fd, "unknown: ", 9); 
 	}
-	for(i = 0; i < size; i++)
+	for(i = 0; i < 0xC; i++)
 	{
-		a = ((buf[i] >> 4) & 0xF);
-		if(a < 0xA)
-			a += 0x30;
-		else
-			a += 0x37;
-		write(log_fd, &a, 1);
-		a = ((buf[i] >> 0) & 0xF);
-		if(a < 0xA)
-			a += 0x30;
-		else
-			a += 0x37;	
-		write(log_fd, &a, 1);
-		write(log_fd, " ", 1);
+		hexdump_byte(((uint8_t*)mio)[i], log_fd);
+	}
+	for(i = 0; i < mio->datasize; i++)
+	{
+		hexdump_byte(mio->data[i], log_fd);
 	}
 	write(log_fd, "\n", 1);
 }
@@ -209,14 +219,7 @@ int32_t wave_ipc_power_off(void *data)
 
 int32_t send_packet(struct ipc_client *client, struct modem_io *ipc_frame)
 {
-	int32_t retval;
-    struct fifoPacketHeader *ipc;
-    uint8_t *frame;
-    uint8_t *payload;
-    int32_t frame_length;
-
 	return client->handlers->write((void*) ipc_frame, 0, client->handlers->write_data);
-
 }
 
 int32_t wave_ipc_send(struct ipc_client *client, struct modem_io *ipc_frame)
