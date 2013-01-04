@@ -61,7 +61,6 @@ char *fake_apps_version = "S8530JPKA1";
  * TODO: Read sound config data from file
  */
 
-
 int32_t get_nvm_data(void *data, uint32_t size)
 {
 	int32_t fd, retval;
@@ -87,23 +86,16 @@ int32_t get_nvm_data(void *data, uint32_t size)
 void handleReadNvRequest(struct drvNvPacket* rxNvPacket)
 {
 	struct modem_io request;
-	struct drvRequest tx_packet;
 
 	DEBUG_I("size = 0x%x", rxNvPacket->size);
 
-	tx_packet.header.drvPacketType = NV_BACKUP_DATA;
-	//tx_packet.header.reserved = 0;
-	tx_packet.respBuf = NULL;
-
 	request.data = malloc((rxNvPacket->size) + sizeof(struct drvPacketHeader));
-
-	memcpy(request.data, &tx_packet, sizeof(struct drvPacketHeader));
-
+	request.data[0] = NV_BACKUP_DATA;	
 	get_nvm_data(request.data + sizeof(struct drvPacketHeader), rxNvPacket->size);
 
 	request.magic = 0xCAFECAFE;
 	request.cmd = FIFO_PKT_DRV;
-	request.datasize = rxNvPacket->size +  sizeof(struct drvPacketHeader);
+	request.datasize = rxNvPacket->size + sizeof(struct drvPacketHeader);
 
 	ipc_send(&request);
 	free(request.data);
@@ -138,70 +130,47 @@ void handleJetPmicRequest(struct modem_io *ipc_frame)
 
 void handleSystemInfoRequest()
 {
-    uint8_t *payload;
+    uint8_t payload[0x14];
 	struct drvRequest tx_packet;
 	struct modem_io request;
 	
-	DEBUG_I("enter");
-	
 	/* TODO: for WAVE add USB TA info sending if there's USB connected (it's not being send if USB is disconnected) */
-	tx_packet.header.drvPacketType = SOUND_CONFIG;
-	//tx_packet.header.reserved = 0;
-	tx_packet.respBuf = NULL;
+	drv_send_packet(SOUND_CONFIG, (uint8_t*)RCV_MSM_Data, sizeof((uint8_t*)RCV_MSM_Data));
+	drv_send_packet(SOUND_CONFIG, (uint8_t*)EAR_MSM_Data, sizeof((uint8_t*)EAR_MSM_Data));
+	drv_send_packet(SOUND_CONFIG, (uint8_t*)SPK_MSM_Data, sizeof((uint8_t*)SPK_MSM_Data));
+	drv_send_packet(SOUND_CONFIG, (uint8_t*)BTH_MSM_Data, sizeof((uint8_t*)BTH_MSM_Data));
 
-	payload = malloc(SOUND_CFG_DATA_SIZE + sizeof(struct drvPacketHeader));
+	memcpy(payload, fake_apps_version, sizeof(*fake_apps_version));
+	drv_send_packet(HIDDEN_SW_VER, payload, 0x14);
 
-	memcpy(payload, &tx_packet, sizeof(struct drvPacketHeader));
-
-	request.magic = 0xCAFECAFE;
-	request.cmd = FIFO_PKT_DRV;
-	request.datasize = SOUND_CFG_DATA_SIZE + sizeof(struct drvPacketHeader);
-
-	memcpy(payload + sizeof(struct drvPacketHeader), RCV_MSM_Data, sizeof(RCV_MSM_Data));
-
-	request.data = payload;
-
-	ipc_send(&request);
-
-	memcpy(payload + sizeof(struct drvPacketHeader), EAR_MSM_Data, sizeof(EAR_MSM_Data));
-
-	request.data = payload;
-
-	ipc_send(&request);
-
-	memcpy(payload + sizeof(struct drvPacketHeader), SPK_MSM_Data, sizeof(SPK_MSM_Data));
-
-	request.data = payload;
-
-	ipc_send(&request);
-
-	memcpy(payload + sizeof(struct drvPacketHeader), BTH_MSM_Data, sizeof(BTH_MSM_Data));
-
-	request.data = payload;
-
-	ipc_send(&request);
-	free(payload);
-
-	tx_packet.header.drvPacketType = HIDDEN_SW_VER;
-	//tx_packet.header.reserved = 0;
-	tx_packet.respBuf = NULL;
-
-	payload = malloc((0x14) + sizeof(struct drvPacketHeader));
-
-	memcpy(payload, &tx_packet, sizeof(struct drvPacketHeader));
-
-	request.magic = 0xCAFECAFE;
-	request.cmd = FIFO_PKT_DRV;
-	request.datasize = 0x14 +  sizeof(struct drvPacketHeader);
-
-	memcpy(payload + sizeof(struct drvPacketHeader), fake_apps_version, sizeof(*fake_apps_version));
-
-	request.data = payload;
-
-	ipc_send(&request);
-	free(payload);
 
 	DEBUG_I("Sent all the sound packages");
+}
+
+void send_ta_info()
+{
+	char buf[60];
+	struct drvRequest tx_packet;
+	struct modem_io request;
+	int32_t fd, len;
+	uint16_t status = 0;
+	
+	sprintf(buf, "%s%s", batteryDev, "usb/online");
+	fd = open(buf, O_RDONLY);
+	read(fd, buf, 1);
+	if(!strcmp(buf, "1"))
+		status = 5;
+	close(fd);
+	if(status == 0) {
+		sprintf(buf, "%s%s", batteryDev, "ac/online");
+		fd = open(buf, O_RDONLY);
+		read(fd, buf, 1);
+		if(!strcmp(buf, "1"))
+			status = 5;
+		close(fd);
+	}
+	
+	drv_send_packet(TA_INFO_RESP, (uint8_t*)&status, 2);
 }
 
 void handleFuelGaugeStatus(uint8_t percentage)
@@ -252,16 +221,30 @@ void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame)
 		DEBUG_I("SYSTEM_INFO_REQ IpcDrv packet received");
 		handleSystemInfoRequest();
 		break;
+	case TA_INFO_REQ:
+		DEBUG_I("TA_INFO requested");
+		send_ta_info();
+		break;
 	case BATT_GAUGE_STATUS_CHANGE_IND:	
 		DEBUG_I("BATT_GAUGE_STATUS_CHANGE_IND IpcDrv packet received");
 		handleFuelGaugeStatus(*((uint8_t*)ipc_frame->data));
 		break;
 	default:
 		DEBUG_I("IpcDrv Packet type 0x%X is not yet handled", rx_header->drvPacketType);
-
 		break;
     }
 
     DEBUG_I("exit");
+}
 
+void drv_send_packet(uint8_t type, uint8_t *data, int32_t data_size)
+{
+	struct modem_io request;
+	request.data = malloc(data_size + sizeof(struct drvPacketHeader));
+	request.data[0] = type;
+	memcpy(request.data + 1, data, data_size);
+	request.magic = 0xCAFECAFE;
+	request.cmd = FIFO_PKT_DRV;
+	request.datasize = data_size + 1;
+	ipc_send(&request);
 }
