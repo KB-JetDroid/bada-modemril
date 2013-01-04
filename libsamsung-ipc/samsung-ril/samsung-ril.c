@@ -503,8 +503,11 @@ static const RIL_RadioFunctions ril_ops = {
 void *networkInitThread(void* arg)
 {
 	/* Wait 5 seconds for modem to initialize before requesting network subsystems init */
+#ifdef DEBUG
+	usleep(25000000);
+#else
 	usleep(5000000);
-	
+#endif
 	RIL_LOCK();
 	tapi_init();
 	proto_startup();

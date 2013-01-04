@@ -23,6 +23,7 @@
  *
  */
 #define DEBUG
+#define FM_DEBUG
 
 #include <termios.h>
 #include <stdio.h>
@@ -64,6 +65,11 @@ void log_write(int type, struct modem_io* mio, int size)
 {
 	int i;
 	char a;
+#ifndef FM_DEBUG
+	if(mio->cmd == 0x06)
+		return;
+#endif
+
 	if(type == 0)
 	{
 		write(log_fd, "tx_frame: ", 10); 
