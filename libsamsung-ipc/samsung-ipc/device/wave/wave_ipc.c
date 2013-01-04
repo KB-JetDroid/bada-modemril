@@ -22,6 +22,7 @@
  * along with libsamsung-ipc.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#define DEBUG
 
 #include <termios.h>
 #include <stdio.h>
@@ -39,7 +40,7 @@
 
 #ifdef DEBUG
 int32_t log_fd;
-#define LOG_PATH "/mnt/bada_user/modem/ipc_log.txt"	
+#define LOG_PATH "/mnt/bada_user/modem/ipc_log.txt"
 
 void log_write(int type, uint8_t* buf, int size)
 {
@@ -124,7 +125,7 @@ int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
 #ifdef DEBUG
 	remove(LOG_PATH);
 	log_fd = open(LOG_PATH, O_RDWR | O_CREAT);
-    DEBUG_I("log filename=%s fd = 0x%x\n", LOG_PATH, log_fd);
+    DEBUG_I("IPC dump log filename=%s fd = 0x%x\n", LOG_PATH, log_fd);
 #endif
 
     DEBUG_I("IO filename=%s fd = 0x%x\n", MODEMPACKET_PATH, fd);
