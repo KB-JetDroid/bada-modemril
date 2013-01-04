@@ -125,6 +125,10 @@ int32_t wave_modem_bootstrap(struct ipc_client *client)
 int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
 {
     int32_t fd = -1;
+#ifdef DEBUG
+	char buf[50];
+	sprintf(buf, "LOG START! Timestamp: %d\n", (int)time(NULL));
+#endif
 
     if(io_data == NULL)
         return -1;
@@ -134,8 +138,9 @@ int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
     fd = open(MODEMPACKET_PATH, O_RDWR);
 #ifdef DEBUG
 	remove(LOG_PATH);
-	log_fd = open(LOG_PATH, O_RDWR | O_CREAT);
+	log_fd = open(LOG_PATH, O_RDWR | O_CREAT | O_APPEND);
     DEBUG_I("IPC dump log filename=%s fd = 0x%x\n", LOG_PATH, log_fd);
+	write(log_fd, buf, strlen(buf));
 #endif
 
     DEBUG_I("IO filename=%s fd = 0x%x\n", MODEMPACKET_PATH, fd);

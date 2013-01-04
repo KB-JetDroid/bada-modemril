@@ -181,7 +181,7 @@ void handleFuelGaugeStatus(uint8_t percentage)
 	fd = open(buf, O_RDWR);
 	if(fd < 0)
 	{
-		DEBUG_E("%s: Failed to open %s.", __func__, buf);
+		DEBUG_E("%s: Error: %s Failed to open %s.", __func__, strerror(errno), buf);
 		return;
 	}
 	sprintf(buf, "%d", percentage);
