@@ -504,10 +504,13 @@ void *networkInitThread(void* arg)
 {
 	/* Wait 5 seconds for modem to initialize before requesting network subsystems init */
 	usleep(5000000);
+	
+	RIL_LOCK();
 	tapi_init();
 	proto_startup();
 //	lbs_init();
 	ril_data.state.network_initialised = 1; /* Mark that packets had been sent, so we can start serving RILD requests. */
+	RIL_UNLOCK();
 	return 0;
 }
 
