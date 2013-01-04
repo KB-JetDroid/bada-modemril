@@ -137,7 +137,6 @@ int32_t wave_ipc_open(void *data, uint32_t size, void *io_data)
 
     fd = open(MODEMPACKET_PATH, O_RDWR);
 #ifdef DEBUG
-	remove(LOG_PATH);
 	log_fd = open(LOG_PATH, O_RDWR | O_CREAT | O_APPEND);
     DEBUG_I("IPC dump log filename=%s fd = 0x%x\n", LOG_PATH, log_fd);
 	write(log_fd, buf, strlen(buf));
