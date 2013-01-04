@@ -46,13 +46,13 @@
 
 #ifdef DEVICE_JET
 #include <device/jet/sound_data.h>
-char *nvmFile = "/efs/bml4";
-char *batteryDev = "/sys/devices/platform/i2c-gpio.6/i2c-6/6-0066/max8998-charger/power_supply/"; 
+char *nvm_file_path = "/efs/bml4";
+char *power_dev_path = "/sys/devices/platform/i2c-gpio.6/i2c-6/6-0066/max8998-charger/power_supply/"; 
 char *fake_apps_version = "S800MPOJB1";
 #elif defined(DEVICE_WAVE)
 #include <device/wave/sound_data.h>
-char *nvmFile = "/dev/block/mtdblock0";
-char *batteryDev = "/sys/devices/platform/i2c-gpio.6/i2c-6/6-0066/max8998-charger/power_supply/"; 
+char *nvm_file_path = "/dev/block/mtdblock0";
+char *power_dev_path = "/sys/devices/platform/i2c-gpio.6/i2c-6/6-0066/max8998-charger/power_supply/"; 
 char *fake_apps_version = "S8530JPKA1";
 #endif
 
@@ -64,9 +64,9 @@ char *fake_apps_version = "S8530JPKA1";
 int32_t get_nvm_data(void *data, uint32_t size)
 {
 	int32_t fd, retval;
-	fd = open(nvmFile, O_RDONLY);
+	fd = open(nvm_file_path, O_RDONLY);
 
-	DEBUG_I("file %s open status = %d", nvmFile, fd);
+	DEBUG_I("file %s open status = %d", nvm_file_path, fd);
 	if(fd < 0)
 	{
 		DEBUG_I("%s: error! %s", __func__, strerror(errno));
@@ -74,7 +74,7 @@ int32_t get_nvm_data(void *data, uint32_t size)
 	}
 	
 	retval = read(fd, data, size);
-	DEBUG_I("file %s read status = %d", nvmFile, retval);
+	DEBUG_I("file %s read status = %d", nvm_file_path, retval);
 	if(retval < 0)
 		DEBUG_I("%s: error! %s", __func__, strerror(errno));
 		
@@ -155,14 +155,14 @@ void send_ta_info()
 	int32_t fd, len;
 	uint16_t status = 0;
 	
-	sprintf(buf, "%s%s", batteryDev, "usb/online");
+	sprintf(buf, "%s%s", power_dev_path, "usb/online");
 	fd = open(buf, O_RDONLY);
 	read(fd, buf, 1);
 	if(!strcmp(buf, "1"))
 		status = 5;
 	close(fd);
 	if(status == 0) {
-		sprintf(buf, "%s%s", batteryDev, "ac/online");
+		sprintf(buf, "%s%s", power_dev_path, "ac/online");
 		fd = open(buf, O_RDONLY);
 		read(fd, buf, 1);
 		if(!strcmp(buf, "1"))
@@ -177,7 +177,7 @@ void handleFuelGaugeStatus(uint8_t percentage)
 {
 	char buf[60];
 	int32_t fd, len;
-	sprintf(buf, "%s%s", batteryDev, "capacity");
+	sprintf(buf, "%s%s", power_dev_path, "battery/capacity");
 	fd = open(buf, O_RDWR);
 	if(fd < 0)
 	{
