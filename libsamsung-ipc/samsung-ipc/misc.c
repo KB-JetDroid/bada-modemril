@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 #include <drv.h>
 #include <tapi.h>
 #include <fm.h>
@@ -49,6 +48,7 @@ void ipc_send_lazy_fw_ver(void)
 {
 	uint8_t buf[0x18];
 	struct modem_io pkt;
+	memset(buf, 0, 0x18);
 	pkt.magic = 0xCAFECAFE;
 	pkt.cmd = FIFO_PKT_BOOT;
 	pkt.data = buf;
