@@ -134,22 +134,21 @@ void handleSystemInfoRequest()
 	struct drvRequest tx_packet;
 	struct modem_io request;
 	
-	/* TODO: for WAVE add USB TA info sending if there's USB connected (it's not being send if USB is disconnected) */
+	/* TODO: for WAVE add USB TA info sending if there's USB connected (it shouldn't be sent if USB is disconnected) */
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)RCV_MSM_Data, sizeof((uint8_t*)RCV_MSM_Data));
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)EAR_MSM_Data, sizeof((uint8_t*)EAR_MSM_Data));
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)SPK_MSM_Data, sizeof((uint8_t*)SPK_MSM_Data));
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)BTH_MSM_Data, sizeof((uint8_t*)BTH_MSM_Data));
 
-	memcpy(payload, fake_apps_version, sizeof(*fake_apps_version));
+	memcpy(payload, fake_apps_version, strlen(fake_apps_version));
 	drv_send_packet(HIDDEN_SW_VER, payload, 0x14);
-
 
 	DEBUG_I("Sent all the sound packages");
 }
 
 void send_ta_info()
 {
-	char buf[60];
+	char buf[200];
 	struct drvRequest tx_packet;
 	struct modem_io request;
 	int32_t fd, len;
@@ -157,17 +156,25 @@ void send_ta_info()
 	
 	sprintf(buf, "%s%s", power_dev_path, "usb/online");
 	fd = open(buf, O_RDONLY);
-	read(fd, buf, 1);
-	if(!strcmp(buf, "1"))
-		status = 5;
-	close(fd);
-	if(status == 0) {
-		sprintf(buf, "%s%s", power_dev_path, "ac/online");
-		fd = open(buf, O_RDONLY);
+	if(fd < 0)
+		DEBUG_E("Couldn't open %s, %s", buf, strerror(errno));
+	else {
 		read(fd, buf, 1);
 		if(!strcmp(buf, "1"))
 			status = 5;
 		close(fd);
+	}
+	if(status == 0) {
+		sprintf(buf, "%s%s", power_dev_path, "ac/online");
+		fd = open(buf, O_RDONLY);
+		if(fd < 0)
+			DEBUG_E("Couldn't open %s", buf);
+		else {
+			read(fd, buf, 1);
+			if(!strcmp(buf, "1"))
+				status = 5;
+			close(fd);
+		}
 	}
 	
 	drv_send_packet(TA_INFO_RESP, (uint8_t*)&status, 2);
@@ -175,7 +182,7 @@ void send_ta_info()
 
 void handleFuelGaugeStatus(uint8_t percentage)
 {
-	char buf[60];
+	char buf[200];
 	int32_t fd, len;
 	sprintf(buf, "%s%s", power_dev_path, "battery/capacity");
 	fd = open(buf, O_RDWR);
@@ -193,11 +200,10 @@ void handleFuelGaugeStatus(uint8_t percentage)
 
 void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame)
 {
-	DEBUG_I("enter");
 	int32_t retval;
 	struct drvPacketHeader *rx_header;
 
-	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
+	DEBUG_I("DRV Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
 
 	ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
 
@@ -234,7 +240,7 @@ void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame)
 		break;
     }
 
-    DEBUG_I("exit");
+    DEBUG_I("DRV exit");
 }
 
 void drv_send_packet(uint8_t type, uint8_t *data, int32_t data_size)
