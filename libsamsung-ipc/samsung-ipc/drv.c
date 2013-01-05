@@ -203,16 +203,9 @@ void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame)
 	int32_t retval;
 	struct drvPacketHeader *rx_header;
 
-	DEBUG_I("DRV Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
-
-	ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
-
-    rx_header = (struct drvPacketHeader *)(ipc_frame->data);
-
-	DEBUG_I("Packet type = 0x%x", rx_header->drvPacketType);
-
-    switch (rx_header->drvPacketType)
-    {
+	rx_header = (struct drvPacketHeader *)(ipc_frame->data);
+	
+    switch (rx_header->drvPacketType) {
 	case READ_NV_BACKUP:
 		DEBUG_I("ReadNvBackup IpcDrv packet received");
 		handleReadNvRequest((struct drvNvPacket *)(ipc_frame->data));
@@ -237,6 +230,10 @@ void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame)
 		break;
 	default:
 		DEBUG_I("IpcDrv Packet type 0x%X is not yet handled", rx_header->drvPacketType);
+		DEBUG_I("Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
+
+		ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
+
 		break;
     }
 
