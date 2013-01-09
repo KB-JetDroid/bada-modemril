@@ -325,7 +325,7 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 	if(check < 0)
 	{
 		ALOGE("ril_modem_check() returned %d => replying RIL_E_RADIO_NOT_AVAILABLE", check);
-		RIL_onRequestComplete(t, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
+		ril_request_complete(t, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
 	}
 
 	switch(request) {
@@ -352,7 +352,7 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 			requestSatSendEnvelopeCommand(t, data, datalen);
 			break;
 		case RIL_REQUEST_STK_HANDLE_CALL_SETUP_REQUESTED_FROM_SIM:
-			RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
+			ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 			break;
 		/* SIM */
 		case RIL_REQUEST_GET_SIM_STATUS:
@@ -439,12 +439,12 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		/* OTHER */
 		case RIL_REQUEST_SCREEN_STATE:
 			/* This doesn't affect anything */
-			RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
+			ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 			break;
 #endif
 		default:
 			ALOGE("Request not implemented: %d", request);
-			RIL_onRequestComplete(t, RIL_E_REQUEST_NOT_SUPPORTED, NULL, 0);
+			ril_request_complete(t, RIL_E_REQUEST_NOT_SUPPORTED, NULL, 0);
 			break;
 	}
 	
@@ -502,7 +502,7 @@ static const RIL_RadioFunctions ril_ops = {
 
 void *networkInitThread(void* arg)
 {
-	/* Wait 5 seconds for modem to initialize before requesting network subsystems init */
+	/* Wait 5 seconds for modem to initialize before requesting network subsystems init, 25s if there's ipc log created */
 #ifdef DEBUG
 	usleep(25000000);
 #else

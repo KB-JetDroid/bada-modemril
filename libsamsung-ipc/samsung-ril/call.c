@@ -55,10 +55,10 @@ unsigned char ipc2ril_call_list_entry_state(unsigned char call_state)
  */
 void ipc_call_incoming(struct ipc_message_info *info)
 {
-	RIL_onUnsolicitedResponse(RIL_UNSOL_CALL_RING, NULL, 0);
+	ril_request_unsolicited(RIL_UNSOL_CALL_RING, NULL, 0);
 
 	/* FIXME: Do we really need to send this? */
-	RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 /**
@@ -70,7 +70,7 @@ void ipc_call_incoming(struct ipc_message_info *info)
  */
 void ipc_call_status(struct ipc_message_info *info)
 {
-	RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 /**
@@ -118,7 +118,7 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 	ipc_send(IPC_CALL_OUTGOING, IPC_TYPE_EXEC, (unsigned char *) &call, sizeof(call), reqGetId(t));
 	
 	/* FIXME: This should actually be sent based on the response from baseband */
-	RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
+	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 }
 
 /**
@@ -182,7 +182,7 @@ void ipc_call_list(struct ipc_message_info *info)
 		entry = (struct ipc_call_list_entry *) (number + entry->number_len);
 	}
 
-	RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_SUCCESS, calls, (num_entries * sizeof(RIL_Call *)));
+	ril_request_complete(reqGetToken(info->aseq), RIL_E_SUCCESS, calls, (num_entries * sizeof(RIL_Call *)));
 
 	for(i = 0; i < num_entries; i++) {
 		free(calls[i]);
@@ -202,10 +202,10 @@ void ril_request_hangup(RIL_Token t)
 	ipc_send_exec(IPC_CALL_RELEASE, reqGetId(t));
 
 	/* FIXME: This should actually be sent based on the response from baseband */
-	RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
+	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 
 	/* FIXME: Do we really need to send this? */
-	RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 /**
@@ -219,10 +219,10 @@ void ril_request_answer(RIL_Token t)
 	ipc_send_exec(IPC_CALL_ANSWER, reqGetId(t));
 
 	/* FIXME: This should actually be sent based on the response from baseband */
-	RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
+	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 
 	/* FIXME: Do we really need to send this? */
-	RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 /**
@@ -273,10 +273,10 @@ void ipc_call_burst_dtmf(struct ipc_message_info *info)
 	if(ret == 0) {
 		ALOGD("Apparently, something went wrong with DTMF burst");
 
-		RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(reqGetToken(info->aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
-	RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_SUCCESS, NULL, 0);
+	ril_request_complete(reqGetToken(info->aseq), RIL_E_SUCCESS, NULL, 0);
 }
 
 void ril_request_dtmf_start(RIL_Token t, void *data, int length)
@@ -289,7 +289,7 @@ void ril_request_dtmf_start(RIL_Token t, void *data, int length)
 
 	ipc_send(IPC_CALL_CONT_DTMF, IPC_TYPE_SET, (void *) &cont_dtmf, sizeof(cont_dtmf), reqGetId(t));
 
-	RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
+	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 }
 
 void ril_request_dtmf_stop(RIL_Token t)
@@ -300,5 +300,5 @@ void ril_request_dtmf_stop(RIL_Token t)
 
 	ipc_send(IPC_CALL_CONT_DTMF, IPC_TYPE_SET, (void *) &cont_dtmf, sizeof(cont_dtmf), reqGetId(t));
 
-	RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
+	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 }

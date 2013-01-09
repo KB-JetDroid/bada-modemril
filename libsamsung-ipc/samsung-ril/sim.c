@@ -61,7 +61,7 @@ void ril_state_update(SIM_Status status)
 	}
 
 	ril_tokens_check();
-	RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 }
 
 /**
@@ -85,7 +85,7 @@ void ipc_sec_pin_status(struct ipc_message_info *info)
 		return;
 
 	if(ril_state.power_mode == POWER_MODE_NORMAL && ril_state.tokens.radio_power != 0) {
-		RIL_onRequestComplete(ril_state.tokens.radio_power, RIL_E_SUCCESS, NULL, 0);
+		ril_request_complete(ril_state.tokens.radio_power, RIL_E_SUCCESS, NULL, 0);
 		ril_state.tokens.radio_power = 0;
 	}
 
@@ -146,7 +146,7 @@ void ipc_sec_pin_status(struct ipc_message_info *info)
 	/* Update radio state based on SIM state */
 	ril_state_update(ril_state.sim_status);
 
-	RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED, NULL, 0);
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED, NULL, 0);
 }
 
 /**
@@ -221,7 +221,7 @@ void ril_request_sim_status(RIL_Token t)
 		//card_status.applications[0] = RIL_APPTYPE_USIM
 	}
 
-	RIL_onRequestComplete(t, RIL_E_SUCCESS, &card_status, sizeof(card_status));
+	ril_request_complete(t, RIL_E_SUCCESS, &card_status, sizeof(card_status));
 }
 
 /**
@@ -296,7 +296,7 @@ void ipc_sec_rsim_access(struct ipc_message_info *info)
 		response.simResponse[0] = '\0';
 	}
 
-	RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_SUCCESS, &response, sizeof(response));
+	ril_request_complete(reqGetToken(info->aseq), RIL_E_SUCCESS, &response, sizeof(response));
 
 	free(response.simResponse);
 }
@@ -320,7 +320,7 @@ void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen)
 	/* 1. Send PIN */
 	if(strlen(data) > 16) {
 		ALOGE("%s: pin exceeds maximum length", __FUNCTION__);
-		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
 	ipc_sec_pin_status_set_setup(&pin_status, IPC_SEC_PIN_TYPE_PIN1, pin, NULL);
@@ -354,9 +354,9 @@ void ipc_sec_pin_status_complete(struct ipc_message_info *info)
 	int attempts = -1;
 
 	if(gen_res->code == 0x0010) {
-		RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(int*));
+		ril_request_complete(reqGetToken(info->aseq), RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(int*));
 	} else if(gen_res->code == 0x8000) {
-		RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_SUCCESS, &attempts, sizeof(int*));
+		ril_request_complete(reqGetToken(info->aseq), RIL_E_SUCCESS, &attempts, sizeof(int*));
 	} else {
 		ALOGE("%s: unhandled code %04x", __FUNCTION__, gen_res->code);
 	}
@@ -400,7 +400,7 @@ void ril_request_query_facility_lock(RIL_Token t, void *data, size_t datalen)
 		lock_type = IPC_SEC_PIN_SIM_LOCK_FD;
 	} else {
 		ALOGE("%s: unsupported facility: %s", __FUNCTION__, facility);
-		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
 	ipc_send(IPC_SEC_PHONE_LOCK, IPC_TYPE_GET, &lock_type, sizeof(lock_type), reqGetId(t));
@@ -419,7 +419,7 @@ void ipc_sec_phone_lock(struct ipc_message_info *info)
 	
 	status = lock->status;
 
-	RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_SUCCESS, &status, sizeof(int*));
+	ril_request_complete(reqGetToken(info->aseq), RIL_E_SUCCESS, &status, sizeof(int*));
 }
 
 /**
@@ -439,7 +439,7 @@ void ril_request_set_facility_lock(RIL_Token t, void *data, size_t datalen)
 		lock_type = IPC_SEC_PIN_SIM_LOCK_FD;
 	} else {
 		ALOGE("%s: unsupported facility: %s", __FUNCTION__, facility);
-		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
 	ipc_send(IPC_SEC_PHONE_LOCK, IPC_TYPE_GET, &lock_type, sizeof(lock_type), reqGetId(t));

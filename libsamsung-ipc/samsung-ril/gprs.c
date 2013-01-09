@@ -52,7 +52,7 @@ void ipc_gprs_pdp_context_complete(struct ipc_message_info *info)
 
 	rc = ipc_gen_phone_res_check(phone_res);
 	if(rc < 0) {
-		RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(reqGetToken(info->aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
 		ALOGE("There was an error, aborting PDP context complete");
 		return;
 	}
@@ -167,7 +167,7 @@ void ipc_gprs_ip_configuration(struct ipc_message_info *info)
 	response[1] = INTERFACE;
 	response[2] = local_ip;
 
-	RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_SUCCESS, response, sizeof(response));
+	ril_request_complete(reqGetToken(info->aseq), RIL_E_SUCCESS, response, sizeof(response));
 }
 
 void ril_request_deactivate_data_call(RIL_Token t, void *data, int length)
@@ -180,5 +180,5 @@ void ril_request_deactivate_data_call(RIL_Token t, void *data, int length)
 	ipc_send(IPC_GPRS_PDP_CONTEXT, IPC_TYPE_SET, 
 			(void *) &deactivate_message, sizeof(struct ipc_gprs_pdp_context), reqGetId(t));
 
-	RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
+	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 }

@@ -40,7 +40,7 @@ void respondSatProactiveCmdIndi(struct ipc_message_info *info)
 
 	bin2hex((unsigned char*)info->data+2, data_len, hexdata);
 
-	RIL_onUnsolicitedResponse(RIL_UNSOL_STK_PROACTIVE_COMMAND, hexdata, sizeof(char*));
+	ril_request_unsolicited(RIL_UNSOL_STK_PROACTIVE_COMMAND, hexdata, sizeof(char*));
 
 	free(hexdata);
 }
@@ -59,7 +59,7 @@ void respondSatProactiveCmdResp(struct ipc_message_info *info)
 	sw2 = ((unsigned char*)info->data)[1];
 
 	if(sw1 == 0x90 && sw2 == 0x00) {
-		RIL_onUnsolicitedResponse(RIL_UNSOL_STK_SESSION_END, NULL, 0);
+		ril_request_unsolicited(RIL_UNSOL_STK_SESSION_END, NULL, 0);
 	} else {
 		ALOGE("%s: unhandled response sw1=%02x sw2=%02x", __FUNCTION__, sw1, sw2);
 	}
@@ -93,7 +93,7 @@ void requestSatSendTerminalResponse(RIL_Token t, void *data, size_t datalen)
 
 	if(len > 255) {
 		ALOGE("%s: data exceeds maximum length", __FUNCTION__);
-		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
 	memset(buf, 0, sizeof(buf));
@@ -103,7 +103,7 @@ void requestSatSendTerminalResponse(RIL_Token t, void *data, size_t datalen)
 
 	ipc_send(IPC_SAT_PROACTIVE_CMD, IPC_TYPE_GET, buf, sizeof(buf), reqGetId(t));
 
-	RIL_onRequestComplete(t, RIL_E_SUCCESS, buf, sizeof(char*));
+	ril_request_complete(t, RIL_E_SUCCESS, buf, sizeof(char*));
 }
 
 /**
@@ -120,7 +120,7 @@ void requestSatSendEnvelopeCommand(RIL_Token t, void *data, size_t datalen)
 
 	if(len > 255) {
 		ALOGE("%s: data exceeds maximum length", __FUNCTION__);
-		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
 	memset(buf, 0, sizeof(buf));
@@ -147,7 +147,7 @@ void respondSatEnvelopeCmd(struct ipc_message_info *info)
 
 	bin2hex((unsigned char*)info->data+2, data_len, hexdata);
 
-	RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_SUCCESS, hexdata, sizeof(char*));
+	ril_request_complete(reqGetToken(info->aseq), RIL_E_SUCCESS, hexdata, sizeof(char*));
 
 	free(hexdata);
 }

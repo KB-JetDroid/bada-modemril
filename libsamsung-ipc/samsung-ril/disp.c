@@ -54,7 +54,7 @@ void ipc_disp_icon_info(struct ipc_message_info *info)
 
 	ALOGD("Signal Strength is %d\n", rssi);
 
-	RIL_onUnsolicitedResponse(RIL_UNSOL_SIGNAL_STRENGTH, &ss, sizeof(ss));
+	ril_request_unsolicited(RIL_UNSOL_SIGNAL_STRENGTH, &ss, sizeof(ss));
 }
 
 void ipc_disp_rssi_info(struct ipc_message_info *info)
@@ -89,5 +89,5 @@ void ipc_disp_rssi_info(struct ipc_message_info *info)
 
 	ALOGD("Signal Strength is %d\n", rssi);
 
-	RIL_onUnsolicitedResponse(RIL_UNSOL_SIGNAL_STRENGTH, &ss, sizeof(ss));
+	ril_request_unsolicited(RIL_UNSOL_SIGNAL_STRENGTH, &ss, sizeof(ss));
 }

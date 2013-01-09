@@ -149,7 +149,7 @@ void ipc_gen_phone_res(struct ipc_message_info *info)
 
 		if(ipc_gen_phone_res_expects[id].func != NULL) {
 			ALOGE("Not safe to run the custom function, reporting generic failure");
-			RIL_onRequestComplete(reqGetToken(ipc_gen_phone_res_expects[id].aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
+			ril_request_complete(reqGetToken(ipc_gen_phone_res_expects[id].aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
 		}
 	}
 
@@ -166,7 +166,7 @@ void ipc_gen_phone_res(struct ipc_message_info *info)
 		e = RIL_E_SUCCESS;
 
 	if(ipc_gen_phone_res_expects[id].to_complete || (ipc_gen_phone_res_expects[id].to_abort && rc < 0)) {
-		RIL_onRequestComplete(reqGetToken(ipc_gen_phone_res_expects[id].aseq), e, NULL, 0);
+		ril_request_complete(reqGetToken(ipc_gen_phone_res_expects[id].aseq), e, NULL, 0);
 		ipc_gen_phone_res_clean_id(id);
 		return;
 	}

@@ -28,7 +28,7 @@
 void ril_request_get_imei(RIL_Token t)
 {
 	if(cached_imei[0] != 0x00)
-		RIL_onRequestComplete(t, RIL_E_SUCCESS, cached_imei, sizeof(cached_imei));
+		ril_request_complete(t, RIL_E_SUCCESS, cached_imei, sizeof(cached_imei));
 	else
 		ril_data.tokens.get_imei = t;
 }
@@ -38,7 +38,7 @@ void ril_request_baseband_version(RIL_Token t)
 {
 
 	if(ril_data.state.radio_state != RADIO_STATE_OFF) {	
-		RIL_onRequestComplete(t, RIL_E_SUCCESS, cached_sw_version, sizeof(cached_sw_version));
+		ril_request_complete(t, RIL_E_SUCCESS, cached_sw_version, sizeof(cached_sw_version));
 	} else {		
 		ril_data.tokens.baseband_version = t;
 	}
@@ -69,6 +69,6 @@ void ipc_misc_time_info(struct ipc_message_info *info)
 	sprintf(str, "%02u/%02u/%02u,%02u:%02u:%02u+%02d,%02d",
 		nitz->year, nitz->mon, nitz->day, nitz->hour, nitz->min, nitz->sec, nitz->tz, 0);
 
-	RIL_onUnsolicitedResponse(RIL_UNSOL_NITZ_TIME_RECEIVED, str, strlen(str) + 1);
+	ril_request_unsolicited(RIL_UNSOL_NITZ_TIME_RECEIVED, str, strlen(str) + 1);
 }
 */

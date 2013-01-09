@@ -334,7 +334,7 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, char *smsc)
 	if(pdu == NULL || smsc == NULL) {
 		ALOGE("Provided PDU or SMSC is NULL! Aborting");
 
-		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 
 		/* Release the lock so we can accept new requests */
 		ril_request_sms_lock_release();
@@ -350,7 +350,7 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, char *smsc)
 	if(pdu_len / 2 > 0xff) {
 		ALOGE("PDU is too large, aborting");
 
-		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 
 		/* Release the lock so we can accept new requests */
 		ril_request_sms_lock_release();
@@ -452,7 +452,7 @@ void ipc_sms_send_msg_complete(struct ipc_message_info *info)
 	if(ipc_gen_phone_res_check(phone_res) < 0) {
 		ALOGE("IPC_GEN_PHONE_RES indicates error, abort request to RILJ");
 
-		RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(reqGetToken(info->aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
 
 		/* Release the lock so we can accept new requests */
 		ril_request_sms_lock_release();
@@ -477,7 +477,7 @@ void ipc_sms_svc_center_addr(struct ipc_message_info *info)
 	if(id < 0) {
 		ALOGE("The request wasn't queued, reporting generic error!");
 
-		RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(reqGetToken(info->aseq), RIL_E_GENERIC_FAILURE, NULL, 0);
 
 		/* Release the lock so we can accept new requests */
 		ril_request_sms_lock_release();
@@ -519,7 +519,7 @@ void ipc_sms_send_msg(struct ipc_message_info *info)
 	response.ackPDU = NULL;
 	ril_ack_err = ipc2ril_sms_ack_error(report_msg->error, &(response.errorCode));
 
-	RIL_onRequestComplete(reqGetToken(info->aseq), ril_ack_err, &response, sizeof(response));
+	ril_request_complete(reqGetToken(info->aseq), ril_ack_err, &response, sizeof(response));
 
 	/* Release the lock so we can accept new requests */
 	ril_request_sms_lock_release();
@@ -633,11 +633,11 @@ void ipc_sms_incoming_msg(struct ipc_message_info *info)
 	ipc_sms_tpid_queue_add(msg->msg_tpid);
 
 	if(msg->type == IPC_SMS_TYPE_POINT_TO_POINT) {
-		RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_NEW_SMS, resp, resp_length);
+		ril_request_unsolicited(RIL_UNSOL_RESPONSE_NEW_SMS, resp, resp_length);
 	} else if(msg->type == IPC_SMS_TYPE_STATUS_REPORT) {
 		// FIXME: do we need to enqueue for this?
 
-		RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_NEW_SMS_STATUS_REPORT, resp, resp_length);
+		ril_request_unsolicited(RIL_UNSOL_RESPONSE_NEW_SMS_STATUS_REPORT, resp, resp_length);
 	} else {
 		ALOGE("%s: Unknown message type", __FUNCTION__);
 	}
@@ -663,7 +663,7 @@ void ril_request_sms_acknowledge(RIL_Token t, void *data, size_t datalen)
 
 	if(id < 0) {
 		ALOGE("There is no SMS message to ACK!");
-		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 
 		return;
 	}
@@ -688,7 +688,7 @@ void ipc_sms_deliver_report(struct ipc_message_info *info)
 {
 	// TODO: check error code to eventually resend ACK
 
-	RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_SUCCESS, NULL, 0);
+	ril_request_complete(reqGetToken(info->aseq), RIL_E_SUCCESS, NULL, 0);
 }
 
 /**

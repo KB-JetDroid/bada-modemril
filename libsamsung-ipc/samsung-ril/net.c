@@ -282,7 +282,7 @@ void ril_request_operator(RIL_Token t)
 	ril_state.netinfo.reg_state == IPC_NET_REGISTRATION_STATE_SEARCHING ||
 	ril_state.netinfo.reg_state == IPC_NET_REGISTRATION_STATE_UNKNOWN ||
 	ril_state.netinfo.reg_state > IPC_NET_REGISTRATION_STATE_ROAMING) {
-		RIL_onRequestComplete(t, RIL_E_OP_NOT_ALLOWED_BEFORE_REG_TO_NW, NULL, 0);
+		ril_request_complete(t, RIL_E_OP_NOT_ALLOWED_BEFORE_REG_TO_NW, NULL, 0);
 
 		ril_state.tokens.operator = (RIL_Token) 0x00;
 		return;
@@ -294,7 +294,7 @@ void ril_request_operator(RIL_Token t)
 		/* Send back the data we got UNSOL */
 		ril_plmn_string(&(ril_state.plmndata), response);
 
-		RIL_onRequestComplete(t, RIL_E_SUCCESS, response, sizeof(response));
+		ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
 
 		for(i = 0; i < sizeof(response) / sizeof(char *) ; i++) {
 			if(response[i] != NULL)
@@ -310,7 +310,7 @@ void ril_request_operator(RIL_Token t)
 		ipc_send_get(IPC_NET_CURRENT_PLMN, reqGetId(t));
 	} else {
 		ALOGE("Another request is going on, reporting failure");
-		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, response, sizeof(response));
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, response, sizeof(response));
 	}
 
 	ril_tokens_net_state_dump();
@@ -359,7 +359,7 @@ void ipc_net_current_plmn(struct ipc_message_info *message)
 					ALOGD("Updating Operator data in background");
 				} else {
 					ril_tokens_net_set_data_waiting();
-					RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_NETWORK_STATE_CHANGED, NULL, 0);
+					ril_request_unsolicited(RIL_UNSOL_RESPONSE_NETWORK_STATE_CHANGED, NULL, 0);
 				}
 			}
 			break;
@@ -372,7 +372,7 @@ void ipc_net_current_plmn(struct ipc_message_info *message)
 				/* Better keeping it up to date */
 				memcpy(&(ril_state.plmndata), plmndata, sizeof(struct ipc_net_current_plmn));
 
-				RIL_onRequestComplete(t, RIL_E_OP_NOT_ALLOWED_BEFORE_REG_TO_NW, NULL, 0);
+				ril_request_complete(t, RIL_E_OP_NOT_ALLOWED_BEFORE_REG_TO_NW, NULL, 0);
 
 				if(ril_state.tokens.operator != RIL_TOKEN_NET_DATA_WAITING)
 					ril_state.tokens.operator = (RIL_Token) 0x00;
@@ -386,7 +386,7 @@ void ipc_net_current_plmn(struct ipc_message_info *message)
 
 				ril_plmn_string(plmndata, response);
 
-				RIL_onRequestComplete(t, RIL_E_SUCCESS, response, sizeof(response));
+				ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
 
 				for(i = 0; i < sizeof(response) / sizeof(char *) ; i++) {
 					if(response[i] != NULL)
@@ -425,7 +425,7 @@ void ril_request_registration_state(RIL_Token t)
 		/* Send back the data we got UNSOL */
 		ipc2ril_reg_state_resp(&(ril_state.netinfo), response);
 
-		RIL_onRequestComplete(t, RIL_E_SUCCESS, response, sizeof(response));
+		ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
 
 		for(i = 0; i < sizeof(response) / sizeof(char *) ; i++) {
 			if(response[i] != NULL)
@@ -442,7 +442,7 @@ void ril_request_registration_state(RIL_Token t)
 		ipc_send(IPC_NET_REGIST, IPC_TYPE_GET, (void *)&regist_req, sizeof(struct ipc_net_regist_get), reqGetId(t));
 	} else {
 		ALOGE("Another request is going on, reporting failure");
-		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
 	ril_tokens_net_state_dump();
@@ -468,7 +468,7 @@ void ril_request_gprs_registration_state(RIL_Token t)
 		/* Send back the data we got UNSOL */
 		ipc2ril_gprs_reg_state_resp(&(ril_state.gprs_netinfo), response);
 
-		RIL_onRequestComplete(t, RIL_E_SUCCESS, response, sizeof(response));
+		ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
 
 		for(i = 0; i < sizeof(response) / sizeof(char *) ; i++) {
 			if(response[i] != NULL)
@@ -486,7 +486,7 @@ void ril_request_gprs_registration_state(RIL_Token t)
 		ipc_send(IPC_NET_REGIST, IPC_TYPE_GET, (void *)&regist_req, sizeof(struct ipc_net_regist_get), reqGetId(t));
 	} else {
 		ALOGE("Another request is going on, reporting failure");
-		RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 
 	ril_tokens_net_state_dump();
@@ -513,7 +513,7 @@ void ipc_net_regist_unsol(struct ipc_message_info *message)
 				ALOGD("Updating NetRegist data in background");
 			} else {
 				ril_tokens_net_set_data_waiting();
-				RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_NETWORK_STATE_CHANGED, NULL, 0);
+				ril_request_unsolicited(RIL_UNSOL_RESPONSE_NETWORK_STATE_CHANGED, NULL, 0);
 			}
 			break;
 
@@ -530,7 +530,7 @@ void ipc_net_regist_unsol(struct ipc_message_info *message)
 				ALOGD("Updating GPRSNetRegist data in background");
 			} else {
 				ril_tokens_net_set_data_waiting();
-				RIL_onUnsolicitedResponse(RIL_UNSOL_RESPONSE_NETWORK_STATE_CHANGED, NULL, 0);
+				ril_request_unsolicited(RIL_UNSOL_RESPONSE_NETWORK_STATE_CHANGED, NULL, 0);
 			}
 			break;
 		default:
@@ -561,7 +561,7 @@ void ipc_net_regist_sol(struct ipc_message_info *message)
 
 			ipc2ril_reg_state_resp(netinfo, response);
 
-			RIL_onRequestComplete(t, RIL_E_SUCCESS, response, sizeof(response));
+			ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
 
 			for(i = 0; i < sizeof(response) / sizeof(char *) ; i++) {
 				if(response[i] != NULL)
@@ -580,7 +580,7 @@ void ipc_net_regist_sol(struct ipc_message_info *message)
 
 			ipc2ril_gprs_reg_state_resp(netinfo, response);
 
-			RIL_onRequestComplete(t, RIL_E_SUCCESS, response, sizeof(response));
+			ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
 
 			for(i = 0; i < sizeof(response) / sizeof(char *) ; i++) {
 				if(response[i] != NULL)
@@ -692,7 +692,7 @@ void ipc_net_plmn_list(struct ipc_message_info *info)
 		resp_ptr += 4;
 	}
 
-	RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_SUCCESS, resp, (4 * sizeof(char*) * actual_size));
+	ril_request_complete(reqGetToken(info->aseq), RIL_E_SUCCESS, resp, (4 * sizeof(char*) * actual_size));
 
 	/* FIXME: free individual strings */
 	free(resp);
@@ -702,7 +702,7 @@ void ipc_net_plmn_list(struct ipc_message_info *info)
 void ril_request_query_network_selection_mode(RIL_Token t)
 {
 	unsigned int mode = 0;
-	RIL_onRequestComplete(t, RIL_E_SUCCESS, &mode, sizeof(mode));
+	ril_request_complete(t, RIL_E_SUCCESS, &mode, sizeof(mode));
 }
 
 void ril_request_get_preferred_network_type(RIL_Token t)
@@ -723,5 +723,5 @@ void ipc_net_mode_sel(struct ipc_message_info *info)
 	unsigned char ipc_mode = *(unsigned char *) info->data;
 	int ril_mode = ipc2ril_modesel(ipc_mode);
 
-	RIL_onRequestComplete(reqGetToken(info->aseq), RIL_E_SUCCESS, &ril_mode, sizeof(int*));
+	ril_request_complete(reqGetToken(info->aseq), RIL_E_SUCCESS, &ril_mode, sizeof(int*));
 }
