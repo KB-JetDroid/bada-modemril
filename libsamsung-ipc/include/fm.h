@@ -44,12 +44,12 @@ struct fmPacketHeader {
 };
 
 struct fmRequest {
-	struct fmPacketHeader *header; 	// has to be the same in responsepacket, probably fm request counter
+	struct fmPacketHeader header; 	// has to be the same in responsepacket, probably fm request counter
 	uint8_t *reqBuf; 		//usually first comes unsigned int params, and then string containing name
 };
 
 struct fmResponse {
-	struct fmPacketHeader *header; 	// has to be the same in responsepacket, probably fm request counter
+	struct fmPacketHeader header; 	// has to be the same in responsepacket, probably fm request counter
 	int32_t funcRet; 		//called function return value
 	int32_t errorVal; 		//0 if func_ret == 0, otherwise retvalue of platform LastError()
 	uint8_t *respBuf;
@@ -112,7 +112,7 @@ typedef struct
 } TmDateTime;
 
 #ifdef DEVICE_JET
-typedef struct
+struct FmFileAttribute
 {
 	uint32_t		oldFileSize;		// for backward compatibilty with previous PC tools
 	uint32_t*		startAddr;			/** Only used at LFS*/
@@ -128,10 +128,10 @@ typedef struct
 									*Note: allocated size for sub directories & sub files are not included
 										only allocation size for directory itself!!!
 									*/
-} FmFileAttribute;
+};
 #endif
 #ifdef DEVICE_WAVE
-typedef struct
+struct FmFileAttribute
 {
 	uint32_t		oldFileSize;		// for backward compatibilty with previous PC tools
 	uint32_t*		startAddr;			/** Only used at LFS*/
@@ -149,7 +149,7 @@ typedef struct
 										only allocation size for directory itself!!!
 									*/
 	uint32_t		unknownField3;
-} FmFileAttribute;
+};
 #endif
 
 /**

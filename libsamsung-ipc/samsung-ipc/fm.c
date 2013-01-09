@@ -166,7 +166,7 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->errorVal = (retval < 0 ? (errno == ENOENT ? 0 : FmGetLastError()) : 0);
 	/* For some reason Mocha doesn't set error code if there's no specified file, just returns -1 */
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
 	DEBUG_I("Leaving FmOpenFile fd = %d", retval);
@@ -193,7 +193,7 @@ int32_t FmCloseFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0); //0; //retval;
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* returns true on success */
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
 	tx_packet->respBuf = NULL;
 
 	DEBUG_I("Leaving FmCloseFile fd = %d", fd);
@@ -217,7 +217,7 @@ int32_t FmCreateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = retval; /* returns fd */
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
 	DEBUG_I("Leaving FmCreateFile, fd: %d", retval);
@@ -247,7 +247,7 @@ int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->errorVal = (numRead < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (numRead < 0 ? 0 : 1); /* false/true */
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + numRead; //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + numRead; //0x08; //0x100;
 	tx_packet->respBuf = responseBuf;
 
 	DEBUG_I("Leaving FmReadFile fd = %d", fd);
@@ -276,7 +276,7 @@ int32_t FmWriteFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->errorVal = (numWrite < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (numWrite < 0 ? 0 : 1); /* false/true */
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
 	DEBUG_I("Leaving FmWriteFile fd = %d", fd);
@@ -297,7 +297,7 @@ int32_t FmFlushFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* false/true */
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
 	tx_packet->respBuf = NULL;
 
 	DEBUG_I("Leaving FmFlushFile");
@@ -323,7 +323,7 @@ int32_t FmSeekFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* true/false */
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
 	DEBUG_I("Leaving FmSeekFile fd = %d", fd);
@@ -344,7 +344,7 @@ int32_t FmTellFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = retval;
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
 	tx_packet->respBuf = NULL;
 
 	DEBUG_I("Leaving FmTellFile fd = %d", fd);
@@ -365,7 +365,7 @@ int32_t FmRemoveFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (retval < 0 ? 0 : 1);
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
 //	DEBUG_I("Leaving FmRemoveFile");
@@ -398,7 +398,7 @@ int32_t FmGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_p
 //	DEBUG_I("Inside FmGetFileAttributes");
 	int32_t retval = 0;
 	struct stat sb;
-	FmFileAttribute *fAttr;
+	struct FmFileAttribute *fAttr;
 	
 	strcpy(nameBuf, mochaRoot);
 	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
@@ -406,12 +406,12 @@ int32_t FmGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_p
 
 	retval = stat(nameBuf, &sb);
 
-	fAttr = (FmFileAttribute *)malloc(sizeof(FmFileAttribute));
-	memset(fAttr, 0, sizeof(FmFileAttribute));
+	fAttr = (struct FmFileAttribute *)malloc(sizeof(struct FmFileAttribute));
+	memset(fAttr, 0, sizeof(struct FmFileAttribute));
 	
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* returns true on success */
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(FmFileAttribute); //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(struct FmFileAttribute); //0x08; //0x100;
 
 	if(retval >= 0)
 	{
@@ -453,19 +453,19 @@ int32_t FmFGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_
 	int32_t retval = 0;
 	struct stat sb;
 	int32_t fd;
-	FmFileAttribute *fAttr;
+	struct FmFileAttribute *fAttr;
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
 	fd &= 0xFFF;
 
 	retval = fstat(fd, &sb);
 
-	fAttr = malloc(sizeof(FmFileAttribute));
-	memset(fAttr, 0, sizeof(FmFileAttribute));
+	fAttr = malloc(sizeof(struct FmFileAttribute));
+	memset(fAttr, 0, sizeof(struct FmFileAttribute));
 	
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* returns true on success */
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(FmFileAttribute); //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(struct FmFileAttribute); //0x08; //0x100;
 
 	if(retval >= 0)
 	{
@@ -495,7 +495,6 @@ int32_t FmFGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_
 		fAttr->iVol = 0xFFFFFFFF;
 	}
 
-	//memcpy(tx_packet->respBuf, &fAttr, sizeof(FmFileAttribute));
 	tx_packet->respBuf = (uint8_t *)fAttr;
 
 	return retval;
@@ -542,7 +541,7 @@ int32_t FmOpenDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 		tx_packet->funcRet = -1;
 	}
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
 	DEBUG_I("Leaving FmOpenDir");
@@ -563,7 +562,7 @@ int32_t FmCloseDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* false/true */
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
 	DEBUG_I("Leaving FmCloseDir");
@@ -589,7 +588,7 @@ int32_t FmReadDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->errorVal = 0;
 	tx_packet->funcRet = 0;
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
 	DEBUG_I("Leaving FmReadDir");
@@ -613,7 +612,7 @@ int32_t FmCreateDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* false/true */
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 
-	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
 	DEBUG_I("Leaving FmCreateDir");
@@ -638,15 +637,12 @@ int32_t FmGetQuotaSpace(struct fmRequest *rx_packet, struct fmResponse *tx_packe
 
 int32_t get_request_packet(void *data, struct fmRequest *rx_packet)
 {
-	struct fmPacketHeader *header;
-
-	header = (struct fmPacketHeader *)data;
-	rx_packet->header = header;
+	rx_packet->header = *(struct fmPacketHeader *)data;
 	rx_packet->reqBuf = (uint8_t *)((uint8_t *)data + sizeof(struct fmPacketHeader));
 
-//	DEBUG_I("Packet type = 0x%x", header->fmPacketType);
-//	DEBUG_I("Packet Length = 0x%x", header->packetLen);
-	DEBUG_I("Packet counter = 0x%x", header->reqCounter);
+//	DEBUG_I("Packet type = 0x%x", rx_packet->header.fmPacketType);
+//	DEBUG_I("Packet Length = 0x%x", rx_packet->header.packetLen);
+	DEBUG_I("Packet counter = 0x%x", rx_packet->header.reqCounter);
 //	DEBUG_I("File name = %s", (char *)(rx_packet->reqBuf));
 
 	return 0;
@@ -668,9 +664,9 @@ int32_t ipc_parse_fm(struct ipc_client* client, struct modem_io *ipc_frame)
 	get_request_packet(ipc_frame->data, &rx_packet);
 
 	tx_packet.header = rx_packet.header;
-	retval = fileOps[(tx_packet.header->fmPacketType + 0xEFFFFFFF)](&rx_packet, &tx_packet);
+	retval = fileOps[(tx_packet.header.fmPacketType + 0xEFFFFFFF)](&rx_packet, &tx_packet);
 
-    frame_length = (sizeof(struct fmPacketHeader) + tx_packet.header->packetLen);
+    frame_length = (sizeof(struct fmPacketHeader) + tx_packet.header.packetLen);
 
 	request.magic = ipc_frame->magic;
 	request.cmd = ipc_frame->cmd;
@@ -678,19 +674,15 @@ int32_t ipc_parse_fm(struct ipc_client* client, struct modem_io *ipc_frame)
 
     frame = (uint8_t*)malloc(frame_length);
 
-    memcpy(frame, tx_packet.header, sizeof(struct fmPacketHeader));
+    *(struct fmPacketHeader*)(frame) = tx_packet.header;
 
     payload = (frame + sizeof(struct fmPacketHeader));
-
-    memcpy(payload, &tx_packet.funcRet, sizeof(tx_packet.funcRet));
-
+    *(uint32_t*)(payload) = tx_packet.funcRet;
     payload = (payload + sizeof(tx_packet.funcRet));
-
-    memcpy(payload, &tx_packet.errorVal, sizeof(tx_packet.errorVal));
-
+    *(uint32_t*)(payload) = tx_packet.errorVal;
     payload = (payload + sizeof(tx_packet.errorVal));
 
-    memcpy(payload, tx_packet.respBuf, tx_packet.header->packetLen - (sizeof(tx_packet.errorVal) + sizeof(tx_packet.funcRet)));
+    memcpy(payload, tx_packet.respBuf, tx_packet.header.packetLen - (sizeof(tx_packet.errorVal) + sizeof(tx_packet.funcRet)));
 
 	request.data = frame;
 
