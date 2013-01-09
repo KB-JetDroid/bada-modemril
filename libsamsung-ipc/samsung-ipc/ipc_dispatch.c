@@ -39,6 +39,12 @@ void ipc_dispatch(struct ipc_client *client, struct modem_io *ipc_frame)
 {
 	switch(ipc_frame->cmd)
     {
+		case FIFO_PKT_SIM:
+			ipc_parse_sim(client, ipc_frame);
+		break;
+		case FIFO_PKT_PROTO:
+			ipc_parse_proto(client, ipc_frame);
+		break;
         case FIFO_PKT_FILE:
         	ipc_parse_fm(client, ipc_frame);
 			/*

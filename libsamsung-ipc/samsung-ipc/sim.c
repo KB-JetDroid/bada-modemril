@@ -46,7 +46,7 @@
 
 void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 {
-	DEBUG_I("Entering");
+	DEBUG_I("Entering ipc_parse_sim");
 	int32_t retval, count;
 	uint32_t diffedSubtype;
 	struct simPacketHeader *simHeader;
@@ -121,8 +121,7 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 		}
 	}
 
-    DEBUG_I("leaving");
-
+    DEBUG_I("Leaving ipc_parse_sim");
 }
 
 void sim_parse_event(uint8_t* buf, uint32_t bufLen)
