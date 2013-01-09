@@ -58,7 +58,7 @@ void ipc_send_lazy_fw_ver(void)
 	ipc_send(&pkt);
 }
 
-void ipc_send_lpm_mode(void)
+void ipc_send_lpm_mode(int lpmEnabled)
 {
 	uint32_t buf[2];
 	struct modem_io pkt;
@@ -66,7 +66,7 @@ void ipc_send_lpm_mode(void)
 	pkt.cmd = FIFO_PKT_BOOT;
 	pkt.data = (uint8_t*)&buf;
 	buf[0] = 0xB; /* LPM state */
-	buf[1] = 1; /* enabled */
+	buf[1] = lpmEnabled;
 	pkt.datasize = 8;
 	ipc_send(&pkt);
 }
@@ -86,7 +86,7 @@ void ipc_parse_dbg_level(struct ipc_client *client, struct modem_io *ipc_frame)
 
 	ipc_send_debug_level(1);
 	/* Initialize AMSS in LPM mode by default, we'll initialize network interfaces on RIL request */
-	ipc_send_lpm_mode();
+	ipc_send_lpm_mode(1);
 	syssec_send_imei();
 	ipc_send_lazy_fw_ver();
 	DEBUG_I("Inside ipc_parse_dbg_level leaving\n");
