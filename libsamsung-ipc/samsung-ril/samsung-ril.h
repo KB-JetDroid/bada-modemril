@@ -165,7 +165,6 @@ struct ril_state {
 	RIL_RadioState radio_state;
 	ril_sim_state sim_state;
 	int power_state;
-	int network_initialised;
 #if 0
 	struct ipc_sec_sim_status_response sim_pin_status;
 	struct ipc_sec_sim_icc_type sim_type;

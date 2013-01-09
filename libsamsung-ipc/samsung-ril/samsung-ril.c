@@ -308,9 +308,6 @@ int ril_modem_check(void)
 
 	if(ril_data.ipc_packet_client->state != RIL_CLIENT_READY)
 		return -2;
-	
-	if(!ril_data.state.network_initialised)
-		return -3;
 		
 	return 0;
 }
@@ -500,6 +497,7 @@ static const RIL_RadioFunctions ril_ops = {
 	ril_get_version
 };
 
+/* TODO: Reimplement as action performed on PWR request */ 
 void *networkInitThread(void* arg)
 {
 	/* Wait 5 seconds for modem to initialize before requesting network subsystems init, 25s if there's ipc log created */
@@ -512,7 +510,6 @@ void *networkInitThread(void* arg)
 	tapi_init();
 	proto_startup();
 //	lbs_init();
-	ril_data.state.network_initialised = 1; /* Mark that packets had been sent, so we can start serving RILD requests. */
 	RIL_UNLOCK();
 	return 0;
 }
@@ -555,10 +552,6 @@ const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **a
 	ril_data.ipc_packet_client = ipc_packet_client;
 	ALOGI("IPC client ready");
 	
-	if(pthread_create(&networkInit, NULL, networkInitThread, NULL) == 0)
-		ALOGI("Network init thread started!");
-	else
-		ALOGE("Network init thread startup failure!");
 srs:
 	ALOGD("Creating SRS client");
 

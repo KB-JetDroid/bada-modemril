@@ -58,6 +58,19 @@ void ipc_send_lazy_fw_ver(void)
 	ipc_send(&pkt);
 }
 
+void ipc_send_lpm_mode(void)
+{
+	uint32_t buf[2];
+	struct modem_io pkt;
+	pkt.magic = 0xCAFECAFE;
+	pkt.cmd = FIFO_PKT_BOOT;
+	pkt.data = (uint8_t*)&buf;
+	buf[0] = 0xB; /* LPM state */
+	buf[1] = 1; /* enabled */
+	pkt.datasize = 8;
+	ipc_send(&pkt);
+}
+
 void ipc_parse_boot(struct ipc_client *client, struct modem_io *ipc_frame)
 {
 	DEBUG_I("Inside ipc_parse_boot\n");
@@ -72,7 +85,8 @@ void ipc_parse_dbg_level(struct ipc_client *client, struct modem_io *ipc_frame)
 	DEBUG_I("Inside ipc_parse_dbg_level\n");
 
 	ipc_send_debug_level(1);
-	/* If LPM mode here comes another 0xF (BOOT) packet, we don't care for now */
+	/* Initialize AMSS in LPM mode by default, we'll initialize network interfaces on RIL request */
+	ipc_send_lpm_mode();
 	syssec_send_imei();
 	ipc_send_lazy_fw_ver();
 	DEBUG_I("Inside ipc_parse_dbg_level leaving\n");
@@ -81,7 +95,7 @@ void ipc_parse_dbg_level(struct ipc_client *client, struct modem_io *ipc_frame)
 
 void ipc_parse_system(struct ipc_client *client, struct modem_io *ipc_frame)
 {
-	DEBUG_I("received SYSTEM packet with AMSS version");
+	DEBUG_I("received SYSTEM packet with AMSS version, notifying RIL that AMSS has initialized");
 	uint32_t desc_size;
 	int suffix_size;
 	desc_size = strlen((const char*)ipc_frame->data);
