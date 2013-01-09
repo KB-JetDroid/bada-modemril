@@ -229,26 +229,26 @@ int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	int32_t numRead;
 	int32_t fd;
 	uint32_t size;
-	uint8_t *readBuf;
+	uint8_t *responseBuf;
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
 	fd &= 0xFFF;
 	size = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd));
 
-	readBuf = (uint8_t *)malloc(size + sizeof(numRead));
+	responseBuf = (uint8_t *)malloc(size + sizeof(numRead));
 
-	numRead = read(fd, (readBuf+ sizeof(numRead)), size);
+	numRead = read(fd, (responseBuf + sizeof(numRead)), size);
 	
 	if(numRead < 0)
 		DEBUG_I("%s: error! %s, fd: %d", __func__, strerror(errno), fd);
 		
-	memcpy(readBuf, &numRead, sizeof(numRead));
+	memcpy(responseBuf, &numRead, sizeof(numRead));
 
 	tx_packet->errorVal = (numRead < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (numRead < 0 ? 0 : 1); /* false/true */
 
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + numRead; //0x08; //0x100;
-	tx_packet->respBuf = readBuf;
+	tx_packet->respBuf = responseBuf;
 
 	DEBUG_I("Leaving FmReadFile fd = %d", fd);
 	return 0;
@@ -313,8 +313,8 @@ int32_t FmSeekFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
 	fd &= 0xFFF;
-	offset = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd));
-	origin = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd) + sizeof(offset));
+	origin = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd));
+	offset = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd) + sizeof(origin));
 
 	DEBUG_I("Inside FmSeekFile fd = %d, offset = 0x%x, origin = 0x%x", fd, offset, origin);
 
