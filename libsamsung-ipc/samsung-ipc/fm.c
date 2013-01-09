@@ -407,7 +407,7 @@ int32_t FmGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_p
 	retval = stat(nameBuf, &sb);
 
 	fAttr = (FmFileAttribute *)malloc(sizeof(FmFileAttribute));
-
+	memset(fAttr, 0, sizeof(FmFileAttribute));
 	
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* returns true on success */
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
@@ -416,7 +416,6 @@ int32_t FmGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_p
 	if(retval >= 0)
 	{
 		fAttr->oldFileSize = sb.st_size;
-		fAttr->startAddr = 0;
 		fAttr->attribute = sb.st_mode;
 		fAttr->iVol = sb.st_dev;
 		fAttr->dt.year = fmTime.year;
@@ -433,37 +432,15 @@ int32_t FmGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_p
 		fAttr->stModifiedDataTime.minute = fmTime.minute;
 		fAttr->stModifiedDataTime.second = fmTime.second;
 		fAttr->u64EntryUniqID = sb.st_ino;
-		fAttr->uReservedField = 0;
 		fAttr->fileSize = sb.st_size;
 		fAttr->allocatedSize = sb.st_size;
 	}
 	else
 	{
 		DEBUG_I("%s: error! %s", __func__, strerror(errno));
-		fAttr->oldFileSize = 0;
-		fAttr->startAddr = 0;
-		fAttr->attribute = 0;
-		fAttr->iVol = 0;
-		fAttr->dt.year = fmTime.year;
-		fAttr->dt.month = fmTime.month;
-		fAttr->dt.day = fmTime.day;
-		fAttr->dt.hour = fmTime.hour;
-		fAttr->dt.minute = fmTime.minute;
-		fAttr->dt.second = fmTime.second;
-		fAttr->oldAllocatedSize = 0;
-		fAttr->stModifiedDataTime.year = fmTime.year;
-		fAttr->stModifiedDataTime.month = fmTime.month;
-		fAttr->stModifiedDataTime.day = fmTime.day;
-		fAttr->stModifiedDataTime.hour = fmTime.hour;
-		fAttr->stModifiedDataTime.minute = fmTime.minute;
-		fAttr->stModifiedDataTime.second = fmTime.second;
-		fAttr->u64EntryUniqID = 0;
-		fAttr->uReservedField = 0;
-		fAttr->fileSize = 0;
-		fAttr->allocatedSize = 0;
+		fAttr->iVol = 0xFFFFFFFF;
 	}
 
-	//memcpy(tx_packet->respBuf, &fAttr, sizeof(FmFileAttribute));
 	tx_packet->respBuf = (uint8_t *)fAttr;
 
 //	DEBUG_I("Leaving FmGetFileAttributes");
@@ -484,7 +461,8 @@ int32_t FmFGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_
 	retval = fstat(fd, &sb);
 
 	fAttr = malloc(sizeof(FmFileAttribute));
-
+	memset(fAttr, 0, sizeof(FmFileAttribute));
+	
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* returns true on success */
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->header->packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(FmFileAttribute); //0x08; //0x100;
@@ -492,7 +470,6 @@ int32_t FmFGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_
 	if(retval >= 0)
 	{
 		fAttr->oldFileSize = sb.st_size;
-		fAttr->startAddr = 0;
 		fAttr->attribute = sb.st_mode;
 		fAttr->iVol = sb.st_dev;
 		fAttr->dt.year = fmTime.year;
@@ -509,34 +486,13 @@ int32_t FmFGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_
 		fAttr->stModifiedDataTime.minute = fmTime.minute;
 		fAttr->stModifiedDataTime.second = fmTime.second;
 		fAttr->u64EntryUniqID = sb.st_ino;
-		fAttr->uReservedField = 0;
 		fAttr->fileSize = sb.st_size;
 		fAttr->allocatedSize = sb.st_size;
 	}
 	else
-	{	
+	{
 		DEBUG_I("%s: error! %s", __func__, strerror(errno));
-		fAttr->oldFileSize = 0;
-		fAttr->startAddr = 0;
-		fAttr->attribute = 0;
-		fAttr->iVol = 0;
-		fAttr->dt.year = fmTime.year;
-		fAttr->dt.month = fmTime.month;
-		fAttr->dt.day = fmTime.day;
-		fAttr->dt.hour = fmTime.hour;
-		fAttr->dt.minute = fmTime.minute;
-		fAttr->dt.second = fmTime.second;
-		fAttr->oldAllocatedSize = 0;
-		fAttr->stModifiedDataTime.year = fmTime.year;
-		fAttr->stModifiedDataTime.month = fmTime.month;
-		fAttr->stModifiedDataTime.day = fmTime.day;
-		fAttr->stModifiedDataTime.hour = fmTime.hour;
-		fAttr->stModifiedDataTime.minute = fmTime.minute;
-		fAttr->stModifiedDataTime.second = fmTime.second;
-		fAttr->u64EntryUniqID = 0;
-		fAttr->uReservedField = 0;
-		fAttr->fileSize = 0;
-		fAttr->allocatedSize = 0;
+		fAttr->iVol = 0xFFFFFFFF;
 	}
 
 	//memcpy(tx_packet->respBuf, &fAttr, sizeof(FmFileAttribute));

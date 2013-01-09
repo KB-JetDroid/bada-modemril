@@ -111,6 +111,7 @@ typedef struct
 	int32_t		second;	/**<Second (1-60)*/
 } TmDateTime;
 
+#ifdef DEVICE_JET
 typedef struct
 {
 	uint32_t		oldFileSize;		// for backward compatibilty with previous PC tools
@@ -128,6 +129,28 @@ typedef struct
 										only allocation size for directory itself!!!
 									*/
 } FmFileAttribute;
+#endif
+#ifdef DEVICE_WAVE
+typedef struct
+{
+	uint32_t		oldFileSize;		// for backward compatibilty with previous PC tools
+	uint32_t*		startAddr;			/** Only used at LFS*/
+	uint32_t		attribute;			/** file attribute like directory or file, hidden, readonly, system, ...	*/
+	int32_t			iVol;				/** positioned volume*/
+	TmDateTime		dt;					/** Creation date/time*/
+	uint32_t		oldAllocatedSize;	// for backward compatibilty with previous PC tools
+	TmDateTime		stModifiedDataTime;	/** DON NOT USE THIS FIELD YET!!!*/
+	uint64_t		u64EntryUniqID;		/** uniq ID for file or directory */
+	uint32_t		unknownField1;
+	uint32_t		unknownField2;
+	uint32_t		fileSize;			/** File Size in bytes */
+	uint32_t		allocatedSize;	/** real allocated size of file & directory in sub System
+									*Note: allocated size for sub directories & sub files are not included
+										only allocation size for directory itself!!!
+									*/
+	uint32_t		unknownField3;
+} FmFileAttribute;
+#endif
 
 /**
   * @brief		These are basic structures for Directory Attribute
