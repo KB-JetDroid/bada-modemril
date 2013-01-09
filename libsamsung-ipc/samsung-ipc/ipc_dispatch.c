@@ -29,11 +29,10 @@
 #include <sim.h>
 #include <radio.h>
 #include <misc.h>
-
+#include <proto.h>
 
 #define LOG_TAG "Mocha-RIL-IPC-PARSER"
 #include <utils/Log.h>
-
 
 void ipc_dispatch(struct ipc_client *client, struct modem_io *ipc_frame)
 {
@@ -45,6 +44,9 @@ void ipc_dispatch(struct ipc_client *client, struct modem_io *ipc_frame)
 		case FIFO_PKT_PROTO:
 			ipc_parse_proto(client, ipc_frame);
 		break;
+        case FIFO_PKT_TAPI:
+        	ipc_parse_tapi(client, ipc_frame);
+        break;
         case FIFO_PKT_FILE:
         	ipc_parse_fm(client, ipc_frame);
 			/*
@@ -69,12 +71,6 @@ void ipc_dispatch(struct ipc_client *client, struct modem_io *ipc_frame)
         break;
         case FIFO_PKT_DEBUG:
         	ipc_parse_dbg(client, ipc_frame);
-        break;
-        case FIFO_PKT_TAPI:
-        	ipc_parse_tapi(client, ipc_frame);
-        break;
-        case FIFO_PKT_SIM:
-        	ipc_parse_sim(client, ipc_frame);
         break;
         default :
         	DEBUG_I("Packet type 0x%x not yet handled\n", ipc_frame->cmd);
