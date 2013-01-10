@@ -413,7 +413,7 @@ int32_t FmGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_p
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(struct FmFileAttribute);
 	
-	DEBUG_I("%s: fName FmFileAttribute size = %d, packetLen = %d", sizeof(struct FmFileAttribute), tx_packet->header.packetLen);
+	DEBUG_I("%s: fName FmFileAttribute size = %d, packetLen = %d", __func__, sizeof(struct FmFileAttribute), tx_packet->header.packetLen);
 
 	if(retval >= 0)
 	{
