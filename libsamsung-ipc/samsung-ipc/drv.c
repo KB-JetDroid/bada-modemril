@@ -184,6 +184,7 @@ void handleFuelGaugeStatus(uint8_t percentage)
 {
 	char buf[200];
 	int32_t fd, len;
+	DEBUG_I("%s: Percentage: %d\%", __func__, percentage);
 	sprintf(buf, "%s%s", power_dev_path, "battery/capacity");
 	fd = open(buf, O_RDWR);
 	if(fd < 0)
