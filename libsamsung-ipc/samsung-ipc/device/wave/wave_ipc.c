@@ -23,7 +23,6 @@
  *
  */
 #define DEBUG
-#define FM_DEBUG
 
 #include <termios.h>
 #include <stdio.h>
