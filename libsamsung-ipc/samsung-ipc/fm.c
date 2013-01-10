@@ -256,7 +256,6 @@ int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 int32_t FmWriteFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-//	DEBUG_I("Inside FmWriteFile");
 	int32_t numWrite;
 	int32_t fd;
 	uint32_t size;
@@ -451,7 +450,6 @@ int32_t FmGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_p
 
 int32_t FmFGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	DEBUG_I("Inside FmFGetFileAttributes");
 	int32_t retval = 0;
 	struct stat sb;
 	int32_t fd;
@@ -573,7 +571,6 @@ int32_t FmCloseDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 
 int32_t FmReadDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	DEBUG_I("Inside FmReadDir");
 	int32_t retval = 0;
 	struct dirent * dir;
 	int32_t fd;
@@ -593,13 +590,11 @@ int32_t FmReadDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-	DEBUG_I("Leaving FmReadDir");
 	return 0;
 }
 
 int32_t FmCreateDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	DEBUG_I("Inside FmCreateDir");
 	int32_t retval = 0;
 
 	strcpy(nameBuf, mochaRoot);
@@ -617,7 +612,6 @@ int32_t FmCreateDir(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet); //0x08; //0x100;
 	tx_packet->respBuf = NULL;
 
-	DEBUG_I("Leaving FmCreateDir");
 	return retval;
 }
 
@@ -642,19 +636,11 @@ int32_t get_request_packet(void *data, struct fmRequest *rx_packet)
 	rx_packet->header = *(struct fmPacketHeader *)data;
 	rx_packet->reqBuf = (uint8_t *)((uint8_t *)data + sizeof(struct fmPacketHeader));
 
-//	DEBUG_I("Packet type = 0x%x", rx_packet->header.fmPacketType);
-//	DEBUG_I("Packet Length = 0x%x", rx_packet->header.packetLen);
-	DEBUG_I("Packet counter = 0x%x", rx_packet->header.reqCounter);
-//	DEBUG_I("File name = %s", (char *)(rx_packet->reqBuf));
-
 	return 0;
-
 }
 
 int32_t ipc_parse_fm(struct ipc_client* client, struct modem_io *ipc_frame)
 {
-	//DEBUG_I("Entering ipc_parse_fm");
-
 	int32_t retval;
 	struct fmRequest rx_packet;
 	struct fmResponse tx_packet;
