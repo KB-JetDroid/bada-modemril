@@ -247,7 +247,7 @@ int32_t FmReadFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	tx_packet->errorVal = (numRead < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = (numRead < 0 ? 0 : 1); /* false/true */
 
-	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) +  + sizeof(numRead) + numRead;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(numRead) + numRead;
 	tx_packet->respBuf = responseBuf;
 
 	DEBUG_I("Leaving FmReadFile fd = %d", fd);
