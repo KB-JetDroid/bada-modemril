@@ -22,7 +22,7 @@
  * along with libsamsung-ipc.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#define DEBUG
+#undef DEBUG
 
 #include <termios.h>
 #include <stdio.h>
