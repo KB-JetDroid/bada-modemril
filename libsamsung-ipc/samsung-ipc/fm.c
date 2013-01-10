@@ -472,19 +472,39 @@ int32_t FmFGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_
 	return retval;
 }
 
+/* Doesn't seem to occur in normal communication, maybe there's no need to implement it. */
 int32_t FmSetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
 	DEBUG_I("Inside FmSetFileAttributes - TBD");
-
+	tx_packet->errorVal = 0xDEADFACE;
+	tx_packet->funcRet = 0; /* false */
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
+	tx_packet->respBuf = NULL;
 	DEBUG_I("Leaving FmSetFileAttributes");
 	return 0;
 }
 
 int32_t FmTruncateFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 {
-	DEBUG_I("Inside FmTruncateFile - TBD");
+	int32_t retval = 0;
+	int32_t fd;
+	uint32_t length;
 
-	DEBUG_I("Leaving FmTruncateFile");
+	fd = *(int32_t *)(rx_packet->reqBuf);
+	fd &= 0xFFF;
+	length = *(int32_t *)((rx_packet->reqBuf) + sizeof(fd));
+
+	retval = ftruncate(fd, length);
+
+	if(retval < 0)
+		DEBUG_I("%s: error! %s, fd: %d", __func__, strerror(errno), fd);
+		
+	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
+	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* true/false */
+
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet);
+	tx_packet->respBuf = NULL;
+
 	return 0;
 }
 
