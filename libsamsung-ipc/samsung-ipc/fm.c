@@ -339,7 +339,7 @@ int32_t FmTellFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	fd = *(int32_t *)(rx_packet->reqBuf);
 	fd &= 0xFFF;
 
-	retval = lseek(fd, 0, SEEK_CUR); //ftell(fd);
+	retval = lseek(fd, 0, SEEK_CUR);
 
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->funcRet = retval;
@@ -412,6 +412,8 @@ int32_t FmGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_p
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* returns true on success */
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
 	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(struct FmFileAttribute);
+	
+	DEBUG_I("%s: fName FmFileAttribute size = %d, packetLen = %d", sizeof(struct FmFileAttribute), tx_packet->header.packetLen);
 
 	if(retval >= 0)
 	{
