@@ -37,7 +37,7 @@ void ipc_pwr_phone_pwr_up(void)
 void ipc_cp_system_start(void* data)
 {	
 	/*  
-	* It's not ON yet but all initial setup has been done 
+	* It's not ON yet but AMSS is able to serve most of IPC request already
 	* TODO: Decide if it should become ON and/or normal mode already
 	* we'd rather avoid using deprecated RADIO_STATE_SIM_NOT_READY
 	*/

@@ -220,6 +220,7 @@ void srs_dispatch(struct srs_message *message);
 
 /* PWR */
 void ipc_cp_system_start(void* data);
+void ril_request_radio_power(RIL_Token t, void *data, size_t datalen);
 
 /* MISC */
 void ril_request_get_imei(RIL_Token t);
@@ -227,6 +228,17 @@ void ril_request_get_imeisv(RIL_Token t);
 void ril_request_baseband_version(RIL_Token t);
 void ril_request_get_imsi(RIL_Token t);
 
+/* Call */
+void ipc_call_incoming(void* data);
+void ipc_call_status(void* data);
+void ril_request_dial(RIL_Token t, void *data, size_t datalen);
+void ril_request_get_current_calls(RIL_Token t);
+void ril_request_hangup(RIL_Token t);
+void ril_request_answer(RIL_Token t);
+void ril_request_last_call_fail_cause(RIL_Token t);
+void ril_request_dtmf(RIL_Token t, void *data, int length);
+void ril_request_dtmf_start(RIL_Token t, void *data, int length);
+void ril_request_dtmf_stop(RIL_Token t);
 
 
 #endif

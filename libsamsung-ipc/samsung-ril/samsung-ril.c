@@ -2,9 +2,9 @@
  * This file is part of samsung-ril.
  *
  * Copyright (C) 2010-2011 Joerie de Gram <j.de.gram@gmail.com>
- * Copyright (C) 2011 Paul Kocialkowski <contact@oaulk.fr>
+ * Copyright (C) 2011-2012 Paul Kocialkowski <contact@oaulk.fr>
  * Copyright (C) 2012 KB <kbjetdroid@gmail.com>
- * Copyright (C) 2012 Dominik Marszk <dmarszk@gmail.com>
+ * Copyright (C) 2012-2013 Dominik Marszk <dmarszk@gmail.com>
  *
  * samsung-ril is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -399,6 +399,7 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_SMS_ACKNOWLEDGE:
 			ril_request_sms_acknowledge(t, data, datalen);
 			break;
+#endif
 		/* CALL */
 		case RIL_REQUEST_DIAL:
 			ril_request_dial(t, data, datalen);
@@ -414,6 +415,9 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_ANSWER:
 			ril_request_answer(t);
 			break;
+		case RIL_REQUEST_LAST_CALL_FAIL_CAUSE:
+			ril_request_last_call_fail_cause(t);
+			break;
 		case RIL_REQUEST_DTMF:
 			ril_request_dtmf(t, data, datalen);
                        break;
@@ -423,6 +427,7 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_DTMF_STOP:
 			ril_request_dtmf_stop(t);
                        break;
+#if 0
 		/* GPRS */
 		case RIL_REQUEST_SETUP_DATA_CALL:
 			ril_request_setup_data_call(t, data, datalen);
