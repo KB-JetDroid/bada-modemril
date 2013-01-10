@@ -2,13 +2,6 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
-TARGET_PLATFORM := $(TARGET_DEVICE)
-
-# walkaround for the need to duplicate wave sources for wave2
-ifeq ($(TARGET_DEVICE),wave2)
-	TARGET_PLATFORM := wave
-endif
-
 BUILD_IPC-MODEMCTRL := true
 DEBUG := true
 
@@ -35,7 +28,7 @@ samsung-ipc_files := \
 	samsung-ipc/tapi_at.c \
 	samsung-ipc/tapi_dmh.c \
 	samsung-ipc/tapi_config.c \
-	samsung-ipc/device/$(TARGET_PLATFORM)/$(TARGET_PLATFORM)_ipc.c
+	samsung-ipc/device/$(TARGET_DEVICE)/$(TARGET_DEVICE)_ipc.c
 
 
 ifeq ($(TARGET_DEVICE),jet)
@@ -43,10 +36,6 @@ ifeq ($(TARGET_DEVICE),jet)
 endif
 
 ifeq ($(TARGET_DEVICE),wave)
-	LOCAL_CFLAGS += -DDEVICE_WAVE
-endif
-
-ifeq ($(TARGET_DEVICE),wave2)
 	LOCAL_CFLAGS += -DDEVICE_WAVE
 endif
 
@@ -133,9 +122,6 @@ ifeq ($(TARGET_DEVICE),jet)
 	LOCAL_CFLAGS += -DDEVICE_JET
 endif
 ifeq ($(TARGET_DEVICE),wave)
-	LOCAL_CFLAGS += -DDEVICE_WAVE
-endif
-ifeq ($(TARGET_DEVICE),wave2)
 	LOCAL_CFLAGS += -DDEVICE_WAVE
 endif
 
