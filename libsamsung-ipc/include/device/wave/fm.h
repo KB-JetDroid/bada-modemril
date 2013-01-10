@@ -30,9 +30,9 @@ typedef struct
 	int32_t		hour;	/**<Hour (1-12)*/
 	int32_t		minute; 	/**<Minute (1-60)*/
 	int32_t		second;	/**<Second (1-60)*/
-} TmDateTime;
+}  __attribute__ ((packed)) TmDateTime;
 
-/* As per old Jet'ish headers + S8500 APPS analysis */
+/* As per Jet'ish headers + S8500 APPS analysis */
 typedef struct
 {
 	uint32_t		oldFileSize;		// for backward compatibilty with previous PC tools
@@ -51,6 +51,6 @@ typedef struct
 										only allocation size for directory itself!!!
 									*/
 	uint32_t		unknownField3;
-} FmFileAttribute;
+}  __attribute__ ((packed)) FmFileAttribute;
 
 #endif

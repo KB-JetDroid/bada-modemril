@@ -47,7 +47,7 @@ struct fmPacketHeader {
 	uint32_t reserved1; 		//dummy, unused? always equal 1
 	uint32_t packetLen; 		//equal to n, equal to packetLength-16 (headersize)
 	uint32_t reqCounter; 	// has to be the same in responsepacket, probably fm request counter
-};
+}  __attribute__ ((packed));
 
 struct fmRequest {
 	struct fmPacketHeader header; 	// has to be the same in responsepacket, probably fm request counter
@@ -127,7 +127,7 @@ typedef struct
 	char			szName[FM_FILENAME_LEN_MAX];	/** File name*/
 	uint32_t		uReservedField;		/** DON NOT USE THIS FIELD YET!!!*/
 
-} FmDirEntry;
+} __attribute__ ((packed)) FmDirEntry;
 
 /**
   * @brief		These are basic structures for VolumeStat
@@ -139,7 +139,7 @@ typedef struct
 	FmFsType	fsType;					/** volume type such as FM_FSTYPE_FIXED, FM_FSTYPE_REMOVABLE...*/
 	uint64_t		availableSize;			/** available size */
 	uint64_t		allocatedSize;			/** actual usage in File Syste*/
-} FmVolumeStat;
+} __attribute__ ((packed)) FmVolumeStat;
 
 /**
   * @brief		These are basic structures for QuotaStat
@@ -155,13 +155,13 @@ typedef struct
 	uint64_t			reservedSize;			/** if requested path is not registered. it will be 0*/
 	uint64_t			diskSize;				/** fixed size of Quota Area in TFS. This value is a practical meaning as disk size to user. */
 	uint64_t			clusterSize;				/** disk Cluster Size. */
-} FmQuotaStat;
+} __attribute__ ((packed)) FmQuotaStat;
 
 typedef struct
 {
 	char pathname[FM_FILEPATH_LEN_MAX];		// null-terminated pathname
 	FmEntryType entryType;					// File or Directory
-} FmOpenEntry;
+} __attribute__ ((packed)) FmOpenEntry;
 
 
 /**
