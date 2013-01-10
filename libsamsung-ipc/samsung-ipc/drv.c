@@ -227,7 +227,7 @@ void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame)
 		break;
 	case BATT_GAUGE_STATUS_CHANGE_IND:	
 		DEBUG_I("BATT_GAUGE_STATUS_CHANGE_IND IpcDrv packet received");
-		handleFuelGaugeStatus(*((uint8_t*)ipc_frame->data)+1);
+		handleFuelGaugeStatus(*((uint8_t*)ipc_frame->data + 1));
 		break;
 	default:
 		DEBUG_I("IpcDrv Packet type 0x%X is not yet handled", rx_header->drvPacketType);
