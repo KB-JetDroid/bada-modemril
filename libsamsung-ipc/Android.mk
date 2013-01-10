@@ -63,6 +63,13 @@ LOCAL_MODULE_TAGS := optional debug
 
 modemctrl_files := tools/modemctrl.c
 
+ifeq ($(TARGET_DEVICE),jet)
+	LOCAL_CFLAGS += -DDEVICE_JET
+endif
+ifeq ($(TARGET_DEVICE),wave)
+	LOCAL_CFLAGS += -DDEVICE_WAVE
+endif
+
 DEBUG := true
 
 ifeq ($(DEBUG),true)
