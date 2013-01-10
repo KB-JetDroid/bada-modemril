@@ -33,7 +33,7 @@ typedef struct
 } TmDateTime;
 
 /* As per old Jet'ish headers + S8500 APPS analysis */
-struct FmFileAttribute
+typedef struct
 {
 	uint32_t		oldFileSize;		// for backward compatibilty with previous PC tools
 	uint32_t		startAddr;			/** Only used at LFS*/
@@ -51,6 +51,6 @@ struct FmFileAttribute
 										only allocation size for directory itself!!!
 									*/
 	uint32_t		unknownField3;
-};
+} FmFileAttribute;
 
 #endif

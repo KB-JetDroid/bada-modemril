@@ -398,7 +398,7 @@ int32_t FmGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_p
 //	DEBUG_I("Inside FmGetFileAttributes");
 	int32_t retval = 0;
 	struct stat sb;
-	struct FmFileAttribute *fAttr;
+	FmFileAttribute *fAttr;
 	
 	strcpy(nameBuf, mochaRoot);
 	strcat(nameBuf, (const char *)(rx_packet->reqBuf));
@@ -406,14 +406,14 @@ int32_t FmGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_p
 
 	retval = stat(nameBuf, &sb);
 
-	fAttr = (struct FmFileAttribute *)malloc(sizeof(struct FmFileAttribute));
-	memset(fAttr, 0, sizeof(struct FmFileAttribute));
+	fAttr = (FmFileAttribute *)malloc(sizeof(FmFileAttribute));
+	memset(fAttr, 0, sizeof(FmFileAttribute));
 	
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* returns true on success */
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
-	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(struct FmFileAttribute);
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(FmFileAttribute);
 	
-	DEBUG_I("%s: fName FmFileAttribute size = %d, packetLen = %d", __func__, sizeof(struct FmFileAttribute), tx_packet->header.packetLen);
+	DEBUG_I("%s: fName FmFileAttribute size = %d, packetLen = %d", __func__, sizeof(FmFileAttribute), tx_packet->header.packetLen);
 
 	if(retval >= 0)
 	{
@@ -455,19 +455,19 @@ int32_t FmFGetFileAttributes(struct fmRequest *rx_packet, struct fmResponse *tx_
 	int32_t retval = 0;
 	struct stat sb;
 	int32_t fd;
-	struct FmFileAttribute *fAttr;
+	FmFileAttribute *fAttr;
 
 	fd = *(int32_t *)(rx_packet->reqBuf);
 	fd &= 0xFFF;
 
 	retval = fstat(fd, &sb);
 
-	fAttr = malloc(sizeof(struct FmFileAttribute));
-	memset(fAttr, 0, sizeof(struct FmFileAttribute));
+	fAttr = malloc(sizeof(FmFileAttribute));
+	memset(fAttr, 0, sizeof(FmFileAttribute));
 	
 	tx_packet->funcRet = (retval < 0 ? 0 : 1); /* returns true on success */
 	tx_packet->errorVal = (retval < 0 ? FmGetLastError() : 0);
-	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(struct FmFileAttribute); //0x08; //0x100;
+	tx_packet->header.packetLen = sizeof(tx_packet->errorVal) + sizeof(tx_packet->funcRet) + sizeof(FmFileAttribute); //0x08; //0x100;
 
 	if(retval >= 0)
 	{

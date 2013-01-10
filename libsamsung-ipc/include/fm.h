@@ -112,19 +112,19 @@ typedef enum
   */
 typedef struct
 {
-	FmEntryType	type;					/** File or Directory*/
+	FmEntryType		type;					/** File or Directory*/
 	uint32_t		oldFileSize;			// for backward compatibilty with previous PC tools
 	uint32_t		attribute;				/** Attribute*/
-	TmDateTime	dt;						/** Creation date/time*/
-	char		szDummy[FM_FILEPATH_LEN_MAX];	// for backward compatibility with previous PC tools
+	TmDateTime		dt;						/** Creation date/time*/
+	char			szDummy[FM_FILEPATH_LEN_MAX];	// for backward compatibility with previous PC tools
 	uint32_t		oldAllocatedSize;		// for backward compatibilty with previous PC tools
-	TmDateTime	stModifiedDataTime;	/** DON NOT USE THIS FIELD YET!!!*/
+	TmDateTime		stModifiedDataTime;	/** DON NOT USE THIS FIELD YET!!!*/
 	uint64_t		u64EntryUniqID;		/** uniq ID for file or directory, data cluster number + ctime mtime*/
-	uint32_t /*UINT64*/fileSize;			/** File size if entry is file. meaningless for directory entry */
-	uint32_t /*UINT64*/allocatedSize;		/** real allocated size of file or directory in Sub System
+	uint32_t 		fileSize;			/** File size if entry is file. meaningless for directory entry */
+	uint32_t 		allocatedSize;		/** real allocated size of file or directory in Sub System
 										 *Note: allocated size for sub directories & sub files are not included
 										  only allocation size for directory itself!!!*/
-	char		szName[FM_FILENAME_LEN_MAX];	/** File name*/
+	char			szName[FM_FILENAME_LEN_MAX];	/** File name*/
 	uint32_t		uReservedField;		/** DON NOT USE THIS FIELD YET!!!*/
 
 } FmDirEntry;
