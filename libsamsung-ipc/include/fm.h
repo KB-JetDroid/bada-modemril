@@ -1,7 +1,8 @@
 /**
  * This file is part of libsamsung-ipc.
  *
- * Copyright (C) 2011 KB <kbjetdroid@gmail.com>
+ * Copyright (C) 2011-2013 KB <kbjetdroid@gmail.com>
+ * Copyright (C) 2011-2013 Dominik Marszk <dmarszk@gmail.com>
  *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +24,11 @@
 
 #include <radio.h>
 
+#if defined(DEVICE_JET)
+#include "device/jet/fm.h"
+#elif defined(DEVICE_WAVE)
+#include "device/wave/fm.h"
+#endif
 /*
  * Declarations copied from Dolphin headers
  */
@@ -100,57 +106,6 @@ typedef enum
 	FM_FS_MTEKFS=9,
 	FM_FS_MAX =10
 } FmFsType;
-
-typedef struct
-{
-	int32_t		year; 	/**<Year (1900[1900_BASE] or 1970[1970_BASE] ~ 2030)*/
-	int32_t		month;	/**<Month (1-12)*/
-	int32_t		day;	/**<Day (1-31)*/
-	int32_t		hour;	/**<Hour (1-12)*/
-	int32_t		minute; 	/**<Minute (1-60)*/
-	int32_t		second;	/**<Second (1-60)*/
-} TmDateTime;
-
-#ifdef DEVICE_JET
-struct FmFileAttribute
-{
-	uint32_t		oldFileSize;		// for backward compatibilty with previous PC tools
-	uint32_t*		startAddr;			/** Only used at LFS*/
-	uint32_t		attribute;			/** file attribute like directory or file, hidden, readonly, system, ...	*/
-	int32_t			iVol;				/** positioned volume*/
-	TmDateTime	dt;					/** Creation date/time*/
-	uint32_t		oldAllocatedSize;	// for backward compatibilty with previous PC tools
-	TmDateTime	stModifiedDataTime;	/** DON NOT USE THIS FIELD YET!!!*/
-	uint64_t		u64EntryUniqID;		/** uniq ID for file or directory, data cluster number + ctimeuint32_tigned long		uReservedField;		DON NOT USE THIS FIELD YET!!!*/
-	uint32_t		uReservedField;		/** DON NOT USE THIS FIELD YET!!!*/
-	uint64_t/*UINT64*/	fileSize;			/** File Size in bytes */
-	uint64_t/*UINT64*/	allocatedSize;	/** real allocated size of file & directory in sub System
-									*Note: allocated size for sub directories & sub files are not included
-										only allocation size for directory itself!!!
-									*/
-};
-#endif
-#ifdef DEVICE_WAVE
-struct FmFileAttribute
-{
-	uint32_t		oldFileSize;		// for backward compatibilty with previous PC tools
-	uint32_t*		startAddr;			/** Only used at LFS*/
-	uint32_t		attribute;			/** file attribute like directory or file, hidden, readonly, system, ...	*/
-	int32_t			iVol;				/** positioned volume*/
-	TmDateTime		dt;					/** Creation date/time*/
-	uint32_t		oldAllocatedSize;	// for backward compatibilty with previous PC tools
-	TmDateTime		stModifiedDataTime;	/** DON NOT USE THIS FIELD YET!!!*/
-	uint64_t		u64EntryUniqID;		/** uniq ID for file or directory */
-	uint32_t		unknownField1;
-	uint32_t		unknownField2;
-	uint32_t		fileSize;			/** File Size in bytes */
-	uint32_t		allocatedSize;	/** real allocated size of file & directory in sub System
-									*Note: allocated size for sub directories & sub files are not included
-										only allocation size for directory itself!!!
-									*/
-	uint32_t		unknownField3;
-};
-#endif
 
 /**
   * @brief		These are basic structures for Directory Attribute
