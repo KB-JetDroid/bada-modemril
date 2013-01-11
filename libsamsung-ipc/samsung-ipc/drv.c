@@ -135,10 +135,10 @@ void handleSystemInfoRequest()
 	struct modem_io request;
 	
 	/* TODO: for WAVE add USB TA info sending if there's USB connected (it shouldn't be sent if USB is disconnected) */
-	drv_send_packet(SOUND_CONFIG, (uint8_t*)RCV_MSM_Data, sizeof((uint8_t*)RCV_MSM_Data));
-	drv_send_packet(SOUND_CONFIG, (uint8_t*)EAR_MSM_Data, sizeof((uint8_t*)EAR_MSM_Data));
-	drv_send_packet(SOUND_CONFIG, (uint8_t*)SPK_MSM_Data, sizeof((uint8_t*)SPK_MSM_Data));
-	drv_send_packet(SOUND_CONFIG, (uint8_t*)BTH_MSM_Data, sizeof((uint8_t*)BTH_MSM_Data));
+	drv_send_packet(SOUND_CONFIG, (uint8_t*)RCV_MSM_Data, sizeof(RCV_MSM_Data));
+	drv_send_packet(SOUND_CONFIG, (uint8_t*)EAR_MSM_Data, sizeof(EAR_MSM_Data));
+	drv_send_packet(SOUND_CONFIG, (uint8_t*)SPK_MSM_Data, sizeof(SPK_MSM_Data));
+	drv_send_packet(SOUND_CONFIG, (uint8_t*)BTH_MSM_Data, sizeof(BTH_MSM_Data));
 
 	memcpy(payload, fake_apps_version, strlen(fake_apps_version));
 	drv_send_packet(HIDDEN_SW_VER, payload, 0x14);
