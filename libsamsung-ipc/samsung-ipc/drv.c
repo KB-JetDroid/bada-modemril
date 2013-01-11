@@ -135,10 +135,10 @@ void handleSystemInfoRequest()
 	struct modem_io request;
 	
 	/* TODO: for WAVE add USB TA info sending if there's USB connected (it shouldn't be sent if USB is disconnected) */
-	drv_send_packet(SOUND_CONFIG, (uint8_t*)RCV_MSM_Data, sizeof((uint8_t*)RCV_MSM_Data));
-	drv_send_packet(SOUND_CONFIG, (uint8_t*)EAR_MSM_Data, sizeof((uint8_t*)EAR_MSM_Data));
-	drv_send_packet(SOUND_CONFIG, (uint8_t*)SPK_MSM_Data, sizeof((uint8_t*)SPK_MSM_Data));
-	drv_send_packet(SOUND_CONFIG, (uint8_t*)BTH_MSM_Data, sizeof((uint8_t*)BTH_MSM_Data));
+	drv_send_packet(SOUND_CONFIG, (uint8_t*)RCV_MSM_Data, sizeof(RCV_MSM_Data));
+	drv_send_packet(SOUND_CONFIG, (uint8_t*)EAR_MSM_Data, sizeof(EAR_MSM_Data));
+	drv_send_packet(SOUND_CONFIG, (uint8_t*)SPK_MSM_Data, sizeof(SPK_MSM_Data));
+	drv_send_packet(SOUND_CONFIG, (uint8_t*)BTH_MSM_Data, sizeof(BTH_MSM_Data));
 
 	memcpy(payload, fake_apps_version, strlen(fake_apps_version));
 	drv_send_packet(HIDDEN_SW_VER, payload, 0x14);
@@ -231,7 +231,7 @@ void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame)
 		break;
 	default:
 		DEBUG_I("IpcDrv Packet type 0x%X is not yet handled", rx_header->drvPacketType);
-		DEBUG_I("Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
+		DEBUG_I("Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->cmd, ipc_frame->datasize);
 
 		ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
 
