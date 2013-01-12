@@ -44,9 +44,9 @@ void tapi_nettext_parser(uint16_t tapiNettextType, uint32_t tapiNettextLength, u
 
     switch(tapiNettextType)
     {
-    case 0x01:
-    	break;
     default:
+		DEBUG_I("TapiNettext packet type 0x%X is not yet handled, len = 0x%x", tapiNettextType, tapiNettextLength);
+		hex_dump(tapiNettextData, tapiNettextLength);
     	break;
     }
 }

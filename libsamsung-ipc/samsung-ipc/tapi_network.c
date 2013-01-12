@@ -67,7 +67,7 @@ void tapi_network_parser(uint16_t tapiNetType, uint32_t tapiNetLength, uint8_t *
 		tapi_network_cell_info(tapiNetLength, tapiNetData);
 		break;
     default:
-		DEBUG_I("Unhandled TAPI Network type 0x%x received", tapiNetType);
+		DEBUG_I("TapiNetwork packet type 0x%X is not yet handled, len = 0x%x", tapiNetType, tapiNetLength);
 		hex_dump(tapiNetData, tapiNetLength);
     	break;
     }

@@ -44,9 +44,9 @@ void tapi_dmh_parser(uint16_t tapiDmhType, uint32_t tapiDmhLength, uint8_t *tapi
 
     switch(tapiDmhType)
     {
-    case 0x01:
-    	break;
     default:
+		DEBUG_I("TapiDmh Packet type 0x%X is not yet handled, len = 0x%x", tapiDmhType, tapiDmhLength);
+		hex_dump(tapiDmhData, tapiDmhLength);
     	break;
     }
 }
