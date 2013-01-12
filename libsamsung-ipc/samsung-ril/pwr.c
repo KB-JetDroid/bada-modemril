@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2010-2011 Joerie de Gram <j.de.gram@gmail.com>
  * Copyright (C) 2011 Paul Kocialkowski <contact@oaulk.fr>
+ * Copyright (C) 2012-2013 Dominik Marszk <dmarszk@gmail.com>
  *
  * samsung-ril is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,59 +23,22 @@
 #define LOG_TAG "Mocha-RIL-PWR"
 #include <utils/Log.h>
 
+#include <lbs.h>
+#include <tapi.h>
+#include <sim.h>
+#include <proto.h>
+
 #include "samsung-ril.h"
 #include "util.h"
-
-
-void ipc_pwr_phone_pwr_up(void)
-{
-	ALOGD("ipc_pwr_phone_pwr_up");
-	ril_data.state.radio_state = RADIO_STATE_OFF;
-	ril_request_unsolicited(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
-	ril_data.state.power_state = POWER_STATE_LPM;
-}
 
 void ipc_cp_system_start(void* data)
 {	
 	/*  
 	* It's not ON yet but AMSS is able to serve most of IPC request already
-	* TODO: Decide if it should become ON and/or normal mode already
-	* we'd rather avoid using deprecated RADIO_STATE_SIM_NOT_READY
 	*/
 	ril_data.state.power_state = POWER_STATE_LPM;
-	ril_data.state.radio_state = RADIO_STATE_UNAVAILABLE;
-	ril_tokens_check();
-}
-
-void ipc_pwr_phone_state(struct ipc_message_info *info)
-{
-#if 0
-	uint8_t state = *((uint8_t *) info->data);
-
-	switch(state)
-	{
-		/* This shouldn't append for LPM (no respond message) */
-		case IPC_PWR_R(IPC_PWR_PHONE_STATE_LPM):
-			ril_data.state.power_state = POWER_STATE_LPM;
-			ril_data.state.radio_state = RADIO_STATE_OFF;
-			ALOGD("Got power to LPM");
-			ril_request_unsolicited(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
-		break;
-		case IPC_PWR_R(IPC_PWR_PHONE_STATE_NORMAL):
-			usleep(3000);
-
-			ril_data.state.power_state = POWER_STATE_NORMAL;
-			ril_data.state.radio_state = RADIO_STATE_SIM_NOT_READY;
-			ALOGD("Got power to NORMAL");
-
-			/* 
-			 * return RIL_E_SUCCESS is done at IPC_SEC_PIN_STATUS:
-			 * breaks return-from-airplane-mode if done here 
-			 */
-			ril_request_unsolicited(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
-		break;
-	}
-#endif
+	ril_data.state.radio_state = RADIO_STATE_OFF;
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 	ril_tokens_check();
 }
 
@@ -88,13 +52,24 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 	int power_state = *((int *)data);
 	unsigned short power_data;
 	/* TODO: fix it, implement LPM mode? */
-	ALOGD("ril_request_radio_power: IMPLEMENT ME! requested power_state is %d", power_state);
+	ALOGD("%s: requested power_state is %d", __func__, power_state);
+	if(ril_data.state.power_state == POWER_STATE_OFF) {
+		ALOGD("%s: current power state OFF, returning RADIO_NOT_AVAILABLE", __func__);
+		ril_request_complete(t, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
+		return;
+	}
 	if(power_state <= 0) {
-		ALOGD("Request power to LPM");
-		// LPM
+		ALOGD("Request power to LPM, IMPLEMENT ME!");
+		ril_data.state.power_state = POWER_STATE_LPM;
+		ril_data.state.radio_state = RADIO_STATE_OFF;
 		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 	} else {	
 		ALOGD("Request power to NORMAL");
+		tapi_init();
+		proto_startup();
+		lbs_init();
+		ril_data.state.power_state = POWER_STATE_NORMAL;
+		ril_data.state.radio_state = RADIO_STATE_ON;
 	}
 	
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
