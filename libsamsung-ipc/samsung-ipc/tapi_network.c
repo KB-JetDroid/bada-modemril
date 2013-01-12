@@ -116,7 +116,7 @@ void tapi_network_shutdown(uint8_t mode)
 void tapi_network_set_subscription_mode(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
 	uint8_t subscriptionMode = (uint8_t)tapiNetData[0];	
-	DEBUG_I("mode:%d\n", subscriptionMode);
+	DEBUG_I("tapi_network_set_subscription_mode mode:%d\n", subscriptionMode);
 	//TODO: bounce-back packet to CP, with the same type, subtype and mode
 	ipc_invoke_ril_cb(NETWORK_SET_SUBSCRIPTION_MODE, (void*)tapiNetData);
 }
@@ -125,7 +125,7 @@ void tapi_network_network_select_ind(uint32_t tapiNetLength, uint8_t *tapiNetDat
 {	
 	struct tapiNetworkInfo* netInfo = (struct tapiNetworkInfo*)(tapiNetData);	
 	
-	DEBUG_I("serviceLevel=%d, serviceType=%d, psServiceType=%d, systemId.systemType=%d,bRoaming=%d,name=%s, spn =%s,registrationFail.state = %d, registrationFail.cause = %d, bDisplayPplmn = %d, bDisplaySpn = %d", netInfo->serviceLevel, netInfo->serviceType, netInfo->psServiceType, netInfo->systemType, netInfo->bRoaming, netInfo->name, netInfo->spn, netInfo->registrationFail.state, netInfo->registrationFail.cause, netInfo->bDisplayPplmn, netInfo->bDisplaySpn);
+	DEBUG_I("tapi_network_network_select_ind: serviceLevel=%d, serviceType=%d, psServiceType=%d, systemId.systemType=%d,bRoaming=%d,name=%s, spn =%s,registrationFail.state = %d, registrationFail.cause = %d, bDisplayPplmn = %d, bDisplaySpn = %d", netInfo->serviceLevel, netInfo->serviceType, netInfo->psServiceType, netInfo->systemType, netInfo->bRoaming, netInfo->name, netInfo->spn, netInfo->registrationFail.state, netInfo->registrationFail.cause, netInfo->bDisplayPplmn, netInfo->bDisplaySpn);
 	ipc_invoke_ril_cb(NETWORK_SELECT, (void*)netInfo);
 }
 
@@ -133,6 +133,7 @@ void tapi_network_radio_info(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
 	uint8_t* radioInfo = malloc(tapiNetLength);
 	memcpy(radioInfo, tapiNetData, tapiNetLength);
+	DEBUG_I("tapi_network_radio_info");
 	ipc_invoke_ril_cb(NETWORK_RADIO_INFO, (void*)radioInfo);
 	free(radioInfo);
 }
