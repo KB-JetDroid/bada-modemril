@@ -231,7 +231,7 @@ void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame)
 		break;
 	default:
 		DEBUG_I("IpcDrv Packet type 0x%X is not yet handled", rx_header->drvPacketType);
-		DEBUG_I("Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
+		DEBUG_I("Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->cmd, ipc_frame->datasize);
 
 		ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
 
