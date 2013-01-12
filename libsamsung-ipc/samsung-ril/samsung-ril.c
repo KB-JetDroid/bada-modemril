@@ -502,23 +502,6 @@ static const RIL_RadioFunctions ril_ops = {
 	ril_get_version
 };
 
-/* TODO: Reimplement as action performed on PWR request */ 
-void *networkInitThread(void* arg)
-{
-	/* Wait 5 seconds for modem to initialize before requesting network subsystems init, 25s if there's ipc log created */
-#ifdef DEBUG
-	usleep(25000000);
-#else
-	usleep(5000000);
-#endif
-	RIL_LOCK();
-	tapi_init();
-	proto_startup();
-//	lbs_init();
-	RIL_UNLOCK();
-	return 0;
-}
-
 const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **argv)
 {
 	struct ril_client *ipc_packet_client;
@@ -580,7 +563,7 @@ srs:
 
 end:
 	ril_data.state.radio_state = RADIO_STATE_OFF;
-	ril_data.state.power_state = POWER_STATE_LPM;
+	ril_data.state.power_state = POWER_STATE_OFF;
 
 	RIL_UNLOCK();
 

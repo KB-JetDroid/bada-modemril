@@ -143,7 +143,8 @@ void ril_tokens_check(void);
  */
  
  typedef enum {
-	POWER_STATE_LPM                  = 0,
+	POWER_STATE_OFF                  = 0,
+	POWER_STATE_LPM                  = 1,
 	POWER_STATE_NORMAL               = 2,
 	POWER_STATE_SIM_INIT_COMPLETE    = 4,
 } modem_power_state;
