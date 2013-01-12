@@ -44,9 +44,9 @@ void tapi_at_parser(uint16_t tapiAtType, uint32_t tapiAtLength, uint8_t *tapiAtD
 
     switch(tapiAtType)
     {
-    case 0x01:
-    	break;
     default:
+		DEBUG_I("TapiAT Packet type 0x%X is not yet handled, len = 0x%x", tapiAtType, tapiAtLength);
+		hex_dump(tapiAtData, tapiAtLength);
     	break;
     }
 }

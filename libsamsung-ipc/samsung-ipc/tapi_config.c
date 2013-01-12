@@ -44,9 +44,9 @@ void tapi_config_parser(uint16_t tapiConfigType, uint32_t tapiConfigLength, uint
 
     switch(tapiConfigType)
     {
-    case 0x01:
-    	break;
     default:
+		DEBUG_I("TapiConfig Packet type 0x%X is not yet handled, len = 0x%x", tapiConfigType, tapiConfigLength);
+		hex_dump(tapiConfigData, tapiConfigLength);
     	break;
     }
 }

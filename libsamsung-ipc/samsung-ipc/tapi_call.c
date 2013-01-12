@@ -44,9 +44,12 @@ void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *t
 
     switch(tapiCallType)
     {
-    case 0x01:
-    	break;
-    default:
+	case 0x00:
+		/* Confirmation of properly executed function, just drop it */
+		break;
+    default:	
+		DEBUG_I("TapiCall Packet type 0x%X is not yet handled, len = 0x%x", tapiCallType, tapiCallLength);
+		hex_dump(tapiCallData, tapiCallLength);
     	break;
     }
 }
