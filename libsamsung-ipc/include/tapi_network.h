@@ -35,15 +35,15 @@
  */
 
 //TODO: check if following definitions does apply to JET too, confirm it for WAVE
-struct tapiNetRegistrationFail {
+typedef struct {
 	uint8_t state;
 	uint8_t cause;
-} __attribute__((__packed__));
+} __attribute__((__packed__)) tapiNetRegistrationFail;
 
 #define NET_MAX_NAME_LEN 40 //it's kinda guess
 #define NET_MAX_SPN_LEN 24 //same as above
 
-struct tapiNetworkInfo { //not sure if it's specific to WAVE or same for JET, 
+typedef struct { //not sure if it's specific to WAVE or same for JET, 
 //most likely sizeof should be 0x78 bytes for WAVE
 	uint8_t serviceLevel;
 	uint8_t serviceType;
@@ -57,12 +57,11 @@ struct tapiNetworkInfo { //not sure if it's specific to WAVE or same for JET,
 	uint32_t bDisplayPplmn;
 	uint32_t bDisplaySpn;
 	uint8_t _unknown3_[8]; //this can belong to NetworkInfo or registrationFail
-	struct tapiNetRegistrationFail registrationFail;	
+	tapiNetRegistrationFail registrationFail;	
 	uint8_t _unknown4_[6]; //this can belong to NetworkInfo or registrationFail
-	
-} __attribute__((__packed__));
+} __attribute__((__packed__)) tapiNetworkInfo;
 
-struct tapiStartupNetworkInfo {
+typedef struct {
 //most likely sizeof should be 0x14 bytes for WAVE
 	uint32_t bAuto;
 	uint32_t bAttach;
@@ -72,9 +71,9 @@ struct tapiStartupNetworkInfo {
 	uint32_t mode;
 	uint8_t subs;
 	uint8_t bFlight;
-} __attribute__((__packed__));
+} __attribute__((__packed__)) tapiStartupNetworkInfo;
 
-struct tapiCellInfo {
+typedef struct {
 //most likely sizeof should be 0x1C bytes for WAVE
 	uint32_t bCellChanged;
 	uint32_t bRACChanged;
@@ -86,12 +85,17 @@ struct tapiCellInfo {
 	uint8_t plnmId[3];
 	uint8_t cbchStatus;
 	uint8_t _unknown_;
-} __attribute__((__packed__));
+} __attribute__((__packed__)) tapiCellInfo;
 
-struct tapiNetwork {
-	struct tapiNetworkInfo networkInfo;
+typedef struct {
+	uint8_t rxLevel;
+	uint8_t rxQual;
+} __attribute__((__packed__)) tapiRadioInfo;
+
+typedef struct {
+	tapiNetworkInfo networkInfo;
 	uint8_t networkOrder;
-};
+} tapiNetwork;
 
 void tapi_network_parser(uint16_t tapiNetworkType, uint32_t tapiNetworkLength, uint8_t *tapiNetworkData);
 

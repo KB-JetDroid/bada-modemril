@@ -67,8 +67,6 @@ void tapi_init(void)
 
 void ipc_parse_tapi(struct ipc_client* client, struct modem_io *ipc_frame)
 {
-	DEBUG_I("Entering ipc_parse_tapi");
-
 	struct tapiPacketHeader *rx_header;
 	struct tapiPacket tx_packet;
 
@@ -113,9 +111,6 @@ void ipc_parse_tapi(struct ipc_client* client, struct modem_io *ipc_frame)
 		DEBUG_I("Undefined TAPI Service 0x%x received", rx_header->tapiService);
 		break;
     }
-
-	DEBUG_I("Leaving ipc_parse_tapi");
-
 }
 
 void tapi_send_packet(struct tapiPacket* tapiReq)

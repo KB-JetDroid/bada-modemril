@@ -68,9 +68,10 @@ void tapi_network_parser(uint16_t tapiNetType, uint32_t tapiNetLength, uint8_t *
 		break;
     default:
 		DEBUG_I("TapiNetwork packet type 0x%X is not yet handled, len = 0x%x", tapiNetType, tapiNetLength);
-		hex_dump(tapiNetData, tapiNetLength);
     	break;
     }
+	DEBUG_I("tapi_network_parser");
+	hex_dump(tapiNetData, tapiNetLength);
 }
 
 void tapi_network_init(void)
@@ -86,8 +87,8 @@ void tapi_network_init(void)
 
 void tapi_network_startup(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
-	struct tapiStartupNetworkInfo* startInfo = (struct tapiStartupNetworkInfo*)(tapiNetData);
-	DEBUG_I("Auto:%d,bAttach:%d,mode=%d,networkOrder:%d,serviceDomain:%d,subs:%d,bFlight=%d", startInfo->bAuto, startInfo->bAttach, startInfo->mode, startInfo->networkOrder, startInfo->serviceDomain, startInfo->subs, startInfo->bFlight);
+	tapiStartupNetworkInfo* startInfo = (tapiStartupNetworkInfo*)(tapiNetData);
+	DEBUG_I("tapi_network_startup - Auto:%d,bAttach:%d,mode=%d,networkOrder:%d,serviceDomain:%d,subs:%d,bFlight=%d", startInfo->bAuto, startInfo->bAttach, startInfo->mode, startInfo->networkOrder, startInfo->serviceDomain, startInfo->subs, startInfo->bFlight);
 	ipc_invoke_ril_cb(NETWORK_STARTUP, (void*)startInfo);
 }
 
@@ -123,19 +124,17 @@ void tapi_network_set_subscription_mode(uint32_t tapiNetLength, uint8_t *tapiNet
 
 void tapi_network_network_select_ind(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {	
-	struct tapiNetworkInfo* netInfo = (struct tapiNetworkInfo*)(tapiNetData);	
+	tapiNetworkInfo* netInfo = (tapiNetworkInfo*)(tapiNetData);	
 	
-	DEBUG_I("tapi_network_network_select_ind: serviceLevel=%d, serviceType=%d, psServiceType=%d, systemId.systemType=%d,bRoaming=%d,name=%s, spn =%s,registrationFail.state = %d, registrationFail.cause = %d, bDisplayPplmn = %d, bDisplaySpn = %d", netInfo->serviceLevel, netInfo->serviceType, netInfo->psServiceType, netInfo->systemType, netInfo->bRoaming, netInfo->name, netInfo->spn, netInfo->registrationFail.state, netInfo->registrationFail.cause, netInfo->bDisplayPplmn, netInfo->bDisplaySpn);
+	DEBUG_I("tapi_network_network_select_ind: serviceLevel=%d, serviceType=%d, psServiceType=%d, systemId.systemType=%d, bRoaming=%d,name=%s, spn=%s, registrationFail.state=%d, registrationFail.cause=%d, bDisplayPplmn=%d, bDisplaySpn=%d", netInfo->serviceLevel, netInfo->serviceType, netInfo->psServiceType, netInfo->systemType, netInfo->bRoaming, netInfo->name, netInfo->spn, netInfo->registrationFail.state, netInfo->registrationFail.cause, netInfo->bDisplayPplmn, netInfo->bDisplaySpn);
 	ipc_invoke_ril_cb(NETWORK_SELECT, (void*)netInfo);
 }
 
 void tapi_network_radio_info(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
-	uint8_t* radioInfo = malloc(tapiNetLength);
-	memcpy(radioInfo, tapiNetData, tapiNetLength);
-	DEBUG_I("tapi_network_radio_info");
+	tapiRadioInfo* radioInfo = (tapiRadioInfo*)(tapiNetData);
+	DEBUG_I("tapi_network_radio_info: rxLevel=%d, rxQual=%d", radioInfo->rxLevel, radioInfo->rxQual);
 	ipc_invoke_ril_cb(NETWORK_RADIO_INFO, (void*)radioInfo);
-	free(radioInfo);
 }
 
 void tapi_network_common_error(uint32_t tapiNetLength, uint8_t *tapiNetData)
@@ -147,8 +146,8 @@ void tapi_network_common_error(uint32_t tapiNetLength, uint8_t *tapiNetData)
 
 void tapi_network_cell_info(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {	
-	struct tapiCellInfo* cellInfo = (struct tapiCellInfo*)(tapiNetData);	
-	DEBUG_I("cbchStatus:%d, bCellChanged:%d, bRACChanged:%d, bLACChanged:%d, bPLMNChanged:%d", cellInfo->cbchStatus, cellInfo->bCellChanged, cellInfo->bRACChanged, cellInfo->bLACChanged, cellInfo->bPLMNChanged);
-	DEBUG_I("cellId:%x %x %x %x, racId:%x, ladId:%x %x, plmnId:%x %x %x)\n", cellInfo->cellId[0], cellInfo->cellId[1], cellInfo->cellId[2], cellInfo->cellId[3], cellInfo->racId, cellInfo->ladId[0], cellInfo->ladId[1], cellInfo->plnmId[0], cellInfo->plnmId[1], cellInfo->plnmId[2]);
+	tapiCellInfo* cellInfo = (tapiCellInfo*)(tapiNetData);	
+	DEBUG_I("tapi_network_cell_info: cbchStatus:%d, bCellChanged:%d, bRACChanged:%d, bLACChanged:%d, bPLMNChanged:%d", cellInfo->cbchStatus, cellInfo->bCellChanged, cellInfo->bRACChanged, cellInfo->bLACChanged, cellInfo->bPLMNChanged);
+	DEBUG_I("tapi_network_cell_info: cellId:%x %x %x %x, racId:%x, ladId:%x %x, plmnId:%x %x %x\n", cellInfo->cellId[0], cellInfo->cellId[1], cellInfo->cellId[2], cellInfo->cellId[3], cellInfo->racId, cellInfo->ladId[0], cellInfo->ladId[1], cellInfo->plnmId[0], cellInfo->plnmId[1], cellInfo->plnmId[2]);
 	ipc_invoke_ril_cb(NETWORK_CELL_INFO, (void*)cellInfo);
 }
