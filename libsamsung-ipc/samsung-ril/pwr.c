@@ -27,6 +27,7 @@
 #include <tapi.h>
 #include <sim.h>
 #include <proto.h>
+#include <misc.h>
 
 #include "samsung-ril.h"
 #include "util.h"

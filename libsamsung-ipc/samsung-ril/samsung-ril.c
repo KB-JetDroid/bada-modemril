@@ -39,13 +39,10 @@
 #include <sim.h>
 #include <lbs.h>
 
-#define RIL_VERSION_STRING "Samsung RIL"
-
 /**
  * Samsung-RIL TODO:
  * Everything? :]
  */
-
 
 /**
  * RIL data
