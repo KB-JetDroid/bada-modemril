@@ -25,9 +25,9 @@
 #include "util.h"
 #include <tapi_network.h>
  
- void ipc_network_radio_info(void* data)
+void ipc_network_radio_info(void* data)
 {
-	tapiRadioInfo* radioInfo = (tapiRadioInfo*)data;
+	tapiRadioInfo* radioInfo = (tapiRadioInfo*)(data);
 	RIL_SignalStrength_v6 ss;
 	int rssi;
 
@@ -47,4 +47,10 @@
 	ALOGD("Signal Strength is %d\n", rssi);
 
 	ril_request_unsolicited(RIL_UNSOL_SIGNAL_STRENGTH, &ss, sizeof(ss));
+}
+
+void ipc_network_select(void* data)
+{	
+	tapiNetworkInfo* netInfo = (tapiNetworkInfo*)(data);
+	
 }
