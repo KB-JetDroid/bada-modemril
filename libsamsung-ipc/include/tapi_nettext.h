@@ -40,4 +40,6 @@ struct tapiNetText {
 void tapi_nettext_parser(uint16_t tapiNettextType, uint32_t tapiNettextLength, uint8_t *tapiNettextData);
 
 void tapi_nettext_set_mem_available(uint32_t bMemAvail);
+void tapi_nettext_set_preferred_memory(uint8_t preferredMemory);
+void tapi_nettext_set_net_burst(uint32_t bNetBurstEnabled);
 #endif

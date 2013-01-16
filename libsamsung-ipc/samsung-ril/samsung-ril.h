@@ -245,5 +245,9 @@ void ril_request_dtmf_stop(RIL_Token t);
 
 /* NETWORK */
 void ipc_network_radio_info(void* data);
+void ipc_network_select(void* data);
+
+/* SIM */
+void ril_sim_init(void);
 
 #endif

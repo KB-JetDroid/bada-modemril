@@ -69,6 +69,7 @@ void ipc_parse_tapi(struct ipc_client* client, struct modem_io *ipc_frame)
 {
 	struct tapiPacketHeader *rx_header;
 	struct tapiPacket tx_packet;
+	uint8_t resp_buf[8];
 
 	struct modem_io request;
     uint8_t *frame;
@@ -111,6 +112,16 @@ void ipc_parse_tapi(struct ipc_client* client, struct modem_io *ipc_frame)
 		DEBUG_I("Undefined TAPI Service 0x%x received", rx_header->tapiService);
 		break;
     }
+	if(rx_header->tapiService || rx_header->tapiServiceFunction)
+	{
+		*(uint32_t*)(resp_buf) = 0;
+		*(uint32_t*)(resp_buf+4) = 1; /* return true */
+		tx_packet.buf = resp_buf;
+		tx_packet.header.tapiService = 0;
+		tx_packet.header.tapiServiceFunction = 0;
+		tx_packet.header.len = 8;
+		tapi_send_packet(&tx_packet);
+	}
 }
 
 void tapi_send_packet(struct tapiPacket* tapiReq)

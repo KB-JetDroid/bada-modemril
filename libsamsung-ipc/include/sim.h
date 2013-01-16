@@ -120,6 +120,6 @@ void sim_send_oem_req(uint8_t* simBuf, uint8_t simBufLen);
 void sim_send_oem_data(uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32_t oemBufLen);
 
 void sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin);
-void sim_atk_open(uint32_t sid);
+int sim_atk_open(void);
 void sim_open_to_modem(uint8_t hSim);
 #endif

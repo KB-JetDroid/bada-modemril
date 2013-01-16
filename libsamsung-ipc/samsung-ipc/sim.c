@@ -165,8 +165,9 @@ void sim_send_oem_data(uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint3
 	oem_header.oemBufLen = oemBufLen;
 	
 
-	uint32_t simBufLen = oemBufLen + sizeof(struct oemSimPacketHeader);
+	uint32_t simBufLen = oemBufLen + sizeof(struct oemSimPacketHeader) + 1; /* Looks like bug in Bada, but there's always 1 redundant, zero byte */
 	uint8_t* simBuf = malloc(simBufLen);
+	memset(simBuf, 0x00, simBufLen);
 	memcpy(simBuf, &(oem_header), sizeof(struct oemSimPacketHeader));
 	if(oemBufLen)
 		memcpy(simBuf + sizeof(struct oemSimPacketHeader), dataBuf, oemBufLen);
@@ -188,16 +189,17 @@ void sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin)
 	sim_send_oem_data(hSim, 0xB, packetBuf, 10);
 }
 
-void sim_atk_open(uint32_t sid)
+int sim_atk_open(void)
 {
 	//TODO: verify ATK session and create/open it and return handler to it?!
-	DEBUG_I("Sending");
+	DEBUG_I("sim_atk_open");
 	sim_send_oem_data(0xA, 0x1B, NULL, 0); //0xA hSim is hardcoded in bada
+	return 0;
 }
 
 void sim_open_to_modem(uint8_t hSim)
 {
 	//TODO: verify, create and initialize session, send real hSim
-	DEBUG_I("Sending");
-	sim_send_oem_data(0x4, 0x1, NULL, 0); //why it starts from 4? hell knows
+	DEBUG_I("sim_open_to_modem");
+	sim_send_oem_data(hSim, 0x1, NULL, 0); //why it starts from 4? hell knows
 }

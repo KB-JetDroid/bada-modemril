@@ -62,15 +62,17 @@ typedef struct { //not sure if it's specific to WAVE or same for JET,
 } __attribute__((__packed__)) tapiNetworkInfo;
 
 typedef struct {
-//most likely sizeof should be 0x14 bytes for WAVE
-	uint32_t bAuto;
-	uint32_t bAttach;
-	uint8_t networkOrder;
-	uint8_t serviceDomain;
-	uint8_t _unknown_[2];
-	uint32_t mode;
-	uint8_t subs;
-	uint8_t bFlight;
+	/* sizeof should be 0x14 for WAVE */
+	/* Hex values next to variables are corresponding Bada NV Integer ids */
+	uint32_t bAutoSelection; /* 0x55C */
+	uint32_t bPoweronGprsAttach; /* 0x1AC */
+	uint8_t networkOrder; /* 0x55D */
+	uint8_t serviceDomain; /* 0x1AD */
+	uint8_t unknown1[2]; /* uninitialized? */
+	uint32_t networkMode; /* 0x55E */
+	uint8_t subscriptionMode; /* hardcoded to 0 in PhoneShell */
+	uint8_t bFlightMode; /* 0x16C, this is also called offlineMode */
+	uint8_t unknown2[2]; /* first byte is hardcoded 2, second uninitialized? */
 } __attribute__((__packed__)) tapiStartupNetworkInfo;
 
 typedef struct {
@@ -101,7 +103,7 @@ typedef struct {
 void tapi_network_parser(uint16_t tapiNetworkType, uint32_t tapiNetworkLength, uint8_t *tapiNetworkData);
 
 void tapi_network_api_request(uint32_t tapiNetLength, uint8_t *tapiNetData);
-void tapi_network_startup(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_startup(tapiStartupNetworkInfo* network_startup_info);
 void tapi_network_set_subscription_mode(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_radio_info(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_network_select_ind(uint32_t tapiNetLength, uint8_t *tapiNetData);
