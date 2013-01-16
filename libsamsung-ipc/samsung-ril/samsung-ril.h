@@ -32,6 +32,8 @@
 #include "ipc.h"
 #include "srs.h"
 
+#include <tapi_network.h>
+
 /**
  * Defines
  */
@@ -229,7 +231,7 @@ void ril_request_get_imeisv(RIL_Token t);
 void ril_request_baseband_version(RIL_Token t);
 void ril_request_get_imsi(RIL_Token t);
 
-/* Call */
+/* CALL */
 void ipc_call_incoming(void* data);
 void ipc_call_status(void* data);
 void ril_request_dial(RIL_Token t, void *data, size_t datalen);
@@ -241,5 +243,7 @@ void ril_request_dtmf(RIL_Token t, void *data, int length);
 void ril_request_dtmf_start(RIL_Token t, void *data, int length);
 void ril_request_dtmf_stop(RIL_Token t);
 
+/* NETWORK */
+void ipc_network_radio_info(void* data);
 
 #endif
