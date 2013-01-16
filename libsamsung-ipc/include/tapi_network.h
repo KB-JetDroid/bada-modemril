@@ -89,7 +89,8 @@ typedef struct {
 
 typedef struct {
 	uint8_t rxLevel;
-	uint8_t rxQual;
+	uint8_t rxQual; //always 0xFF?
+	uint8_t unknown; //always 0x00?
 } __attribute__((__packed__)) tapiRadioInfo;
 
 typedef struct {

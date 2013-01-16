@@ -477,6 +477,7 @@ const char *ril_get_version(void)
 void ril_install_ipc_callbacks(void)
 {
 	ipc_register_ril_cb(CP_SYSTEM_START, ipc_cp_system_start);
+	ipc_register_ril_cb(NETWORK_RADIO_INFO, ipc_network_radio_info);
 }
  
 void ril_data_init(void)
