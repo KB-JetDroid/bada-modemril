@@ -132,7 +132,7 @@ void tapi_network_network_select_ind(uint32_t tapiNetLength, uint8_t *tapiNetDat
 
 void tapi_network_radio_info(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
-	tapiRadioInfo* radioInfo = (tapiRadioInfo*)(radioInfo);
+	tapiRadioInfo* radioInfo = (tapiRadioInfo*)(tapiNetData);
 	DEBUG_I("tapi_network_radio_info: rxLevel=%d, rxQual=%d", radioInfo->rxLevel, radioInfo->rxQual);
 	ipc_invoke_ril_cb(NETWORK_RADIO_INFO, (void*)radioInfo);
 }
@@ -148,6 +148,6 @@ void tapi_network_cell_info(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {	
 	tapiCellInfo* cellInfo = (tapiCellInfo*)(tapiNetData);	
 	DEBUG_I("tapi_network_cell_info: cbchStatus:%d, bCellChanged:%d, bRACChanged:%d, bLACChanged:%d, bPLMNChanged:%d", cellInfo->cbchStatus, cellInfo->bCellChanged, cellInfo->bRACChanged, cellInfo->bLACChanged, cellInfo->bPLMNChanged);
-	DEBUG_I("tapi_network_cell_info: cellId:%x %x %x %x, racId:%x, ladId:%x %x, plmnId:%x %x %x)\n", cellInfo->cellId[0], cellInfo->cellId[1], cellInfo->cellId[2], cellInfo->cellId[3], cellInfo->racId, cellInfo->ladId[0], cellInfo->ladId[1], cellInfo->plnmId[0], cellInfo->plnmId[1], cellInfo->plnmId[2]);
+	DEBUG_I("tapi_network_cell_info: cellId:%x %x %x %x, racId:%x, ladId:%x %x, plmnId:%x %x %x\n", cellInfo->cellId[0], cellInfo->cellId[1], cellInfo->cellId[2], cellInfo->cellId[3], cellInfo->racId, cellInfo->ladId[0], cellInfo->ladId[1], cellInfo->plnmId[0], cellInfo->plnmId[1], cellInfo->plnmId[2]);
 	ipc_invoke_ril_cb(NETWORK_CELL_INFO, (void*)cellInfo);
 }
