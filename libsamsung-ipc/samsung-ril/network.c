@@ -39,7 +39,7 @@ void ipc_network_radio_info(void* data)
 	memset(&ss.LTE_SignalStrength, -1, sizeof(ss.LTE_SignalStrength));	
 	
 	/* rxLevel appears to be value between 0 and 100, rescale it to 0-31 */
-	rssi = (((uint32_t)radioInfo->rxLevel+50) * 31) / 100;
+	rssi = (((uint32_t)radioInfo->rxLevel) * 31) / 100;
 
 	ss.GW_SignalStrength.signalStrength = rssi;
 	ss.GW_SignalStrength.bitErrorRate = 99;
