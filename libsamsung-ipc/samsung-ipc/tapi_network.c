@@ -48,9 +48,6 @@ void tapi_network_parser(uint16_t tapiNetType, uint32_t tapiNetLength, uint8_t *
 
     switch(tapiNetType)
     {
-	case TAPI_NETWORK_STARTUP:	
-		tapi_network_startup(tapiNetLength, tapiNetData);
-		break;
 	case TAPI_NETWORK_SET_SUBSCRIPTION_MODE:
 		tapi_network_set_subscription_mode(tapiNetLength, tapiNetData);
 		break;
@@ -85,11 +82,16 @@ void tapi_network_init(void)
 	tapi_send_packet(&pkt);
 }
 
-void tapi_network_startup(uint32_t tapiNetLength, uint8_t *tapiNetData)
+void tapi_network_startup(tapiStartupNetworkInfo* network_startup_info)
 {
-	tapiStartupNetworkInfo* startInfo = (tapiStartupNetworkInfo*)(tapiNetData);
-	DEBUG_I("tapi_network_startup - Auto:%d,bAttach:%d,mode=%d,networkOrder:%d,serviceDomain:%d,subs:%d,bFlight=%d", startInfo->bAuto, startInfo->bAttach, startInfo->mode, startInfo->networkOrder, startInfo->serviceDomain, startInfo->subs, startInfo->bFlight);
-	ipc_invoke_ril_cb(NETWORK_STARTUP, (void*)startInfo);
+	struct tapiPacket pkt;
+	pkt.header.len = sizeof(tapiStartupNetworkInfo);
+	pkt.header.tapiService = TAPI_TYPE_NETWORK;	
+	pkt.header.tapiServiceFunction = TAPI_NETWORK_STARTUP;	
+	pkt.buf = network_startup_info;
+	DEBUG_I("tapi_network_startup - Auto:%d,bAttach:%d,mode=%d,networkOrder:%d,serviceDomain:%d,subs:%d,bFlight=%d", network_startup_info->bAuto, network_startup_info->bAttach, network_startup_info->mode, network_startup_info->networkOrder, network_startup_info->serviceDomain, network_startup_info->subs, network_startup_info->bFlight);
+	
+	tapi_send_packet(&pkt);
 }
 
 void tapi_set_offline_mode(uint8_t mode)

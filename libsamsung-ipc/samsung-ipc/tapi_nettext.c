@@ -57,9 +57,26 @@ void tapi_nettext_set_mem_available(uint32_t bMemAvail)
 	pkt.header.len = 4;
 	pkt.header.tapiService = TAPI_TYPE_NETTEXT;	
 	pkt.header.tapiServiceFunction = TAPI_NETTEXT_SET_MEM_AVAIL;
-	pkt.buf = malloc(4);
-	(*(uint32_t*)pkt.buf) = bMemAvail;
-	
+	pkt.buf = &bMemAvail;	
 	tapi_send_packet(&pkt);
-	free(pkt.buf);
+}
+
+void tapi_nettext_set_preferred_memory(uint8_t preferredMemory)
+{	
+	struct tapiPacket pkt;
+	pkt.header.len = 1;
+	pkt.header.tapiService = TAPI_TYPE_NETTEXT;	
+	pkt.header.tapiServiceFunction = TAPI_NETTEXT_SET_PREFERRED_MEM;
+	pkt.buf = &preferredMemory;	
+	tapi_send_packet(&pkt);
+}
+
+void tapi_nettext_set_net_burst(uint32_t bNetBurstEnabled)
+{	
+	struct tapiPacket pkt;
+	pkt.header.len = 4;
+	pkt.header.tapiService = TAPI_TYPE_NETTEXT;	
+	pkt.header.tapiServiceFunction = TAPI_NETTEXT_SET_BURST;
+	pkt.buf = &bNetBurstEnabled;	
+	tapi_send_packet(&pkt);
 }
