@@ -70,4 +70,6 @@ void ipc_network_select(void* data)
 	
 	tapi_nettext_set_preferred_memory(1); /* let's hope it means phone, not sim */
 	tapi_nettext_set_net_burst(0); /* disable */
+	
+	ril_sim_init();
 }
