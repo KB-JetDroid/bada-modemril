@@ -24,6 +24,7 @@
 #include "samsung-ril.h"
 #include "util.h"
 #include <tapi_network.h>
+#include <tapi_nettext.h>
  
 void ipc_network_radio_info(void* data)
 {
