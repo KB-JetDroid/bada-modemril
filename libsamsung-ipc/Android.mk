@@ -117,6 +117,7 @@ samsung-ril_files := \
 	samsung-ril/call.c \
 	samsung-ril/misc.c \
 	samsung-ril/network.c \
+	samsung-ril/sim.c \
 	samsung-ril/util.c
 
 LOCAL_SHARED_LIBRARIES := \
