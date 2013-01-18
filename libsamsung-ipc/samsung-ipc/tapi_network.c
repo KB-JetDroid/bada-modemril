@@ -88,9 +88,8 @@ void tapi_network_startup(tapiStartupNetworkInfo* network_startup_info)
 	pkt.header.len = sizeof(tapiStartupNetworkInfo);
 	pkt.header.tapiService = TAPI_TYPE_NETWORK;	
 	pkt.header.tapiServiceFunction = TAPI_NETWORK_STARTUP;	
-	pkt.buf = network_startup_info;
-	DEBUG_I("tapi_network_startup - Auto:%d,bAttach:%d,mode=%d,networkOrder:%d,serviceDomain:%d,subs:%d,bFlight=%d", network_startup_info->bAuto, network_startup_info->bAttach, network_startup_info->mode, network_startup_info->networkOrder, network_startup_info->serviceDomain, network_startup_info->subs, network_startup_info->bFlight);
-	
+	pkt.buf = (uint8_t*)(network_startup_info);
+	DEBUG_I("tapi_network_startup - AutoSelection:%d,bPoweronGprsAttach:%d,networkMode=%d,networkOrder:%d,serviceDomain:%d,subscriptionMode:%d,bFlightMode=%d", network_startup_info->bAutoSelection, network_startup_info->bPoweronGprsAttach, network_startup_info->networkMode, network_startup_info->networkOrder, network_startup_info->serviceDomain, network_startup_info->subscriptionMode, network_startup_info->bFlightMode);
 	tapi_send_packet(&pkt);
 }
 
