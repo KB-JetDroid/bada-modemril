@@ -53,11 +53,12 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 	struct simPacket sim_packet;
 
 	struct modem_io request;
-    void *frame;
-    uint8_t *payload;
-    uint32_t frame_length;
+	void *frame;
+ 	uint8_t *payload;
+ 	uint32_t frame_length;
+	uint8_t buf[4];
 
-    struct fifoPacketHeader *fifoHeader;
+	struct fifoPacketHeader *fifoHeader;
 
 	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
 
@@ -108,6 +109,9 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 					case 2: //in this subtype
 						//TODO: these 2 subtypes are somewhat special - apps does switch some bool if they are used, not sure what way they are special.
 						sim_parse_event(sim_packet.simBuf, simHeader->bufLen);
+						buf[0]=0;
+						buf[1]=0;		
+						sim_atk_send_packet(0x1, 0x31, 0x2, buf);
 						break;
 					default:
 						sim_parse_event(sim_packet.simBuf, simHeader->bufLen); 
@@ -202,4 +206,33 @@ void sim_open_to_modem(uint8_t hSim)
 	//TODO: verify, create and initialize session, send real hSim
 	DEBUG_I("sim_open_to_modem");
 	sim_send_oem_data(hSim, 0x1, NULL, 0); //why it starts from 4? hell knows
+}
+
+void sim_atk_send_packet(uint32_t atkType, uint32_t atkSubType, uint32_t atkBufLen, uint8_t* atkBuf)
+{	
+
+	DEBUG_I("Sending sim_atk_send_packet\n");
+	struct modem_io request;
+	sim_atk_packet_header* atk_header;
+	uint8_t* fifobuf;
+	uint32_t bufLen = sizeof(sim_atk_packet_header) + atkBufLen;
+
+	fifobuf = malloc(bufLen);
+	atk_header = (sim_atk_packet_header*)(fifobuf);
+
+	atk_header->atkType = atkType;
+	atk_header->atkSubType = atkSubType;
+	atk_header->atkBufLen = atkBufLen;
+
+	memcpy(fifobuf+sizeof(sim_atk_packet_header), atkBuf, atkBufLen);	
+
+	request.magic = 0xCAFECAFE;
+	request.cmd = FIFO_PKT_SIM;
+	request.datasize = bufLen;
+
+	request.data = fifobuf;
+
+	ipc_send(&request);
+
+	free(fifobuf);
 }

@@ -113,13 +113,23 @@ struct oemSimPacket{
 	uint8_t *oemBuf;
 } __attribute__((__packed__));
 
+typedef struct
+{
+	uint32_t 	atkType;
+	uint32_t 	atkSubType;
+	uint32_t 	atkBufLen;
+} __attribute__((__packed__))  sim_atk_packet_header;
+
 void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame);
 void sim_parse_event(uint8_t* buf, uint32_t bufLen);
 
 void sim_send_oem_req(uint8_t* simBuf, uint8_t simBufLen);
 void sim_send_oem_data(uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint32_t oemBufLen);
+void sim_atk_send_packet(uint32_t atkType, uint32_t atkSubType, uint32_t atkBufLen, uint8_t* atkBuf);
 
 void sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin);
 int sim_atk_open(void);
 void sim_open_to_modem(uint8_t hSim);
+
+
 #endif
