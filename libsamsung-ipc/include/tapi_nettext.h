@@ -37,9 +37,20 @@ struct tapiNetText {
 	uint32_t handle;
 };
 
+typedef struct {
+	uint32_t ext_cb;
+	uint32_t ext_cb_enable;
+	uint32_t enable_all_combined_cb_channels;
+	uint32_t combined_language_type;
+	uint32_t number_of_combined_cbmi;
+	uint16_t cb_info[40];
+} __attribute__((__packed__)) tapi_nettext_cb_settings;
+
 void tapi_nettext_parser(uint16_t tapiNettextType, uint32_t tapiNettextLength, uint8_t *tapiNettextData);
 
 void tapi_nettext_set_mem_available(uint32_t bMemAvail);
 void tapi_nettext_set_preferred_memory(uint8_t preferredMemory);
 void tapi_nettext_set_net_burst(uint32_t bNetBurstEnabled);
+void tapi_nettext_set_cb_settings(uint8_t* cb_sett_buf);
+
 #endif
