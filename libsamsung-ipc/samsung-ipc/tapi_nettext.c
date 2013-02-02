@@ -80,3 +80,13 @@ void tapi_nettext_set_net_burst(uint32_t bNetBurstEnabled)
 	pkt.buf = &bNetBurstEnabled;	
 	tapi_send_packet(&pkt);
 }
+
+void tapi_nettext_set_cb_settings(uint8_t* cb_sett_buf)
+{	
+	struct tapiPacket pkt;
+	pkt.header.len = 0x64;
+	pkt.header.tapiService = TAPI_TYPE_NETTEXT;	
+	pkt.header.tapiServiceFunction = TAPI_NETTEXT_SET_CB_SETTING;
+	pkt.buf = cb_sett_buf;	
+	tapi_send_packet(&pkt);
+}
