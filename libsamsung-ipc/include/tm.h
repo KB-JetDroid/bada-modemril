@@ -71,6 +71,6 @@ struct tm_rx_packet {
 } __attribute__((__packed__));
 
 void ipc_parse_tm(struct ipc_client* client, struct modem_io *ipc_frame);
-void ipc_send_tm(uint8_t group, uint8_t type);
+void tm_send_packet(uint8_t group, uint8_t type, uint8_t *data, int32_t data_size);
 void ipc_send_rcv_tm();
 #endif

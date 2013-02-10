@@ -47,23 +47,17 @@ void ipc_parse_tm(struct ipc_client* client, struct modem_io *ipc_frame)
 
 }
 
-void ipc_send_tm(uint8_t group, uint8_t type)
+void tm_send_packet(uint8_t group, uint8_t type, uint8_t *data, int32_t data_size)
 {
 	struct modem_io pkt;
-	struct tm_tx_packet_header* hdr;
-	uint8_t fifobuf[2];
-	hdr = (struct tm_tx_packet_header*) &fifobuf;
-		
-	hdr->group = group;
-	hdr->type = type;
-
+	pkt.data = malloc(data_size + sizeof(struct tm_tx_packet_header));	
+	pkt.data[0] = group;
+	pkt.data[1] = type;
+	memcpy(pkt.data + 2, data, data_size);
 	pkt.magic = 0xCAFECAFE;
 	pkt.cmd = FIFO_PKT_TESTMODE;
-	pkt.datasize = 2;
-	pkt.data = fifobuf;
-
+	pkt.datasize = data_size + 2;
 	ipc_send(&pkt);
-
 }
 
 void ipc_send_rcv_tm()

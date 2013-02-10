@@ -35,6 +35,7 @@
 #include <radio.h>
 #include <drv.h>
 #include <errno.h>
+#include <tm.h>
 
 #define LOG_TAG "Mocha-RIL-IPC_DRV"
 #include <utils/Log.h>
@@ -135,6 +136,10 @@ void handleSystemInfoRequest()
 	struct modem_io request;
 	
 	/* TODO: for WAVE add USB TA info sending if there's USB connected (it shouldn't be sent if USB is disconnected) */
+	tm_send_packet(0x0,0x0D, (uint8_t*)RCV_MSM_Data, sizeof(RCV_MSM_Data));
+	tm_send_packet(0x0,0x12, (uint8_t*)SPK_MSM_Data, sizeof(SPK_MSM_Data));
+	tm_send_packet(0x0,0x10, (uint8_t*)EAR_MSM_Data, sizeof(EAR_MSM_Data));
+	tm_send_packet(0x0,0x14, (uint8_t*)BTH_MSM_Data, sizeof(BTH_MSM_Data));
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)RCV_MSM_Data, sizeof(RCV_MSM_Data));
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)EAR_MSM_Data, sizeof(EAR_MSM_Data));
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)SPK_MSM_Data, sizeof(SPK_MSM_Data));
