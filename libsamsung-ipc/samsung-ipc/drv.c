@@ -165,7 +165,7 @@ void send_ta_info()
 		DEBUG_E("Couldn't open %s, %s", buf, strerror(errno));
 	else {
 		read(fd, buf, 1);
-		if(!strcmp(buf, "1"))
+		if(buf[0] == '1')
 			status = 5;
 		close(fd);
 	}
@@ -176,7 +176,7 @@ void send_ta_info()
 			DEBUG_E("Couldn't open %s", buf);
 		else {
 			read(fd, buf, 1);
-			if(!strcmp(buf, "1"))
+			if(buf[0] == '1')
 				status = 5;
 			close(fd);
 		}
