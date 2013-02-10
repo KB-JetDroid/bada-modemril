@@ -139,7 +139,7 @@ void handleSystemInfoRequest()
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)EAR_MSM_Data, sizeof(EAR_MSM_Data));
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)SPK_MSM_Data, sizeof(SPK_MSM_Data));
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)BTH_MSM_Data, sizeof(BTH_MSM_Data));
-
+	memset(payload,0, sizeof(payload));
 	memcpy(payload, fake_apps_version, strlen(fake_apps_version));
 	drv_send_packet(HIDDEN_SW_VER, payload, 0x14);
 
