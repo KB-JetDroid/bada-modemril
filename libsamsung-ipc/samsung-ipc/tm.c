@@ -58,6 +58,7 @@ void tm_send_packet(uint8_t group, uint8_t type, uint8_t *data, int32_t data_siz
 	pkt.cmd = FIFO_PKT_TESTMODE;
 	pkt.datasize = data_size + 2;
 	ipc_send(&pkt);
+	free (pkt.data);
 }
 
 void ipc_send_rcv_tm()
