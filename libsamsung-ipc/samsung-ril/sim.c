@@ -27,6 +27,7 @@
 
 void ril_sim_init(void)
 {
+	sim_atk_open();	
 	sim_open_to_modem(4);
-	sim_atk_open();
+	
 }
