@@ -37,6 +37,7 @@
 #include <sim.h>
 #include <tapi.h>
 #include <tapi_nettext.h>
+#include <tapi_network.h>
 
 #define LOG_TAG "Mocha-RIL-SIM"
 #include <utils/Log.h>
