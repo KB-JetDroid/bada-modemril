@@ -93,6 +93,7 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 */
 			break;
 		case 0x24:
+			tapi_set_subscription_mode(0x1);
 			cb_sett_buf = (tapi_nettext_cb_settings *)malloc(sizeof(tapi_nettext_cb_settings));
 			memset(cb_sett_buf, 0, sizeof(tapi_nettext_cb_settings));		
 			cb_sett_buf->ext_cb = 0x0;
