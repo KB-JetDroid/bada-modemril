@@ -111,5 +111,6 @@ void tapi_network_common_error(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_cell_info(uint32_t tapiNetLength, uint8_t *tapiNetData);
 
 void tapi_network_init(void);
+void tapi_set_subscription_mode(uint8_t mode);
 
 #endif

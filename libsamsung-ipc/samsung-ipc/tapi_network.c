@@ -115,6 +115,18 @@ void tapi_network_shutdown(uint8_t mode)
 	tapi_send_packet(&pkt);
 }
 
+void tapi_set_subscription_mode(uint8_t mode)
+{
+	struct tapiPacket pkt;
+	pkt.header.len = 1;
+	pkt.header.tapiService = TAPI_TYPE_NETWORK;	
+	pkt.header.tapiServiceFunction = TAPI_NETWORK_SET_SUBSCRIPTION_MODE;
+	pkt.buf = &mode;
+	
+	tapi_send_packet(&pkt);
+}
+
+
 void tapi_network_set_subscription_mode(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
 	uint8_t subscriptionMode = (uint8_t)tapiNetData[0];	
