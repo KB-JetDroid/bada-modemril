@@ -21,6 +21,7 @@
  */
 
 #define LOG_TAG "Mocha-RIL-PWR"
+#include <time.h>
 #include <utils/Log.h>
 
 #include <lbs.h>
@@ -72,6 +73,8 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 		lbs_init();
 		ril_data.state.power_state = POWER_STATE_NORMAL;
 		ril_data.state.radio_state = RADIO_STATE_ON;
+		usleep(2000000);		
+		network_start();
 	}
 	
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);

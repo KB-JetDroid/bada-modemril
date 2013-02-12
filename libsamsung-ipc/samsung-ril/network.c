@@ -53,6 +53,12 @@ void ipc_network_radio_info(void* data)
 void ipc_network_select(void* data)
 {	
 	tapiNetworkInfo* netInfo = (tapiNetworkInfo*)(data);
+
+}
+
+
+void network_start(void)
+{
 	tapiStartupNetworkInfo start_info;
 	start_info.bAutoSelection = 1;
 	start_info.bPoweronGprsAttach = 1;
