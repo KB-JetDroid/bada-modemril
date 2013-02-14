@@ -37,7 +37,16 @@ struct tapiCall {
 	uint8_t type; //1 or 2 or 3
 	uint32_t handle;
 };
+typedef struct {
+	uint32_t callId;
+	uint8_t callType; 
+	uint8_t nameMode;
+	char phoneNumber[1];
+} __attribute__((__packed__)) tapiCallInfo;
 
 void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *tapiCallData);
+void tapi_call_incoming_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
+void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
+
 
 #endif

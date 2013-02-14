@@ -44,12 +44,32 @@ void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *t
 
     switch(tapiCallType)
     {
-	case 0x00:
+	case TAPI_CALL_APIREQ:
 		/* Confirmation of properly executed function, just drop it */
+		break;
+	case TAPI_CALL_INCOMING_IND:
+		tapi_call_incoming_ind(tapiCallLength, tapiCallData);
+		break;
+	case TAPI_CALL_END_IND:
+		tapi_call_end_ind(tapiCallLength, tapiCallData);
 		break;
     default:	
 		DEBUG_I("TapiCall Packet type 0x%X is not yet handled, len = 0x%x", tapiCallType, tapiCallLength);
 		hex_dump(tapiCallData, tapiCallLength);
     	break;
     }
+}
+
+
+void tapi_call_incoming_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
+{
+	tapiCallInfo* CallInfo = (tapiCallInfo*)(tapiCallData);
+	DEBUG_I("tapi_call_incoming_ind: Incoming call received from %s", CallInfo->phoneNumber);
+	ipc_invoke_ril_cb(CALL_INCOMING_IND, (void*)CallInfo);
+}
+		
+void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
+{
+	DEBUG_I("tapi_call_end_ind");
+	ipc_invoke_ril_cb(CALL_END_IND, (void*)tapiCallData);
 }

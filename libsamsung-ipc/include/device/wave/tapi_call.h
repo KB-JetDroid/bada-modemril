@@ -29,6 +29,8 @@
 enum TAPI_CALL_TYPE
 {
 	TAPI_CALL_APIREQ 	= 0x0,
+	TAPI_CALL_INCOMING_IND  = 0x14,
+	TAPI_CALL_END_IND	= 0x18,
 };
  
 #endif
