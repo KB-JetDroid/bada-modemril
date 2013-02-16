@@ -59,6 +59,7 @@ enum ipc_ril_cb_type {
 	CP_SYSTEM_START,
     CALL_INCOMING_IND,
     CALL_END_IND,
+    NETTEXT_INCOMING,
 	IPC_RIL_CB_LAST
 };
 

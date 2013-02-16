@@ -44,10 +44,13 @@ void tapi_nettext_parser(uint16_t tapiNettextType, uint32_t tapiNettextLength, u
 
     switch(tapiNettextType)
     {
-    default:
+	case TAPI_NETTEXT_INCOMING:
+		tapi_nettext_incoming(tapiNettextLength, tapiNettextData);
+		break;	
+    	default:
 		DEBUG_I("TapiNettext packet type 0x%X is not yet handled, len = 0x%x", tapiNettextType, tapiNettextLength);
 		hex_dump(tapiNettextData, tapiNettextLength);
-    	break;
+	    	break;
     }
 }
 
@@ -89,4 +92,11 @@ void tapi_nettext_set_cb_settings(uint8_t* cb_sett_buf)
 	pkt.header.tapiServiceFunction = TAPI_NETTEXT_SET_CB_SETTING;
 	pkt.buf = cb_sett_buf;	
 	tapi_send_packet(&pkt);
+}
+
+void tapi_nettext_incoming(uint32_t tapiNettextLength, uint8_t *tapiNettextData)
+{
+	tapiNettextInfo* nettextInfo = (tapiNettextInfo*)(tapiNettextData);
+	DEBUG_I("tapi_nettext_incoming: Incoming SMS received from %s, message: %s", nettextInfo->phoneNumber, nettextInfo->messageBody);
+	ipc_invoke_ril_cb(NETTEXT_INCOMING, (void*)nettextInfo);
 }
