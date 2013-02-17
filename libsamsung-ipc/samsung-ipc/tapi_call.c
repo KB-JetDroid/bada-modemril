@@ -63,13 +63,54 @@ void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *t
 
 void tapi_call_incoming_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
 {
-	tapiCallInfo* CallInfo = (tapiCallInfo*)(tapiCallData);
-	DEBUG_I("tapi_call_incoming_ind: Incoming call received from %s", CallInfo->phoneNumber);
-	ipc_invoke_ril_cb(CALL_INCOMING_IND, (void*)CallInfo);
+	tapiCallInfo* callInfo = (tapiCallInfo*)(tapiCallData);
+	DEBUG_I("tapi_call_incoming_ind: Incoming call received from %s", callInfo->phoneNumber);
+	DEBUG_I("tapi_call_incoming_ind: callId = %d", callInfo->callId );
+	ipc_invoke_ril_cb(CALL_INCOMING_IND, (void*)callInfo);
 }
 		
 void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
 {
 	DEBUG_I("tapi_call_end_ind");
 	ipc_invoke_ril_cb(CALL_END_IND, (void*)tapiCallData);
+}
+
+void tapi_call_release(uint8_t callType,uint32_t callId, uint8_t releaseCause)
+{
+	struct tapiPacket tx_packet;
+	tapiCallRelease* callRelease;
+	callRelease = (tapiCallRelease*)malloc(sizeof(tapiCallRelease));
+	memset(callRelease, 0, sizeof(tapiCallRelease));
+	callRelease->callType = callType;
+	callRelease->align0[0] = 0x0;
+	callRelease->align0[1] = 0x0;
+	callRelease->align0[2] = 0x0;
+	callRelease->callId = callId;
+	callRelease->releaseCause = releaseCause; 
+	callRelease->align1[0] = 0x0;
+	callRelease->align1[1] = 0x0;
+	callRelease->align1[2] = 0x0;
+	tx_packet.buf = (uint8_t *)callRelease;
+	tx_packet.header.tapiService = 0;
+	tx_packet.header.tapiServiceFunction = TAPI_CALL_RELEASE;
+	tx_packet.header.len = 12;
+	tapi_send_packet(&tx_packet);
+}
+
+void tapi_call_answer(uint8_t callType, uint32_t callId)
+{
+	struct tapiPacket tx_packet;
+	tapiCallAnswer* callAnswer;
+	callAnswer = (tapiCallAnswer*)malloc(sizeof(tapiCallAnswer));
+	memset(callAnswer, 0, sizeof(tapiCallAnswer));
+	callAnswer->callType = callType;
+	callAnswer->align[0] = 0x0;
+	callAnswer->align[1] = 0x0;
+	callAnswer->align[2] = 0x0;
+	callAnswer->callId = callId; 
+	tx_packet.buf = (uint8_t *)callAnswer;
+	tx_packet.header.tapiService = 0;
+	tx_packet.header.tapiServiceFunction = TAPI_CALL_ANSWER;
+	tx_packet.header.len = 8;
+	tapi_send_packet(&tx_packet);
 }

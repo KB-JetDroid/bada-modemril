@@ -234,6 +234,7 @@ void ril_request_get_imsi(RIL_Token t);
 /* CALL */
 void ipc_call_incoming(void* data);
 void ipc_call_status(void* data);
+void ipc_call_end(void* data);
 void ril_request_dial(RIL_Token t, void *data, size_t datalen);
 void ril_request_get_current_calls(RIL_Token t);
 void ril_request_hangup(RIL_Token t);
@@ -247,6 +248,7 @@ void ril_request_dtmf_stop(RIL_Token t);
 void ipc_network_radio_info(void* data);
 void ipc_network_select(void* data);
 void network_start(void);
+
 /* SIM */
 void ril_sim_init(void);
 

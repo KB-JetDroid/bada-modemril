@@ -386,7 +386,6 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_SET_PREFERRED_NETWORK_TYPE:
 			ril_request_set_preffered_network_type(t, data, datalen);
 			break;
-		/* SMS */
 		case RIL_REQUEST_SEND_SMS:
 			ril_request_send_sms(t, data, datalen);
 			break;
@@ -395,7 +394,7 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 			break;
 		case RIL_REQUEST_SMS_ACKNOWLEDGE:
 			ril_request_sms_acknowledge(t, data, datalen);
-			break;
+				break;
 #endif
 		/* CALL */
 		case RIL_REQUEST_DIAL:
@@ -435,12 +434,12 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		/* SND */
 		case RIL_REQUEST_SET_MUTE:
 			ril_request_set_mute(t, data, datalen);
-		/* OTHER */
+#endif		/* OTHER */
 		case RIL_REQUEST_SCREEN_STATE:
 			/* This doesn't affect anything */
 			ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 			break;
-#endif
+
 		default:
 			ALOGE("Request not implemented: %d", request);
 			ril_request_complete(t, RIL_E_REQUEST_NOT_SUPPORTED, NULL, 0);
@@ -479,6 +478,9 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(CP_SYSTEM_START, ipc_cp_system_start);
 	ipc_register_ril_cb(NETWORK_RADIO_INFO, ipc_network_radio_info);
 	ipc_register_ril_cb(NETWORK_SELECT, ipc_network_select);
+	ipc_register_ril_cb(NETWORK_CELL_INFO, ipc_cell_info);
+	ipc_register_ril_cb(CALL_INCOMING_IND, ipc_call_incoming);
+	ipc_register_ril_cb(CALL_END_IND, ipc_call_end);
 }
  
 void ril_data_init(void)
