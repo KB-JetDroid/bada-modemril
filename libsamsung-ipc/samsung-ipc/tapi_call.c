@@ -73,3 +73,17 @@ void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
 	DEBUG_I("tapi_call_end_ind");
 	ipc_invoke_ril_cb(CALL_END_IND, (void*)tapiCallData);
 }
+
+void tapi_call_hangup(void)
+{
+	struct tapiPacket tx_packet;
+	uint8_t resp_buf[12];
+	*(uint32_t*)(resp_buf) = 0;
+	*(uint32_t*)(resp_buf+4) = 1; /* return true */
+	*(uint32_t*)(resp_buf+8) = 0;
+	tx_packet.buf = resp_buf;
+	tx_packet.header.tapiService = 0;
+	tx_packet.header.tapiServiceFunction = 3;
+	tx_packet.header.len = 12;
+	tapi_send_packet(&tx_packet);
+}
