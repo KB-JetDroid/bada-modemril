@@ -24,14 +24,24 @@
 #include <utils/Log.h>
 
 #include "samsung-ril.h"
+#include <tapi_call.h>
+
+int num_entries=0;
+char *number;
+tapiCallInfo* callInfo;
 
 void ipc_call_incoming(void* data)
 {
-	ALOGE("%s: test me!", __func__);
+	
+ALOGE("%s: test me!", __func__);
+	
+	tapiCallInfo* callInfo = (tapiCallInfo*)(data);
+	num_entries = 1;
+	number = callInfo->phoneNumber;
 	ril_request_unsolicited(RIL_UNSOL_CALL_RING, NULL, 0);
-
 	/* FIXME: Do we really need to send this? */
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+
 }
 
 void ipc_call_status(void* data)
@@ -50,22 +60,61 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 
 void ril_request_get_current_calls(RIL_Token t)
 {
-	unsigned char num_entries;
+	char    *number_ril; //*number;
+	int i, number_len;
 
-	ALOGE("%s: Implement me!", __func__);
-	num_entries = 0;
+	
+	ALOGE("%s: test me!", __func__);
 
-	if(num_entries == 0) {
-		// Don't bother with mem alloc
-
+       if (num_entries == 0) {
+		DEBUG_I("num_entries == 0");	
 		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 		return;
 	}
+
+	RIL_Call **calls = (RIL_Call **) malloc(num_entries * sizeof(RIL_Call *));
+
+	for (i = 0; i < num_entries; i++) {
+
+		RIL_Call *call = (RIL_Call *) malloc(sizeof(RIL_Call));
+
+		call->state = 4; // INCOMING
+		call->index = 1;
+		call->toa = (strlen(number) > 0 && number[0] == '+') ? 145 : 129;
+		call->isMpty = 0;
+		call->isMT = 1;
+		call->als = 0;
+		call->isVoice  = 1;
+		call->isVoicePrivacy = 0;
+		call->number = number;
+		call->numberPresentation = (strlen(number) > 0) ? 0 : 2;
+		call->name = NULL;
+		call->namePresentation = 2;
+		call->uusInfo = NULL;
+		calls[i] = call;
+
+	}
+
+	ril_request_complete(t, RIL_E_SUCCESS, calls, (num_entries * sizeof(RIL_Call *)));
+
+	for (i = 0; i < num_entries; i++) {
+
+		free(calls[i]);
+
+	}
+
+	free(calls);
+
+	
 }
 
+	
 void ril_request_hangup(RIL_Token t)
 {
-	ALOGE("%s: Implement me!", __func__);
+	ALOGE("%s: Test me!", __func__);
+	
+	tapi_call_hangup();
+	num_entries = 0;
 
 	/* FIXME: This should actually be sent based on the response from baseband */
 	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
