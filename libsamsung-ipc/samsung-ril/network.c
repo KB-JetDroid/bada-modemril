@@ -25,6 +25,9 @@
 #include "util.h"
 #include <tapi_network.h>
 #include <tapi_nettext.h>
+
+int reg_state = 0;
+
  
 void ipc_network_radio_info(void* data)
 {
@@ -54,9 +57,32 @@ void ipc_network_select(void* data)
 {	
 	tapiNetworkInfo* netInfo = (tapiNetworkInfo*)(data);
 
+        /* Converts IPC network registration status to Android RIL format */
+	switch(netInfo->serviceType) {
+		case 0x1:
+			reg_state = 0;//Not registered, MT is not currently searching a new operator to register
+			break;
+		case 0x2:
+			reg_state = 2;//Not registered, but MT is currently searching a new operator to register
+			break;
+		case 0x4:
+			reg_state = 1; //Registered, home network
+			break;
+		default:
+			reg_state = 0;
+			break;
+	}
+
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED, NULL, 0);
+	
 }
 
+void ipc_cell_info(void* data)
+{
 
+	tapiCellInfo* cellInfo = (tapiCellInfo*)(data);
+//TODO: implement cell id and LAC convertion to android RIL format 
+}
 void network_start(void)
 {
 	tapiStartupNetworkInfo start_info;
@@ -78,4 +104,38 @@ void network_start(void)
 	tapi_nettext_set_net_burst(0); /* disable */
 	
 	ril_sim_init();
+}
+
+void ril_request_operator(RIL_Token t)
+{
+	char *response[3];
+
+	if (reg_state == 1) {
+		memset(response, 0, sizeof(response));
+		asprintf(&response[0], "%s","Beeline");
+		asprintf(&response[1], "%s","Beeline");
+		asprintf(&response[2], "%s","25099");
+		ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
+	}
+	else
+	{
+		ril_request_complete(t, RIL_E_OP_NOT_ALLOWED_BEFORE_REG_TO_NW, NULL, 0);
+		
+	}
+
+
+}
+
+void ril_request_registration_state(RIL_Token t)
+{
+	char *response[15];
+
+	memset(response, 0, sizeof(response));
+
+	asprintf(&response[0], "%d", reg_state);
+	asprintf(&response[1], "%x", 0x0f69);
+	asprintf(&response[2], "%x", 0x00000637);
+	asprintf(&response[3], "%d", 0);
+
+	ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
 }
