@@ -364,14 +364,15 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_SET_FACILITY_LOCK:
 			ril_request_set_facility_lock(t, data, datalen);
 			break;
-		/* NET */
+#endif		/* NET */
 		case RIL_REQUEST_OPERATOR:
 			ril_request_operator(t);
 			break;
-		case RIL_REQUEST_REGISTRATION_STATE:
+		case RIL_REQUEST_VOICE_REGISTRATION_STATE:
 			ril_request_registration_state(t);
 			break;
-		case RIL_REQUEST_GPRS_REGISTRATION_STATE:
+#if 0
+			case RIL_REQUEST_GPRS_REGISTRATION_STATE:
 			ril_request_gprs_registration_state(t);
 			break;
 		case RIL_REQUEST_QUERY_AVAILABLE_NETWORKS:
