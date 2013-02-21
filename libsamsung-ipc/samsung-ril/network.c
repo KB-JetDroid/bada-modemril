@@ -25,9 +25,10 @@
 #include "util.h"
 #include <tapi_network.h>
 #include <tapi_nettext.h>
+#include <plmn_list.h>
 
 int reg_state = 0;
-
+char proper_plmn[10];
  
 void ipc_network_radio_info(void* data)
 {
@@ -79,10 +80,14 @@ void ipc_network_select(void* data)
 
 void ipc_cell_info(void* data)
 {
-
 	tapiCellInfo* cellInfo = (tapiCellInfo*)(data);
-//TODO: implement cell id and LAC convertion to android RIL format 
+
+	uint16_t mcc = ((cellInfo->plmnId[0] & 0xF) * 100) + (((cellInfo->plmnId[0] >> 4) & 0xF) * 10) + (((cellInfo->plmnId[1]) & 0xF) * 1);
+	uint16_t mnc = ((cellInfo->plmnId[2] & 0xF) * 10) + (((cellInfo->plmnId[2] >> 4) & 0xF) * 1);
+	sprintf(proper_plmn, "%3u%2u", mcc, mnc);
+	//TODO: implement cell id and LAC convertion to android RIL format 
 }
+
 void network_start(void)
 {
 	tapiStartupNetworkInfo start_info;
@@ -106,15 +111,50 @@ void network_start(void)
 	ril_sim_init();
 }
 
+void ril_plmn_split(char *plmn_data, char **plmn, unsigned int *mcc, unsigned int *mnc)
+{
+	char plmn_t[7];
+
+	memset(plmn_t, 0, sizeof(plmn_t));
+	memcpy(plmn_t, plmn_data, 6);
+//	if (plmn_t[5] == 'f')
+//		plmn_t[5] = '\0';
+//	DEBUG_I("TAPI: plmn_t = %s",plmn_t);
+	if (plmn != NULL) {
+		*plmn = malloc(sizeof(plmn_t));
+		memcpy(*plmn, plmn_t, sizeof(plmn_t));
+	}
+	if (mcc == NULL || mnc == NULL)
+		return;
+	sscanf(plmn_t, "%3u%2u", mcc, mnc);
+}
+
 void ril_request_operator(RIL_Token t)
 {
 	char *response[3];
+	char *plmn;
+	unsigned int mcc, mnc;
+	int plmn_entries;
+	int i;
+
+
 
 	if (reg_state == 1) {
+		
+		ril_plmn_split(proper_plmn, &plmn, &mcc, &mnc);
+		plmn_entries = sizeof(plmn_list) / sizeof(struct plmn_list_entry);
+		
 		memset(response, 0, sizeof(response));
-		asprintf(&response[0], "%s","Beeline");
-		asprintf(&response[1], "%s","Beeline");
-		asprintf(&response[2], "%s","25099");
+
+		asprintf(&response[2], "%s", plmn);
+		free(plmn);
+
+		for (i=0 ; i < plmn_entries ; i++) {
+			if (plmn_list[i].mcc == mcc && plmn_list[i].mnc == mnc) {
+				asprintf(&response[0], "%s", plmn_list[i].operator_short);
+				asprintf(&response[1], "%s", plmn_list[i].operator_long);
+			}
+		}
 		ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
 	}
 	else
