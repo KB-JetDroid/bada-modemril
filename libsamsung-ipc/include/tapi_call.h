@@ -47,7 +47,7 @@ typedef struct {
 void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_incoming_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
-void tapi_call_hangup(void);
+void tapi_call_hangup(uint32_t callId);
 
 
 #endif

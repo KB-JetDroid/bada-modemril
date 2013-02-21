@@ -29,6 +29,7 @@
 int num_entries=0;
 char *number;
 tapiCallInfo* callInfo;
+int callId;
 
 void ipc_call_incoming(void* data)
 {
@@ -38,6 +39,7 @@ ALOGE("%s: test me!", __func__);
 	tapiCallInfo* callInfo = (tapiCallInfo*)(data);
 	num_entries = 1;
 	number = callInfo->phoneNumber;
+	callId = callInfo->callId;
 	ril_request_unsolicited(RIL_UNSOL_CALL_RING, NULL, 0);
 	/* FIXME: Do we really need to send this? */
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
@@ -69,9 +71,8 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 
 void ril_request_get_current_calls(RIL_Token t)
 {
-	char    *number_ril; //*number;
-	int i, number_len;
 
+	int i, number_len;
 	
 	ALOGE("%s: test me!", __func__);
 
@@ -80,7 +81,6 @@ void ril_request_get_current_calls(RIL_Token t)
 		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 		return;
 	}
-
 	RIL_Call **calls = (RIL_Call **) malloc(num_entries * sizeof(RIL_Call *));
 
 	for (i = 0; i < num_entries; i++) {
@@ -122,7 +122,7 @@ void ril_request_hangup(RIL_Token t)
 {
 	ALOGE("%s: Test me!", __func__);
 	
-	tapi_call_hangup();
+	tapi_call_hangup(callId);
 	num_entries = 0;
 
 	/* FIXME: This should actually be sent based on the response from baseband */

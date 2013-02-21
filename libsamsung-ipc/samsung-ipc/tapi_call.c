@@ -63,9 +63,10 @@ void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *t
 
 void tapi_call_incoming_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
 {
-	tapiCallInfo* CallInfo = (tapiCallInfo*)(tapiCallData);
-	DEBUG_I("tapi_call_incoming_ind: Incoming call received from %s", CallInfo->phoneNumber);
-	ipc_invoke_ril_cb(CALL_INCOMING_IND, (void*)CallInfo);
+	tapiCallInfo* callInfo = (tapiCallInfo*)(tapiCallData);
+	DEBUG_I("tapi_call_incoming_ind: Incoming call received from %s", callInfo->phoneNumber);
+	DEBUG_I("tapi_call_incoming_ind: callId = %d", callInfo->callId );
+	ipc_invoke_ril_cb(CALL_INCOMING_IND, (void*)callInfo);
 }
 		
 void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
@@ -74,12 +75,12 @@ void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
 	ipc_invoke_ril_cb(CALL_END_IND, (void*)tapiCallData);
 }
 
-void tapi_call_hangup(void)
+void tapi_call_hangup(uint32_t callId)
 {
 	struct tapiPacket tx_packet;
 	uint8_t resp_buf[12];
 	*(uint32_t*)(resp_buf) = 0;
-	*(uint32_t*)(resp_buf+4) = 1; /* return true */
+	*(uint32_t*)(resp_buf+4) = callId; 
 	*(uint32_t*)(resp_buf+8) = 0;
 	tx_packet.buf = resp_buf;
 	tx_packet.header.tapiService = 0;
