@@ -234,6 +234,7 @@ void ril_request_get_imsi(RIL_Token t);
 /* CALL */
 void ipc_call_incoming(void* data);
 void ipc_call_status(void* data);
+void ipc_call_end(void* data);
 void ril_request_dial(RIL_Token t, void *data, size_t datalen);
 void ril_request_get_current_calls(RIL_Token t);
 void ril_request_hangup(RIL_Token t);
@@ -254,6 +255,5 @@ void ril_plmn_split(char *plmn_data, char **plmn, unsigned int *mcc, unsigned in
 
 /* SIM */
 void ril_sim_init(void);
-
 
 #endif

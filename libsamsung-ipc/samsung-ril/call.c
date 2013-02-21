@@ -50,6 +50,15 @@ void ipc_call_status(void* data)
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
+void ipc_call_end(void* data)
+{
+	ALOGE("%s: test me!", __func__);
+
+	num_entries = 0;
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+
+}
+
 
 void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 {	
