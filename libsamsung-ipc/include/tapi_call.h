@@ -44,10 +44,16 @@ typedef struct {
 	char phoneNumber[1];
 } __attribute__((__packed__)) tapiCallInfo;
 
+typedef struct {
+	uint8_t callType;
+	uint8_t align[3]; //to align to DWORD, uninitialized
+	uint32_t callId;
+} __attribute__((__packed__)) tapiCallAnswer;
+
 void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_incoming_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_hangup(uint32_t callId);
-
+void tapi_call_answer(uint8_t callType, uint32_t callId);
 
 #endif

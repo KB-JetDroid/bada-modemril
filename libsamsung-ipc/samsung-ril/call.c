@@ -26,10 +26,10 @@
 #include "samsung-ril.h"
 #include <tapi_call.h>
 
-int num_entries=0;
+int num_entries, callId, callType;
 char *number;
 tapiCallInfo* callInfo;
-int callId;
+unsigned int call_state;
 
 void ipc_call_incoming(void* data)
 {
@@ -40,6 +40,8 @@ ALOGE("%s: test me!", __func__);
 	num_entries = 1;
 	number = callInfo->phoneNumber;
 	callId = callInfo->callId;
+	callType = callInfo->callType;
+	call_state = RIL_CALL_INCOMING;
 	ril_request_unsolicited(RIL_UNSOL_CALL_RING, NULL, 0);
 	/* FIXME: Do we really need to send this? */
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
@@ -71,8 +73,7 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 
 void ril_request_get_current_calls(RIL_Token t)
 {
-
-	int i, number_len;
+	int i;
 	
 	ALOGE("%s: test me!", __func__);
 
@@ -81,13 +82,12 @@ void ril_request_get_current_calls(RIL_Token t)
 		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 		return;
 	}
+
 	RIL_Call **calls = (RIL_Call **) malloc(num_entries * sizeof(RIL_Call *));
 
 	for (i = 0; i < num_entries; i++) {
-
 		RIL_Call *call = (RIL_Call *) malloc(sizeof(RIL_Call));
-
-		call->state = 4; // INCOMING
+		call->state = call_state;
 		call->index = 1;
 		call->toa = (strlen(number) > 0 && number[0] == '+') ? 145 : 129;
 		call->isMpty = 0;
@@ -107,14 +107,9 @@ void ril_request_get_current_calls(RIL_Token t)
 	ril_request_complete(t, RIL_E_SUCCESS, calls, (num_entries * sizeof(RIL_Call *)));
 
 	for (i = 0; i < num_entries; i++) {
-
 		free(calls[i]);
-
 	}
-
 	free(calls);
-
-	
 }
 
 	
@@ -134,8 +129,9 @@ void ril_request_hangup(RIL_Token t)
 
 void ril_request_answer(RIL_Token t)
 {
-	ALOGE("%s: Implement me!", __func__);
-
+	ALOGE("%s: Test me!", __func__);
+	tapi_call_answer(callType, callId);
+	call_state = RIL_CALL_ACTIVE;
 	/* FIXME: This should actually be sent based on the response from baseband */
 	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 

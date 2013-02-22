@@ -84,7 +84,25 @@ void tapi_call_hangup(uint32_t callId)
 	*(uint32_t*)(resp_buf+8) = 0;
 	tx_packet.buf = resp_buf;
 	tx_packet.header.tapiService = 0;
-	tx_packet.header.tapiServiceFunction = 3;
+	tx_packet.header.tapiServiceFunction = TAPI_CALL_HANGUP;
 	tx_packet.header.len = 12;
+	tapi_send_packet(&tx_packet);
+}
+
+void tapi_call_answer(uint8_t callType, uint32_t callId)
+{
+	struct tapiPacket tx_packet;
+	tapiCallAnswer* callAnswer;
+	callAnswer = (tapiCallAnswer*)malloc(sizeof(tapiCallAnswer));
+	memset(callAnswer, 0, sizeof(tapiCallAnswer));
+	callAnswer->callType = callType;
+	callAnswer->align[0] = 0x0;
+	callAnswer->align[1] = 0x0;
+	callAnswer->align[2] = 0x0;
+	callAnswer->callId = callId; 
+	tx_packet.buf = (uint8_t *)callAnswer;
+	tx_packet.header.tapiService = 0;
+	tx_packet.header.tapiServiceFunction = TAPI_CALL_ANSWER;
+	tx_packet.header.len = 8;
 	tapi_send_packet(&tx_packet);
 }
