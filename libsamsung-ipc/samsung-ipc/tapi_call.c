@@ -75,16 +75,24 @@ void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
 	ipc_invoke_ril_cb(CALL_END_IND, (void*)tapiCallData);
 }
 
-void tapi_call_hangup(uint32_t callId)
+void tapi_call_release(uint8_t callType,uint32_t callId, uint8_t releaseCause)
 {
 	struct tapiPacket tx_packet;
-	uint8_t resp_buf[12];
-	*(uint32_t*)(resp_buf) = 0;
-	*(uint32_t*)(resp_buf+4) = callId; 
-	*(uint32_t*)(resp_buf+8) = 0;
-	tx_packet.buf = resp_buf;
+	tapiCallRelease* callRelease;
+	callRelease = (tapiCallRelease*)malloc(sizeof(tapiCallRelease));
+	memset(callRelease, 0, sizeof(tapiCallRelease));
+	callRelease->callType = callType;
+	callRelease->align0[0] = 0x0;
+	callRelease->align0[1] = 0x0;
+	callRelease->align0[2] = 0x0;
+	callRelease->callId = callId;
+	callRelease->releaseCause = releaseCause; 
+	callRelease->align1[0] = 0x0;
+	callRelease->align1[1] = 0x0;
+	callRelease->align1[2] = 0x0;
+	tx_packet.buf = (uint8_t *)callRelease;
 	tx_packet.header.tapiService = 0;
-	tx_packet.header.tapiServiceFunction = TAPI_CALL_HANGUP;
+	tx_packet.header.tapiServiceFunction = TAPI_CALL_RELEASE;
 	tx_packet.header.len = 12;
 	tapi_send_packet(&tx_packet);
 }

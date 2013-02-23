@@ -117,7 +117,7 @@ void ril_request_hangup(RIL_Token t)
 {
 	ALOGE("%s: Test me!", __func__);
 	
-	tapi_call_hangup(callId);
+	tapi_call_release(callType,callId, 0x0);
 	num_entries = 0;
 
 	/* FIXME: This should actually be sent based on the response from baseband */
