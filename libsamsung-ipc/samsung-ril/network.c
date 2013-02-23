@@ -90,7 +90,10 @@ void ipc_cell_info(void* data)
 
 void network_start(void)
 {
+
+	int i;
 	tapiStartupNetworkInfo start_info;
+	tapi_nettext_cb_settings* cb_sett_buf;
 	start_info.bAutoSelection = 1;
 	start_info.bPoweronGprsAttach = 1;
 	start_info.networkOrder = 1;
@@ -109,6 +112,20 @@ void network_start(void)
 	tapi_nettext_set_net_burst(0); /* disable */
 	
 	ril_sim_init();
+
+	tapi_set_subscription_mode(0x1);
+
+	cb_sett_buf = (tapi_nettext_cb_settings *)malloc(sizeof(tapi_nettext_cb_settings));
+	memset(cb_sett_buf, 0, sizeof(tapi_nettext_cb_settings));		
+	cb_sett_buf->ext_cb = 0x0;
+	cb_sett_buf->ext_cb_enable = 0x0;
+	cb_sett_buf->enable_all_combined_cb_channels = 0x1;
+	cb_sett_buf->combined_language_type = 0x0;
+	cb_sett_buf->number_of_combined_cbmi = 0x367FFF;
+	for (i = 0; i < 40; i++) {
+	cb_sett_buf->cb_info[i] = 0x0;}
+	tapi_nettext_set_cb_settings((uint8_t *)cb_sett_buf);
+	free(cb_sett_buf);
 }
 
 void ril_plmn_split(char *plmn_data, char **plmn, unsigned int *mcc, unsigned int *mnc)
