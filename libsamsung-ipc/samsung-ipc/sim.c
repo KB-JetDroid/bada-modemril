@@ -35,9 +35,6 @@
 
 #include <radio.h>
 #include <sim.h>
-#include <tapi.h>
-#include <tapi_nettext.h>
-#include <tapi_network.h>
 
 #define LOG_TAG "Mocha-RIL-SIM"
 #include <utils/Log.h>
@@ -57,12 +54,10 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 	struct simPacketHeader *simHeader;
 	struct simPacket sim_packet;
 	struct modem_io request;
-	tapi_nettext_cb_settings *cb_sett_buf;
 	void *frame;
  	uint8_t *payload;
  	uint32_t frame_length;
 	uint8_t buf[4];
-	int i;
 
 	struct fifoPacketHeader *fifoHeader;
 
@@ -93,19 +88,10 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 			ipc_hex_dump(oem_packet.oemBuf, oem_header->oemBufLen);
 */
 			break;
+		case 0x08:
+			sim_status(1);
 		case 0x24:
-			tapi_set_subscription_mode(0x1);
-			cb_sett_buf = (tapi_nettext_cb_settings *)malloc(sizeof(tapi_nettext_cb_settings));
-			memset(cb_sett_buf, 0, sizeof(tapi_nettext_cb_settings));		
-			cb_sett_buf->ext_cb = 0x0;
-			cb_sett_buf->ext_cb_enable = 0x0;
-			cb_sett_buf->enable_all_combined_cb_channels = 0x1;
-			cb_sett_buf->combined_language_type = 0x0;
-			cb_sett_buf->number_of_combined_cbmi = 0x367FFF;
-			for (i = 0; i < 40; i++) {
-			cb_sett_buf->cb_info[i] = 0x0;}
-			tapi_nettext_set_cb_settings((uint8_t *)cb_sett_buf);
-			free(cb_sett_buf);
+			sim_status(2);
 		default :
 			DEBUG_I("Unknown SIM subType %d", simHeader->subType);
 			break;
@@ -255,3 +241,10 @@ void sim_atk_send_packet(uint32_t atkType, uint32_t atkSubType, uint32_t atkBufL
 
 	free(fifobuf);
 }
+
+void sim_status(int simCardStatus)
+{
+	DEBUG_I("SIM STATUS CHANGED");
+	ipc_invoke_ril_cb(SIM_STATUS, (void*)simCardStatus);
+}
+

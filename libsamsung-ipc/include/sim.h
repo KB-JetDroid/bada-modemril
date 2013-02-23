@@ -130,6 +130,6 @@ void sim_atk_send_packet(uint32_t atkType, uint32_t atkSubType, uint32_t atkBufL
 void sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin);
 int sim_atk_open(void);
 void sim_open_to_modem(uint8_t hSim);
-
+void sim_status(int simCardStatus);
 
 #endif

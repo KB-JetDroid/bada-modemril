@@ -348,10 +348,11 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_STK_HANDLE_CALL_SETUP_REQUESTED_FROM_SIM:
 			ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 			break;
-		/* SIM */
+#endif		/* SIM */
 		case RIL_REQUEST_GET_SIM_STATUS:
-			ril_request_sim_status(t);
+			ril_request_get_sim_status(t);
 			break;
+#if 0
 		case RIL_REQUEST_SIM_IO:
 			ril_request_sim_io(t, data, datalen);
 			break;
@@ -482,6 +483,7 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(NETWORK_CELL_INFO, ipc_cell_info);
 	ipc_register_ril_cb(CALL_INCOMING_IND, ipc_call_incoming);
 	ipc_register_ril_cb(CALL_END_IND, ipc_call_end);
+	ipc_register_ril_cb(SIM_STATUS, ipc_sim_status);
 }
  
 void ril_data_init(void)

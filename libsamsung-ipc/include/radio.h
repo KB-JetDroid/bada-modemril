@@ -60,6 +60,7 @@ enum ipc_ril_cb_type {
     CALL_INCOMING_IND,
     CALL_END_IND,
     NETTEXT_INCOMING,
+    SIM_STATUS,
 	IPC_RIL_CB_LAST
 };
 
