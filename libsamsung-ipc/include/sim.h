@@ -84,16 +84,16 @@ struct simPacketHeader {
 	uint32_t bufLen;
 } __attribute__((__packed__));
 
-struct simEventPacketHeader {
+typedef struct  {
 	uint32_t sid;
 	uint8_t eventType;
 	uint8_t eventStatus;
 	uint8_t unused; //does always(appearantly) match subtype
 	uint32_t bufLen;
-} __attribute__((__packed__));
+} __attribute__((__packed__)) simEventPacketHeader;
 
 struct simEventPacket {
-	struct simEventPacketHeader header;
+	simEventPacketHeader* header;
 	uint8_t *eventBuf;
 } __attribute__((__packed__));
 
@@ -120,6 +120,13 @@ typedef struct
 	uint32_t 	atkBufLen;
 } __attribute__((__packed__))  sim_atk_packet_header;
 
+typedef struct
+{
+	uint8_t 	status;
+	uint8_t 	attempts;
+} __attribute__((__packed__))  pinStatus;
+
+
 void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame);
 void sim_parse_event(uint8_t* buf, uint32_t bufLen);
 
@@ -131,5 +138,6 @@ void sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin);
 int sim_atk_open(void);
 void sim_open_to_modem(uint8_t hSim);
 void sim_status(int simCardStatus);
+void pin_status(uint8_t *pinStatus);
 
 #endif

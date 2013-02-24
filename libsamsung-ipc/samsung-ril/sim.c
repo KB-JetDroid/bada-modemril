@@ -25,6 +25,8 @@
 #include "util.h"
 #include <sim.h>
 
+RIL_Token token;
+
 void ril_sim_init(void)
 {
 	sim_atk_open();	
@@ -44,6 +46,31 @@ void ipc_sim_status(void *data)
 
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED, NULL, 0);	
 
+}
+
+void ipc_pin_status(void* data)
+{
+	ALOGE("%s: test me!", __func__);
+	pinStatus* pinSt = (pinStatus*)(data);
+	int attempts = -1;
+	switch(pinSt->status){
+		case 0:
+			DEBUG_I("%s : Correct password ", __func__);
+			ril_request_complete(token, RIL_E_SUCCESS, &attempts, sizeof(attempts));
+			return;
+
+		case 1:
+			DEBUG_I("%s : Wrong password ", __func__);
+			attempts = pinSt->attempts;
+			ril_request_complete(token, RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(attempts));
+			return;
+		case 2:
+			DEBUG_I("%s : Wrong password and no attempts left!", __func__);
+			attempts = 0;
+			ril_request_complete(token, RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(attempts));
+			ril_request_unsolicited(RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED, NULL, 0);
+			return;	
+	}
 }
 
 void ril_request_get_sim_status(RIL_Token t)
@@ -155,4 +182,18 @@ void ril_state_update(ril_sim_state sim_state)
 	ril_data.state.radio_state = radio_state;
 	ril_tokens_check();
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
+}
+
+void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen)
+{
+	char *pin = ((char **) data)[0];
+	/* 1. Send PIN */
+	if (strlen(data) > 16) {
+		ALOGE("%s: pin exceeds maximum length", __FUNCTION__);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+	}
+	ALOGE("%s: pin = %s", __FUNCTION__, pin);
+	sim_verify_chv(0x4, 0x0, pin);
+	token = t;
+
 }
