@@ -27,7 +27,7 @@
 #include <tapi_call.h>
 
 int num_entries, callId, callType;
-char *number;
+char number[64];
 tapiCallInfo* callInfo;
 unsigned int call_state;
 
@@ -38,7 +38,7 @@ ALOGE("%s: test me!", __func__);
 	
 	tapiCallInfo* callInfo = (tapiCallInfo*)(data);
 	num_entries = 1;
-	number = callInfo->phoneNumber;
+	strcpy(number, callInfo->phoneNumber);
 	callId = callInfo->callId;
 	callType = callInfo->callType;
 	call_state = RIL_CALL_INCOMING;
@@ -67,6 +67,15 @@ void ipc_call_end(void* data)
 void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 {	
 	ALOGE("%s: Implement me!", __func__);
+
+
+	const RIL_Dial *dial = (const RIL_Dial*)data;
+	int clir;
+
+	strcpy(number, dial->address);
+	num_entries = 1;
+	call_state = RIL_CALL_DIALING;
+
 	/* FIXME: This should actually be sent based on the response from baseband */
 	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 }
