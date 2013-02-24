@@ -25,6 +25,8 @@
 #include "util.h"
 #include <sim.h>
 
+RIL_Token token;
+
 void ril_sim_init(void)
 {
 	sim_atk_open();	
@@ -44,6 +46,21 @@ void ipc_sim_status(void *data)
 
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED, NULL, 0);	
 
+}
+
+void ipc_pin_status(void *data)
+{
+	int attempts = -1;
+	int status;
+
+	status = (int) data;
+
+	if (status == 0) {
+		ALOGE("Wrong password!");
+		ril_request_complete(token, RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(attempts));
+		return;
+	}
+	ril_request_complete(token, RIL_E_SUCCESS, &attempts, sizeof(attempts));
 }
 
 void ril_request_get_sim_status(RIL_Token t)
@@ -167,5 +184,6 @@ void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen)
 	}
 	ALOGE("%s: pin = %s", __FUNCTION__, pin);
 	sim_verify_chv(0x4, 0x0, pin);
+	token = t;
 
 }

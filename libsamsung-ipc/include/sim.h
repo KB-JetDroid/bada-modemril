@@ -131,5 +131,6 @@ void sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin);
 int sim_atk_open(void);
 void sim_open_to_modem(uint8_t hSim);
 void sim_status(int simCardStatus);
+void pin_status(int pinStatus);
 
 #endif

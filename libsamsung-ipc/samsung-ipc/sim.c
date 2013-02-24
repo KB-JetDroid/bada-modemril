@@ -160,8 +160,11 @@ void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 		case 0xA:
 			if (simEvent->eventStatus == 0x0) {
 				DEBUG_I("SIM: pin code correct");
-				DEBUG_I("SIM_READY");			
-				sim_status(2);}
+				pin_status(1);
+			} else {
+				DEBUG_I("SIM: pin code incorrect");
+				pin_status(0);
+			}
 			break;
 		default:
 			DEBUG_I("SIM DEFAULT");
@@ -280,4 +283,11 @@ void sim_status(int simCardStatus)
 	DEBUG_I("SIM STATUS CHANGED");
 	ipc_invoke_ril_cb(SIM_STATUS, (void*)simCardStatus);
 }
+
+void pin_status(int pinStatus)
+{
+	DEBUG_I("PIN STATUS CHANGED");
+	ipc_invoke_ril_cb(PIN_STATUS, (void*)pinStatus);
+}
+
 

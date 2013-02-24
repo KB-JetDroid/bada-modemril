@@ -486,6 +486,7 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(CALL_INCOMING_IND, ipc_call_incoming);
 	ipc_register_ril_cb(CALL_END_IND, ipc_call_end);
 	ipc_register_ril_cb(SIM_STATUS, ipc_sim_status);
+	ipc_register_ril_cb(PIN_STATUS, ipc_pin_status);
 }
  
 void ril_data_init(void)
