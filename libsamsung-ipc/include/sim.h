@@ -84,16 +84,16 @@ struct simPacketHeader {
 	uint32_t bufLen;
 } __attribute__((__packed__));
 
-struct simEventPacketHeader {
+typedef struct  {
 	uint32_t sid;
 	uint8_t eventType;
 	uint8_t eventStatus;
 	uint8_t unused; //does always(appearantly) match subtype
 	uint32_t bufLen;
-} __attribute__((__packed__));
+} __attribute__((__packed__)) simEventPacketHeader;
 
 struct simEventPacket {
-	struct simEventPacketHeader header;
+	simEventPacketHeader* header;
 	uint8_t *eventBuf;
 } __attribute__((__packed__));
 

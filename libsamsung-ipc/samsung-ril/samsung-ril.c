@@ -356,9 +356,11 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_SIM_IO:
 			ril_request_sim_io(t, data, datalen);
 			break;
+#endif
 		case RIL_REQUEST_ENTER_SIM_PIN:
 			ril_request_enter_sim_pin(t, data, datalen);
 			break;
+#if 0
 		case RIL_REQUEST_QUERY_FACILITY_LOCK:
 			ril_request_query_facility_lock(t, data, datalen);
 			break;

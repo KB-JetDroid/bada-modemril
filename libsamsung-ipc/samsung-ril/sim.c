@@ -156,3 +156,16 @@ void ril_state_update(ril_sim_state sim_state)
 	ril_tokens_check();
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 }
+
+void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen)
+{
+	char *pin = ((char **) data)[0];
+	/* 1. Send PIN */
+	if (strlen(data) > 16) {
+		ALOGE("%s: pin exceeds maximum length", __FUNCTION__);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+	}
+	ALOGE("%s: pin = %s", __FUNCTION__, pin);
+	sim_verify_chv(0x4, 0x0, pin);
+
+}

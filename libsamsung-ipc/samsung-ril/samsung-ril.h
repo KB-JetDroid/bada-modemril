@@ -258,5 +258,6 @@ void ril_sim_init(void);
 void ipc_sim_status(void *data);
 void ril_request_get_sim_status(RIL_Token t);
 void ril_state_update(ril_sim_state sim_state);
+void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen);
 
 #endif

@@ -89,11 +89,16 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 */
 			break;
 		case 0x08:
-			sim_status(1);
+			sim_parse_event(sim_packet.simBuf, simHeader->bufLen);
+			break;
 		case 0x24:
+			DEBUG_I("SIM_READY");
 			sim_status(2);
+			sim_parse_event(sim_packet.simBuf, simHeader->bufLen);
+			break;
 		default :
 			DEBUG_I("Unknown SIM subType %d", simHeader->subType);
+			sim_parse_event(sim_packet.simBuf, simHeader->bufLen);
 			break;
 		}
 	}
@@ -135,7 +140,35 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 
 void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 {
+	simEventPacketHeader* simEvent = (simEventPacketHeader*)(buf);
+	switch(simEvent->eventType)
+	{
+		case 0x0:
+			DEBUG_I("SIM_NOT_READY");			
+			sim_status(1);			
+		case 0x1:
+			if (simEvent->eventStatus == 0x6) {
+				DEBUG_I("SIM_ABSENT");
+				sim_status(0);}
+//		if (simEvent->eventStatus == 0x0) {
+//			sim_status(0);}
+			break;
+		case 0x2:
+			DEBUG_I("SIM_PIN");
+			sim_status(3);
+			break;
+		case 0xA:
+			if (simEvent->eventStatus == 0x0) {
+				DEBUG_I("SIM: pin code correct");
+				DEBUG_I("SIM_READY");			
+				sim_status(2);}
+			break;
+		default:
+			DEBUG_I("SIM DEFAULT");
+			break;
 
+	}
+	DEBUG_I("%s: sim event = %d, sim event status = %d",__func__,simEvent->eventType,simEvent->eventStatus);
 }
 
 void sim_send_oem_req(uint8_t* simBuf, uint8_t simBufLen)
