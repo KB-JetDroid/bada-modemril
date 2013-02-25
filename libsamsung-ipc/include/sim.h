@@ -120,6 +120,13 @@ typedef struct
 	uint32_t 	atkBufLen;
 } __attribute__((__packed__))  sim_atk_packet_header;
 
+typedef struct
+{
+	uint8_t 	status;
+	uint8_t 	attempts;
+} __attribute__((__packed__))  pinStatus;
+
+
 void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame);
 void sim_parse_event(uint8_t* buf, uint32_t bufLen);
 
@@ -131,6 +138,6 @@ void sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin);
 int sim_atk_open(void);
 void sim_open_to_modem(uint8_t hSim);
 void sim_status(int simCardStatus);
-void pin_status(int pinStatus);
+void pin_status(uint32_t pinStatusLen, uint8_t *pinStatus);
 
 #endif

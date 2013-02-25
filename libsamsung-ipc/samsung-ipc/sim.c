@@ -141,29 +141,33 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 {
 	simEventPacketHeader* simEvent = (simEventPacketHeader*)(buf);
+	uint8_t pinBuf[2];
 	switch(simEvent->eventType)
 	{
-		case 0x0:
+		
+		case SIM_EVENT_BEGIN:
 			DEBUG_I("SIM_NOT_READY");			
 			sim_status(1);			
-		case 0x1:
-			if (simEvent->eventStatus == 0x6) {
+		case SIM_EVENT_SIM_OPEN:
+			if (simEvent->eventStatus == SIM_CARD_NOT_PRESENT) {
 				DEBUG_I("SIM_ABSENT");
 				sim_status(0);}
 //		if (simEvent->eventStatus == 0x0) {
 //			sim_status(0);}
 			break;
-		case 0x2:
+		case SIM_EVENT_VERIFY_PIN1_IND:
 			DEBUG_I("SIM_PIN");
 			sim_status(3);
 			break;
-		case 0xA:
-			if (simEvent->eventStatus == 0x0) {
-				DEBUG_I("SIM: pin code correct");
-				pin_status(1);
+		case SIM_EVENT_VERIFY_CHV:
+			if (simEvent->eventStatus == SIM_OK) {
+				pinBuf[0] = buf[bufLen-3];
+				pinBuf[1] = buf[bufLen-2];
+				pin_status(simEvent->bufLen, pinBuf);
 			} else {
-				DEBUG_I("SIM: pin code incorrect");
-				pin_status(0);
+				DEBUG_I("SIM: something wrong with pin verify responce");
+				DEBUG_I("SIM_PIN");
+				sim_status(3);
 			}
 			break;
 		default:
@@ -284,7 +288,7 @@ void sim_status(int simCardStatus)
 	ipc_invoke_ril_cb(SIM_STATUS, (void*)simCardStatus);
 }
 
-void pin_status(int pinStatus)
+void pin_status(uint32_t pinStatusLen, uint8_t *pinStatus)
 {
 	DEBUG_I("PIN STATUS CHANGED");
 	ipc_invoke_ril_cb(PIN_STATUS, (void*)pinStatus);
