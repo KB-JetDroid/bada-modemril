@@ -141,7 +141,6 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 {
 	simEventPacketHeader* simEvent = (simEventPacketHeader*)(buf);
-	uint8_t pinBuf[2];
 	switch(simEvent->eventType)
 	{
 		
@@ -161,9 +160,7 @@ void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 			break;
 		case SIM_EVENT_VERIFY_CHV:
 			if (simEvent->eventStatus == SIM_OK) {
-				pinBuf[0] = buf[bufLen-3];
-				pinBuf[1] = buf[bufLen-2];
-				pin_status(simEvent->bufLen, pinBuf);
+				pin_status(buf+sizeof(simEventPacketHeader));
 			} else {
 				DEBUG_I("SIM: something wrong with pin verify responce");
 				DEBUG_I("SIM_PIN");
@@ -288,7 +285,7 @@ void sim_status(int simCardStatus)
 	ipc_invoke_ril_cb(SIM_STATUS, (void*)simCardStatus);
 }
 
-void pin_status(uint32_t pinStatusLen, uint8_t *pinStatus)
+void pin_status(uint8_t *pinStatus)
 {
 	DEBUG_I("PIN STATUS CHANGED");
 	ipc_invoke_ril_cb(PIN_STATUS, (void*)pinStatus);
