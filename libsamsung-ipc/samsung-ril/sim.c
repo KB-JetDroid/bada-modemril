@@ -58,17 +58,18 @@ void ipc_pin_status(void* data)
 			DEBUG_I("%s : Correct password ", __func__);
 			ril_request_complete(token, RIL_E_SUCCESS, &attempts, sizeof(attempts));
 			return;
+
 		case 1:
-			if (pinSt->attempts == 0) {
-				DEBUG_I("%s : Wrong password and no attempts left!", __func__);
-				attempts = 0;
-				ril_request_complete(token, RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(attempts));
-				ril_request_unsolicited(RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED, NULL, 0);
-				return;	
-			} else {
-				DEBUG_I("%s : Wrong password ", __func__);
-				ril_request_complete(token, RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(attempts));}
+			DEBUG_I("%s : Wrong password ", __func__);
+			attempts = pinSt->attempts;
+			ril_request_complete(token, RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(attempts));
 			return;
+		case 2:
+			DEBUG_I("%s : Wrong password and no attempts left!", __func__);
+			attempts = 0;
+			ril_request_complete(token, RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(attempts));
+			ril_request_unsolicited(RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED, NULL, 0);
+			return;	
 	}
 }
 
