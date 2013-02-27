@@ -68,7 +68,7 @@ void ipc_pin_status(void* data)
 			DEBUG_I("%s : Wrong password and no attempts left!", __func__);
 			attempts = 0;
 			ril_request_complete(token, RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(attempts));
-			ril_request_unsolicited(RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED, NULL, 0);
+			sim_status(4);
 			return;	
 	}
 }
