@@ -56,9 +56,23 @@ typedef struct {
 	uint8_t unknown3[32]; 
 	uint32_t unknown4; 
 	uint8_t nUDH; 
+} __attribute__((__packed__)) tapiNettextInfo;
+
+typedef struct {
 	uint8_t messageLength; 
 	uint8_t messageBody[160];
-} __attribute__((__packed__)) tapiNettextInfo;
+} __attribute__((__packed__)) tapiNettextSingleInfo;
+
+typedef struct {
+	uint8_t messageLength; 
+	uint8_t unknownUDH1; 
+	uint8_t unknownUDH2; 
+	uint8_t unknownUDH3; 
+	uint8_t quantityParts; 
+	uint8_t numberPart; 	
+	uint8_t messageBody[160];
+} __attribute__((__packed__)) tapiNettextMultiInfo;
+
 
 void tapi_nettext_parser(uint16_t tapiNettextType, uint32_t tapiNettextLength, uint8_t *tapiNettextData);
 

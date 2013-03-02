@@ -167,50 +167,71 @@ int gsm72ascii(unsigned char *data, char **data_dec, int length)
  * Converts ASCII (7 bits) data to GSM7 (8 bits)
  */
 int ascii2gsm7(char *data, unsigned char **data_enc, int length)
+
 {
+
 	int d_off, d_pos, a_off, a_pos = 0;
+
 	int i;
 
 	int enc_length;
+
 	unsigned char *enc;
 
 	enc_length = ((length * 7) - (length * 7) % 8) / 8;
+
 	enc_length += (length * 7) % 8 > 0 ? 1 : 0;
 
 	//FIXME: why does samsung does that?
+
 	enc_length++;
 
 	enc = malloc(enc_length);
+
 	memset(enc, 0, enc_length);
 
-	for(i=0 ; i < length ; i++)
+	for (i=0 ; i < length ; i++)
+
 	{
+
 		// offset from the right of data to keep
+
 		d_off = i % 8;
 
 		// position of the data we keep
+
 		d_pos = ((i * 7) - (i * 7) % 8) / 8;
+
 		d_pos += (i * 7) % 8 > 0 ? 1 : 0;
 
 		// adding the data with correct offset
+
 		enc[d_pos] |= data[i] >> d_off;
 
 		// numbers of bits to omit to get data to add another place
+
 		a_off = 8 - d_off;
+
 		// position (on the encoded feed) of the data to add
+
 		a_pos = d_pos - 1;
 
 		// adding the data to add at the correct position
+
 		enc[a_pos] |= data[i] << a_off;
+
 	}
 
 	*data_enc = enc;
 
 	//FIXME: what is going on here?
-	enc[enc_length - 2] |= 0x30;
-	enc[enc_length - 1] = 0x02;
+
+//	enc[enc_length - 2] |= 0x30;
+
+//	enc[enc_length - 1] = 0x02;
 
 	return enc_length;
+
 }
 
 void hex_dump(void *data, int size)

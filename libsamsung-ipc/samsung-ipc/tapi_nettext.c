@@ -97,6 +97,16 @@ void tapi_nettext_set_cb_settings(uint8_t* cb_sett_buf)
 void tapi_nettext_incoming(uint32_t tapiNettextLength, uint8_t *tapiNettextData)
 {
 	tapiNettextInfo* nettextInfo = (tapiNettextInfo*)(tapiNettextData);
-	DEBUG_I("tapi_nettext_incoming: Incoming SMS received from %s, message: %s", nettextInfo->phoneNumber, nettextInfo->messageBody);
+	DEBUG_I("tapi_nettext_incoming: Incoming SMS received from %s", nettextInfo->phoneNumber);
+	
+	if (nettextInfo->nUDH == 0)
+	{
+		tapiNettextSingleInfo* message = (tapiNettextSingleInfo*)(tapiNettextData + sizeof(tapiNettextInfo));
+		DEBUG_I("tapi_nettext_incoming: SMS message: %s", message->messageBody);
+	}else{
+		tapiNettextMultiInfo* message = (tapiNettextMultiInfo*)(tapiNettextData + sizeof(tapiNettextInfo));
+		DEBUG_I("tapi_nettext_incoming: Multi-part message %d on %d , SMS message: %s", message->numberPart, message->quantityParts, message->messageBody);
+	} 
+
 	ipc_invoke_ril_cb(NETTEXT_INCOMING, (void*)nettextInfo);
 }
