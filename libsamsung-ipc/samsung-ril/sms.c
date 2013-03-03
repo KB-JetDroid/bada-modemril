@@ -630,23 +630,22 @@ void ipc_incoming_sms(void* data)
 	tapiNettextInfo* nettextInfo = (tapiNettextInfo*)(data);
 	char *number_smsc, *da_len, *sca, *a, *b;
 	char *number_oa, *tp_oa;
-	char *pdu_type, *tp_pid, *tp_dcs, *tp_scts, *tp_udl, *message; 
+	char *pdu_type, *tp_pid, *tp_dcs, *tp_scts, *tp_udl, *tp_ud, *message; 
 	char pdu[400] = {0}, c[3] = {0};
 	char *number, *number2, *len_char;
-	unsigned char *tp_ud;
+	unsigned char *message_tmp;
 	uint8_t *mess;
-
-		
-	unsigned int i , len_sca, len_oa, pdu_len, message_length;
+	unsigned int i , len_sca, len_oa, message_length;
 
 	/* Convert sms packet to SMS-DELIVER PDU type  format
 	SMS = SCA + TPDU */
-
+	
+	//SCA
 	//Covert nettextInfo->serviceCenter to SCA
 	
 	number_smsc = nettextInfo->serviceCenter;
-	if ((strlen(number_smsc) % 2) > 0) 
-		strcat(number_smsc, "F");
+	if ((strlen(number_smsc) % 2) > 0) {
+		strcat(number_smsc, "F");}
 
 	DEBUG_I("%s : number_smsc = %s", __func__, number_smsc);	
 
@@ -682,14 +681,6 @@ void ipc_incoming_sms(void* data)
 
 	strcat (pdu, sca);
 
-
-	if (number != NULL)	
-		free (number);
-
-	if (sca != NULL)	
-		free (sca);
-
-
 	//TPDU
 
 	/* Protocol Data Unit Type (PDU Type) 
@@ -702,7 +693,6 @@ void ipc_incoming_sms(void* data)
 	TP-UDHI:  00		*/
 
 	pdu_type = "24";
-	DEBUG_I("%s : pdu_type = %s", __func__, pdu_type);
 	strcat (pdu, pdu_type);
 
 	// TP-OA: TP- Originating-Address
@@ -713,8 +703,8 @@ void ipc_incoming_sms(void* data)
 
 	len_oa =  strlen(number_oa);
 
-	if ((strlen(number_oa) % 2) > 0) 
-		strcat(number_oa, "F");
+	if ((strlen(number_oa) % 2) > 0) {
+		strcat(number_oa, "F");}
 
 
 	DEBUG_I("%s : number_oa = %s", __func__, number_oa);	
@@ -746,28 +736,14 @@ void ipc_incoming_sms(void* data)
 
 	strcat (pdu, tp_oa);
 
-	if (number2 != NULL)	
-		free (number2);
-
-	if (tp_oa != NULL)	
-		free (tp_oa);
-
-
-
-
 	//TP-PID : TP-Protocol-Identifier 
 
 	tp_pid = "00";
-
 	strcat (pdu, tp_pid);
 
-
-
 	//TP-SCTS: TP-Service-Centre-Time-Stamp
-
  
 	//FIXME: now we use fake value, need to find this in sms packet	
-
 	tp_scts = "11101131521400";
 
 
@@ -779,7 +755,6 @@ void ipc_incoming_sms(void* data)
 	//TP-UD: TP-User Data
 	
 	message_length = nettextInfo->messageLength;
-
 	mess = nettextInfo->messageBody;
 
 	message = malloc((message_length * 2) + 1);
@@ -797,29 +772,50 @@ void ipc_incoming_sms(void* data)
 		/*TP-DCS: TP-Data-Coding-Scheme */
 		tp_dcs = "08"; //Unicode
 		DEBUG_I("%s : TP-DCS = Unicode", __func__);
-		DEBUG_I("%s : message = %s", __func__, message);
-		tp_ud = (unsigned char *)message;
+		tp_ud = message;
+		DEBUG_I("%s : tp_ud = %s", __func__, tp_ud);
 	}else{
 		/*TP-DCS: TP-Data-Coding-Scheme */
 		tp_dcs = "00"; //gsm7
 		DEBUG_I("%s : TP-DCS = GSM7", __func__);
-		DEBUG_I("%s : message = %s", __func__, message);
-		//FIXME: Convert to GSM7 Type		
-		ascii2gsm7(message, &tp_ud, message_length);
+		ascii2gsm7((char *)mess, &message_tmp, message_length);
+		DEBUG_I("%s : message_tmp = %s", __func__, message_tmp);
+		tp_ud = malloc(strlen((char *)message_tmp) + 1);
+		memset(tp_ud, 0, strlen((char *)message_tmp) + 1);
+		bin2hex(message_tmp, strlen((char *)message_tmp), tp_ud);
 		DEBUG_I("%s : tp_ud = %s", __func__, tp_ud);
 	}
 
 	strcat (pdu, tp_dcs);
 	strcat (pdu, tp_scts);
 	strcat (pdu, tp_udl);	
-	strcat (pdu, (char *)tp_ud);
-
-	if (message != NULL)	
-		free (message);
+	strcat (pdu, tp_ud);
 
 	DEBUG_I("%s : pdu = %s", __func__, pdu);
 	
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_NEW_SMS, pdu, strlen(pdu));
+
+	if (number != NULL)	
+		free (number);
+
+	if (sca != NULL)	
+		free (sca);
+
+	if (number2 != NULL)	
+		free (number2);
+
+	if (tp_oa != NULL)	
+		free (tp_oa);
+
+	if (message != NULL)	
+		free (message);
+
+	if (message_tmp != NULL)	
+		free (message_tmp);
+
+	if (tp_ud != NULL)	
+		free (tp_ud);
+
 }
 
 #if 0	
