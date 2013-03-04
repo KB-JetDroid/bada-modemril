@@ -633,9 +633,10 @@ void ipc_incoming_sms(void* data)
 	char *pdu_type, *tp_pid, *tp_dcs, *tp_scts, *tp_udl, *tp_ud, *message; 
 	char pdu[400] = {0}, c[3] = {0};
 	char *number, *number2, *len_char;
-	unsigned char *message_tmp;
+	char *message_tmp, *number_tmp = NULL;
 	uint8_t *mess;
 	unsigned int i , len_sca, len_oa, message_length;
+	char n;
 
 	/* Convert sms packet to SMS-DELIVER PDU type  format
 	SMS = SCA + TPDU */
@@ -699,42 +700,66 @@ void ipc_incoming_sms(void* data)
 
 	number_oa = nettextInfo->phoneNumber;
 
-	DEBUG_I("%s : number_oa = %s", __func__, number_oa);	
+	DEBUG_I("%s : number_oa = %s", __func__, number_oa);
 
-	len_oa =  strlen(number_oa);
+	n = number_oa[0];	
 
-	if ((strlen(number_oa) % 2) > 0) {
-		strcat(number_oa, "F");}
-
-
-	DEBUG_I("%s : number_oa = %s", __func__, number_oa);	
-
-	number2 = malloc(strlen(number_oa) + 1);
-	memset(number, 0, strlen(number_oa) + 1);
-
-	i = 0;	
-	if (number2)
+	if (n >= '0' && n <= '9')
 	{
-		while (i < strlen(number_oa)) 
-		{
-			a = &(number_oa[i+1]);
-			strncat(number, a, 1);
-			b = &(number_oa[i]);
-			strncat(number, b, 1);
-			i = i + 2;
-		}
-	}
-	
-	DEBUG_I("%s : number2 = %s", __func__, number);	
-	
-	tp_oa = malloc(strlen(number2) + 5);
-	memset(tp_oa, 0, strlen(number2) + 5);
-	asprintf(&tp_oa, "%02X", len_oa);
-	strcat(tp_oa, "91");
-	strcat(tp_oa, number);
-	DEBUG_I("%s : tp_oa = %s", __func__, tp_oa);
+		len_oa =  strlen(number_oa);
 
-	strcat (pdu, tp_oa);
+		if ((strlen(number_oa) % 2) > 0) {
+			strcat(number_oa, "F");}
+
+
+		DEBUG_I("%s : number_oa = %s", __func__, number_oa);	
+
+		number2 = malloc(strlen(number_oa) + 1);
+		memset(number2, 0, strlen(number_oa) + 1);
+
+		i = 0;	
+		if (number2)
+		{
+			while (i < strlen(number_oa)) 
+			{
+				a = &(number_oa[i+1]);
+				strncat(number2, a, 1);
+				b = &(number_oa[i]);
+				strncat(number2, b, 1);
+				i = i + 2;
+			}
+		}
+		
+		DEBUG_I("%s : number2 = %s", __func__, number);	
+	
+		tp_oa = malloc(strlen(number2) + 5);
+		memset(tp_oa, 0, strlen(number2) + 5);
+		asprintf(&tp_oa, "%02X", len_oa);
+		strcat(tp_oa, "91");
+		strcat(tp_oa, number2);
+		DEBUG_I("%s : tp_oa = %s", __func__, tp_oa);
+
+		}else{
+
+		ascii2gsm7(number_oa, (unsigned char **)&number_tmp, strlen(number_oa));
+		DEBUG_I("%s : number_tmp = %s", __func__, number_tmp);
+
+		number2 = malloc(strlen(number_tmp) + 1);
+		memset(number2, 0, strlen(number_tmp) + 1);
+		
+		bin2hex((unsigned char *)number_tmp, strlen(number_tmp), number2);
+		DEBUG_I("%s : number2 = %s", __func__, number2);
+		strcpy(number_oa, number2);
+		tp_oa = malloc(strlen(number_oa) + 5);
+		memset(tp_oa, 0, strlen(number_oa) + 5);
+		asprintf(&tp_oa, "%02X", strlen(number_oa));
+		strcat(tp_oa, "D0");
+		DEBUG_I("%s : number2 = %s", __func__, number_oa);
+		strcat(tp_oa, number_oa);
+		DEBUG_I("%s : tp_oa = %s", __func__, tp_oa);		
+		}
+
+		strcat (pdu, tp_oa);
 
 	//TP-PID : TP-Protocol-Identifier 
 
@@ -778,11 +803,11 @@ void ipc_incoming_sms(void* data)
 		/*TP-DCS: TP-Data-Coding-Scheme */
 		tp_dcs = "00"; //gsm7
 		DEBUG_I("%s : TP-DCS = GSM7", __func__);
-		ascii2gsm7((char *)mess, &message_tmp, message_length);
+		ascii2gsm7((char *)mess, (unsigned char **)&message_tmp, message_length);
 		DEBUG_I("%s : message_tmp = %s", __func__, message_tmp);
-		tp_ud = malloc(strlen((char *)message_tmp) + 1);
-		memset(tp_ud, 0, strlen((char *)message_tmp) + 1);
-		bin2hex(message_tmp, strlen((char *)message_tmp), tp_ud);
+		tp_ud = malloc(strlen(message_tmp) + 1);
+		memset(tp_ud, 0, strlen(message_tmp) + 1);
+		bin2hex((unsigned char *)message_tmp, strlen(message_tmp), tp_ud);
 		DEBUG_I("%s : tp_ud = %s", __func__, tp_ud);
 	}
 
@@ -809,9 +834,6 @@ void ipc_incoming_sms(void* data)
 
 	if (message != NULL)	
 		free (message);
-
-	if (message_tmp != NULL)	
-		free (message_tmp);
 
 	if (tp_ud != NULL)	
 		free (tp_ud);
