@@ -633,16 +633,19 @@ void ipc_incoming_sms(void* data)
 	char *pdu_type, *tp_pid, *tp_dcs, *tp_scts, *tp_udl, *tp_ud, *message; 
 	char pdu[400] = {0}, c[3] = {0};
 	char *number, *number2, *len_char;
-	char *message_tmp, *number_tmp = NULL;
+	char *message_tmp, *number_tmp;
 	uint8_t *mess;
 	unsigned int i , len_sca, len_oa, message_length;
 	char n;
+
+	number_tmp = NULL;
+	message_tmp = NULL;
 
 	/* Convert sms packet to SMS-DELIVER PDU type  format
 	SMS = SCA + TPDU */
 	
 	//SCA
-	//Covert nettextInfo->serviceCenter to SCA
+	//Convert nettextInfo->serviceCenter to SCA
 	
 	number_smsc = nettextInfo->serviceCenter;
 	if ((strlen(number_smsc) % 2) > 0) {
@@ -673,14 +676,23 @@ void ipc_incoming_sms(void* data)
 	memset(sca, 0, strlen(number) + 5);
 
 	len_sca =  (strlen(number) / 2 ) + 1;
-	asprintf(&sca, "%02X", len_sca);
-
+	asprintf(&len_char, "%02X", len_sca);
+	strcat(sca, len_char);
 	strcat(sca, "91");
 	strcat(sca, number);
 
 	DEBUG_I("%s : sca = %s", __func__, sca);
 
 	strcat (pdu, sca);
+
+	if (number != NULL)	
+		free (number);
+
+	if (sca != NULL)	
+		free (sca);
+
+	len_char = NULL;
+	
 
 	//TPDU
 
@@ -697,6 +709,7 @@ void ipc_incoming_sms(void* data)
 	strcat (pdu, pdu_type);
 
 	// TP-OA: TP- Originating-Address
+	//Convert nettextInfo->phoneNumber to TP-OA
 
 	number_oa = nettextInfo->phoneNumber;
 
@@ -734,32 +747,42 @@ void ipc_incoming_sms(void* data)
 	
 		tp_oa = malloc(strlen(number2) + 5);
 		memset(tp_oa, 0, strlen(number2) + 5);
-		asprintf(&tp_oa, "%02X", len_oa);
+		asprintf(&len_char, "%02X", len_oa);
+		strcat(tp_oa, len_char);	
 		strcat(tp_oa, "91");
 		strcat(tp_oa, number2);
 		DEBUG_I("%s : tp_oa = %s", __func__, tp_oa);
 
-		}else{
-
+	}else{
+		
 		ascii2gsm7(number_oa, (unsigned char **)&number_tmp, strlen(number_oa));
 		DEBUG_I("%s : number_tmp = %s", __func__, number_tmp);
 
-		number2 = malloc(strlen(number_tmp) + 1);
-		memset(number2, 0, strlen(number_tmp) + 1);
+		number2 = malloc((strlen(number_tmp)* 2) + 1);
+		memset(number2, 0, (strlen(number_tmp)* 2) + 1);
 		
 		bin2hex((unsigned char *)number_tmp, strlen(number_tmp), number2);
 		DEBUG_I("%s : number2 = %s", __func__, number2);
-		strcpy(number_oa, number2);
-		tp_oa = malloc(strlen(number_oa) + 5);
-		memset(tp_oa, 0, strlen(number_oa) + 5);
-		asprintf(&tp_oa, "%02X", strlen(number_oa));
-		strcat(tp_oa, "D0");
-		DEBUG_I("%s : number2 = %s", __func__, number_oa);
-		strcat(tp_oa, number_oa);
-		DEBUG_I("%s : tp_oa = %s", __func__, tp_oa);		
-		}
 
-		strcat (pdu, tp_oa);
+		tp_oa = malloc(strlen(number2)  + 5);
+		memset(tp_oa, 0, strlen(number2) + 5);
+
+		asprintf(&len_char, "%02X", strlen(number2));
+		strcat(tp_oa, len_char);
+		strcat(tp_oa, "D0");
+		strcat(tp_oa, number2);
+		DEBUG_I("%s : tp_oa = %s", __func__, tp_oa);		
+	}
+
+	strcat (pdu, tp_oa);
+
+	if (number2 != NULL)	
+		 free (number2);
+
+	if (tp_oa != NULL)	
+		free (tp_oa);
+
+	len_char = NULL;
 
 	//TP-PID : TP-Protocol-Identifier 
 
@@ -773,11 +796,13 @@ void ipc_incoming_sms(void* data)
 
 
 	//TP-UDL:TP-User-Data-Length
+	//Covert nettextInfo->messageLength to TP-UDL
 
 	asprintf(&tp_udl, "%02X", nettextInfo->messageLength);
 	DEBUG_I("%s : tp_udl = %s", __func__, tp_udl);
 
 	//TP-UD: TP-User Data
+	//Convert nettextInfo->messageBody to TP-UD
 	
 	message_length = nettextInfo->messageLength;
 	mess = nettextInfo->messageBody;
@@ -797,16 +822,23 @@ void ipc_incoming_sms(void* data)
 		/*TP-DCS: TP-Data-Coding-Scheme */
 		tp_dcs = "08"; //Unicode
 		DEBUG_I("%s : TP-DCS = Unicode", __func__);
-		tp_ud = message;
+
+		tp_ud = malloc(strlen(message) + 1);
+		memset(tp_ud, 0, strlen(message) + 1);
+
+		strcat(tp_ud,message);
 		DEBUG_I("%s : tp_ud = %s", __func__, tp_ud);
 	}else{
 		/*TP-DCS: TP-Data-Coding-Scheme */
 		tp_dcs = "00"; //gsm7
 		DEBUG_I("%s : TP-DCS = GSM7", __func__);
+
 		ascii2gsm7((char *)mess, (unsigned char **)&message_tmp, message_length);
 		DEBUG_I("%s : message_tmp = %s", __func__, message_tmp);
-		tp_ud = malloc(strlen(message_tmp) + 1);
-		memset(tp_ud, 0, strlen(message_tmp) + 1);
+
+		tp_ud = malloc((strlen(message_tmp) * 2) + 1);
+		memset(tp_ud, 0, (strlen(message_tmp) * 2) + 1);
+
 		bin2hex((unsigned char *)message_tmp, strlen(message_tmp), tp_ud);
 		DEBUG_I("%s : tp_ud = %s", __func__, tp_ud);
 	}
@@ -819,18 +851,6 @@ void ipc_incoming_sms(void* data)
 	DEBUG_I("%s : pdu = %s", __func__, pdu);
 	
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_NEW_SMS, pdu, strlen(pdu));
-
-	if (number != NULL)	
-		free (number);
-
-	if (sca != NULL)	
-		free (sca);
-
-	if (number2 != NULL)	
-		free (number2);
-
-	if (tp_oa != NULL)	
-		free (tp_oa);
 
 	if (message != NULL)	
 		free (message);
