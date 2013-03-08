@@ -626,7 +626,6 @@ int ipc_sms_tpid_queue_get_next(void)
 
 void ipc_incoming_sms(void* data)
 {
-
 	tapiNettextInfo* nettextInfo = (tapiNettextInfo*)(data);
 	char *number_smsc, *da_len, *sca, *a, *b;
 	char *number_oa, *tp_oa;
@@ -795,17 +794,26 @@ void ipc_incoming_sms(void* data)
 	tp_scts = "11101131521400";
 
 
-	//TP-UDL:TP-User-Data-Length
-	//Covert nettextInfo->messageLength to TP-UDL
+	if (nettextInfo->nUDH == 0)
+	{
+		tapiNettextSingleInfo* messageInfo = (tapiNettextSingleInfo*)((uint8_t *)data + sizeof(tapiNettextInfo));
 
-	asprintf(&tp_udl, "%02X", nettextInfo->messageLength);
+		message_length = messageInfo->messageLength;
+		mess = messageInfo->messageBody;
+	}else{
+		tapiNettextMultiInfo* messageInfo = (tapiNettextMultiInfo*)((uint8_t *)data + sizeof(tapiNettextInfo));
+	
+		message_length = messageInfo->messageLength;
+		mess = messageInfo->messageBody;
+	}
+
+	//TP-UDL:TP-User-Data-Length
+
+	asprintf(&tp_udl, "%02X", message_length);
 	DEBUG_I("%s : tp_udl = %s", __func__, tp_udl);
 
 	//TP-UD: TP-User Data
-	//Convert nettextInfo->messageBody to TP-UD
-	
-	message_length = nettextInfo->messageLength;
-	mess = nettextInfo->messageBody;
+	//Convert messageBody to TP-UD
 
 	message = malloc((message_length * 2) + 1);
 	memset(message, 0, (message_length * 2) + 1);
