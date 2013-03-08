@@ -105,7 +105,7 @@ void tapi_nettext_incoming(uint32_t tapiNettextLength, uint8_t *tapiNettextData)
 		DEBUG_I("tapi_nettext_incoming: SMS message: %s", message->messageBody);
 	}else{
 		tapiNettextMultiInfo* message = (tapiNettextMultiInfo*)(tapiNettextData + sizeof(tapiNettextInfo));
-		DEBUG_I("tapi_nettext_incoming: Multi-part message %d on %d , SMS message: %s", message->quantityParts, message->numberPart, message->messageBody);
+		DEBUG_I("tapi_nettext_incoming: Multi-part message %d on %d , SMS message: %s", message->numberPart, message->quantityParts, message->messageBody);
 	} 
 
 	ipc_invoke_ril_cb(NETTEXT_INCOMING, (void*)nettextInfo);
