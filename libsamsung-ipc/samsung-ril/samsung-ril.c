@@ -390,9 +390,11 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_SET_PREFERRED_NETWORK_TYPE:
 			ril_request_set_preffered_network_type(t, data, datalen);
 			break;
+#endif		/* SMS */
 		case RIL_REQUEST_SEND_SMS:
 			ril_request_send_sms(t, data, datalen);
 			break;
+#if 0		
 		case RIL_REQUEST_SEND_SMS_EXPECT_MORE:
 			ril_request_send_sms_expect_more(t, data, datalen);
 			break;
@@ -488,6 +490,7 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(SIM_STATUS, ipc_sim_status);
 	ipc_register_ril_cb(PIN_STATUS, ipc_pin_status);
 	ipc_register_ril_cb(NETTEXT_INCOMING, ipc_incoming_sms);
+	ipc_register_ril_cb(NETTEXT_SEND_CALLBACK, ipc_sms_send_status);
 }
  
 void ril_data_init(void)
