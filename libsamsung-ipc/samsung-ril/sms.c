@@ -26,49 +26,44 @@
 #include "util.h"
 #include <tapi_nettext.h>
 
-#if 0
+
 /**
  * SMS global vars
  */
 
-struct ril_request_sms ril_request_sms[10];
-int ril_request_sms_lock = 0;
-
-unsigned char ipc_sms_tpid_queue[10];
+RIL_Token token;
 
 /**
  * Format conversion utils
  */
 
-unsigned short ril2ipc_sms_ack_error(int success, int failcause)
+void ipc_sms_send_status(void* data)
 {
-	if(success) {
-		return IPC_SMS_ACK_NO_ERROR;
-	} else {
-		switch(failcause) {
-			case 0xD3:
-				return IPC_SMS_ACK_PDA_FULL_ERROR;
-			default:
-				return IPC_SMS_ACK_UNSPEC_ERROR;
-		}
-	}
-}
+	ALOGE("%s: test me!", __func__);
+	tapiNettextCallBack* callBack = (tapiNettextCallBack*)(data);
 
-RIL_Errno ipc2ril_sms_ack_error(unsigned short error, int *error_code)
-{
-	/* error_code is defined in See 3GPP 27.005, 3.2.5 for GSM/UMTS */
+	RIL_SMS_Response response;
 
-	switch(error) {
-		case IPC_SMS_ACK_NO_ERROR:
-			*error_code = -1;
-			return RIL_E_SUCCESS;
+	memset(&response, 0, sizeof(response));
+	response.messageRef = 0;
+	response.ackPDU = NULL;
+
+	switch(callBack->status){
+		case 0:
+			DEBUG_I("%s : Message sent  ", __func__);
+			response.errorCode = -1;
+			ril_request_complete(token, RIL_E_SUCCESS, &response, sizeof(response));
+			return;
+
 		default:
-			// unknown error
-			*error_code = 500;
-			return RIL_E_GENERIC_FAILURE;
+			DEBUG_I("%s : Message sending error  ", __func__);
+			response.errorCode = 500;
+			ril_request_complete(token, RIL_E_GENERIC_FAILURE, &response, sizeof(response));
+			return;
 	}
-}
 
+}
+#if 0
 /**
  * RIL request SMS (queue) functions
  */
@@ -219,6 +214,8 @@ void ril_request_sms_lock_release(void)
 	ril_request_sms_lock = 0;
 }
 
+#endif
+
 /**
  * Outgoing SMS functions
  */
@@ -227,37 +224,56 @@ void ril_request_sms_lock_release(void)
  * In: RIL_REQUEST_SEND_SMS
  *   Send an SMS message.
  *
- * Out: IPC_SMS_SEND_MSG
+ * Out: 
  */
-void ril_request_send_sms(RIL_Token t, void *data, size_t datalen)
+void ril_request_send_sms(RIL_Token t, void *data, size_t length)
 {
-	const char **request = (char **) data;
-	char *pdu = request[1];
-	int pdu_len = pdu != NULL ? strlen(pdu) : 0;
-	char *smsc = request[0];
-	int smsc_len = smsc != NULL ? strlen(smsc) : 0;
+	char *pdu;
+	int pdu_length;
+	unsigned char *smsc;
+	int smsc_length;
+	int rc;
 
-	if(!ril_request_sms_lock_acquire()) {
-		ALOGD("The SMS lock is already taken, adding req to the SMS queue");
-
-		ril_request_sms_add(reqGetId(t), pdu, pdu_len, smsc, smsc_len);
+	if (data == NULL || length < 2 * sizeof(char *))
 		return;
+
+	pdu = ((char **) data)[1];
+	smsc = ((unsigned char **) data)[0];
+	pdu_length = 0;
+	smsc_length = 0;
+
+	if (pdu != NULL) {
+		pdu_length = strlen(pdu) + 1;
+		pdu = strdup(pdu);
 	}
 
+	if (smsc != NULL) {
+		smsc_length = strlen((char *) smsc);
+		smsc = (unsigned char *) strdup((char *) smsc);
+	}
+
+
 	/* We first need to get SMS SVC before sending the message */
+
 	if(smsc == NULL) {
 		ALOGD("We have no SMSC, let's ask one");
-
-		/* Enqueue the request */
-		ril_request_sms_add(reqGetId(t), pdu, pdu_len, NULL, 0);
-
-		ipc_send_get(IPC_SMS_SVC_CENTER_ADDR, reqGetId(t));
+		smsc = (unsigned char *)"07919730071111F1"; //FIXME: Add smsc request
+		smsc_length = strlen((char *) smsc);
+		smsc = (unsigned char *) strdup((char *) smsc);
+		ril_request_send_sms_complete(t, pdu, pdu_length, smsc, smsc_length);
 		
 	} else {
-		ril_request_send_sms_complete(t, pdu, smsc);
+		ril_request_send_sms_complete(t, pdu, pdu_length, smsc, smsc_length);
+
+		if (pdu != NULL)
+			free(pdu);
+
+		if (smsc != NULL)
+			free(smsc);
 	}
 }
 
+#if 0
 /**
  * In: RIL_REQUEST_SEND_SMS_EXPECT_MORE
  *   Send an SMS message. Identical to RIL_REQUEST_SEND_SMS,
@@ -313,140 +329,233 @@ int ril_request_send_sms_next(void)
 	return id;
 }
 
+#endif
+
 /**
  * Complete (continue) the send_sms request (do the real sending)
  */
-void ril_request_send_sms_complete(RIL_Token t, char *pdu, char *smsc)
+void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsigned char *smsc, int smsc_length)
 {
-	struct ipc_sms_send_msg send_msg;
-	unsigned char send_msg_type = IPC_SMS_MSG_SINGLE;
-	int send_msg_len;
+	tapiNettextOutgoingMessage* mess;
 
-	char *data;
-	int data_len;
+	unsigned char *pdu_hex;
+	int pdu_hex_length;
+	void *data;
+	int length, i, numberLen, send_msg_type;
+	unsigned char *p;
+	char *a, *message;
+	message = NULL;
 
-	char *pdu_dec;
-	unsigned char pdu_dec_len;
 
-	int pdu_len;
-	unsigned char smsc_len;
+	if (pdu == NULL || pdu_length <= 0 || smsc == NULL || smsc_length <= 0) {
 
-	char *p;
-
-	if(pdu == NULL || smsc == NULL) {
-		ALOGE("Provided PDU or SMSC is NULL! Aborting");
-
+		ALOGE("Provided PDU or SMSC is invalid! Aborting");
 		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
-
-		/* Release the lock so we can accept new requests */
-		ril_request_sms_lock_release();
-		/* Now send the next message in the queue if any */
-		ril_request_send_sms_next();
-
+		// Send the next SMS in the list
+		//ril_request_send_sms_next();
 		return;
+
 	}
 
-	/* Setting various len vars */
-	pdu_len = strlen(pdu);
+	if ((pdu_length / 2 + smsc_length) > 0xfe) {
 
-	if(pdu_len / 2 > 0xff) {
-		ALOGE("PDU is too large, aborting");
-
+		ALOGE("PDU or SMSC too large, aborting");
 		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
-
-		/* Release the lock so we can accept new requests */
-		ril_request_sms_lock_release();
-		/* Now send the next message in the queue if any */
-		ril_request_send_sms_next();
-
+		// Send the next SMS in the list
+		//ril_request_send_sms_next();
 		return;
+
 	}
 
-	pdu_dec_len = pdu_len / 2;
-	smsc_len = smsc[0];
-	send_msg_len = sizeof(struct ipc_sms_send_msg);
+	pdu_hex_length = pdu_length % 2 == 0 ? pdu_length / 2 :
 
-	/* Length of the final message */
-	data_len = pdu_dec_len + smsc_len + send_msg_len;
+		(pdu_length ^ 1) / 2;
 
-	ALOGD("Sending SMS message!");
+	// Length of the final message
 
-	ALOGD("data_len is 0x%x + 0x%x + 0x%x = 0x%x\n", pdu_dec_len, smsc_len, send_msg_len, data_len);
+	length = pdu_hex_length + smsc_length;
 
-	pdu_dec = malloc(pdu_dec_len);
-	hex2bin(pdu, pdu_len, pdu_dec);
+	ALOGD("Sending SMS message (length: 0x%x)!", length);
+
+	pdu_hex = calloc(1, pdu_hex_length);
+
+	hex2bin(pdu, pdu_length, pdu_hex);
+
+	send_msg_type = 0;
 
 	/* PDU operations */
-	int pdu_tp_da_index = 2;
-	unsigned char pdu_tp_da_len = pdu_dec[pdu_tp_da_index];
 
-	if(pdu_tp_da_len > 0xff / 2) {
+	int pdu_tp_da_index = 2;
+
+	unsigned char pdu_tp_da_len = pdu_hex[pdu_tp_da_index];
+
+	if (pdu_tp_da_len > 0xff / 2) {
+
 		ALOGE("PDU TP-DA Len failed (0x%x)\n", pdu_tp_da_len);
+
 		goto pdu_end;
+
 	}
 
 	ALOGD("PDU TP-DA Len is 0x%x\n", pdu_tp_da_len);
 
 	int pdu_tp_udh_index = pdu_tp_da_index + pdu_tp_da_len;
-	unsigned char pdu_tp_udh_len = pdu_dec[pdu_tp_udh_index];
-	
-	if(pdu_tp_udh_len > 0xff / 2 || pdu_tp_udh_len < 5) {
+
+	unsigned char pdu_tp_udh_len = pdu_hex[pdu_tp_udh_index];
+
+	if (pdu_tp_udh_len > 0xff / 2 || pdu_tp_udh_len < 5) {
+
 		ALOGE("PDU TP-UDH Len failed (0x%x)\n", pdu_tp_udh_len);
+
 		goto pdu_end;
+
 	}
 
 	ALOGD("PDU TP-UDH Len is 0x%x\n", pdu_tp_udh_len);
 
 	int pdu_tp_udh_num_index = pdu_tp_udh_index + 4;
-	unsigned char pdu_tp_udh_num = pdu_dec[pdu_tp_udh_num_index];
 
-	if(pdu_tp_udh_num > 0xf) {
+	unsigned char pdu_tp_udh_num = pdu_hex[pdu_tp_udh_num_index];
+
+	if (pdu_tp_udh_num > 0xf) {
+
 		ALOGE("PDU TP-UDH Num failed (0x%x)\n", pdu_tp_udh_num);
+
 		goto pdu_end;
+
 	}
 
 	int pdu_tp_udh_seq_index = pdu_tp_udh_index + 5;
-	unsigned char pdu_tp_udh_seq = pdu_dec[pdu_tp_udh_seq_index];
 
-	if(pdu_tp_udh_seq > 0xf || pdu_tp_udh_seq > pdu_tp_udh_num) {
+	unsigned char pdu_tp_udh_seq = pdu_hex[pdu_tp_udh_seq_index];
+
+	if (pdu_tp_udh_seq > 0xf || pdu_tp_udh_seq > pdu_tp_udh_num) {
+
 		ALOGE("PDU TP-UDH Seq failed (0x%x)\n", pdu_tp_udh_seq);
+
 		goto pdu_end;
+
 	}
 
 	ALOGD("We are sending message %d on %d\n", pdu_tp_udh_seq, pdu_tp_udh_num);
 
-	if(pdu_tp_udh_num > 1) {
+	if (pdu_tp_udh_num > 1) {
+
 		ALOGD("We are sending a multi-part message!");
-		send_msg_type = IPC_SMS_MSG_MULTIPLE;
+
+		send_msg_type = 1; //multi-part
+
 	}
 
-pdu_end:
-	/* Alloc and clean memory for the final message */
-	data = malloc(data_len);
-	memset(&send_msg, 0, sizeof(struct ipc_sms_send_msg));
 
-	/* Fill the IPC structure part of the message */
-	send_msg.type = IPC_SMS_TYPE_OUTGOING;
-	send_msg.msg_type =  send_msg_type;
-	send_msg.length = (unsigned char) (pdu_dec_len + smsc_len + 1);
-	send_msg.smsc_len = smsc_len;
+	pdu_end:
 
-	/* Copy the other parts of the message */
-	p = data;
-	memcpy(p, &send_msg, send_msg_len);
-	p +=  send_msg_len;
-	memcpy(p, (char *) (smsc + 1), smsc_len);
-	p += smsc_len;
-	memcpy(p, pdu_dec, pdu_dec_len);
+	DEBUG_I("%s : pdu : %s", __func__, pdu);
+	DEBUG_I("%s : pdu_hex : %s", __func__, pdu_hex);
 
-	ipc_gen_phone_res_expect_to_func(reqGetId(t), IPC_SMS_SEND_MSG, ipc_sms_send_msg_complete);
+	numberLen = (uint8_t)pdu_tp_da_len;	
 
-	ipc_send(IPC_SMS_SEND_MSG, IPC_TYPE_EXEC, data, data_len, reqGetId(t));
+	mess = (tapiNettextOutgoingMessage *)malloc(sizeof(tapiNettextOutgoingMessage));
+	memset(mess, 0, sizeof(tapiNettextOutgoingMessage));		
+	for (i = 0; i < 7; i++) {
+	mess->Unknown1[i] = 0x0;}
 
-	free(pdu_dec);
-	free(data);
+	mess->Unknown2= 0x00; // 00
+	mess->Unknown3= 0x01; // 01
+	mess->numberType= 0x01; // 01 - international
+	mess->numberLength = numberLen;
+	if (numberLen % 2 > 0)
+		numberLen = numberLen + 1;		
+	i = 0;	
+	while (i < numberLen)
+	{
+		mess->phoneNumber[i] = pdu[i + 9];
+		if ( pdu[i + 8] != 'f')
+		mess->phoneNumber[i+1] =pdu[i + 8]; 	
+		i = i + 2;		
+	}
+
+	mess->unknown4[0] = 0xFF; //fake
+	mess->unknown4[1] = 0x46; //fake
+	mess->unknown4[2] = 0x3A; //fake
+	mess->unknown4[3] = 0x51; //fake
+	mess->unknown4[4] = 0x00; //fake
+	mess->unknown4[5] = 0x01; //fake
+	mess->unknown4[6] = 0x01; //fake
+
+
+	//fake serviceCenter number  - 79037011111
+	//FIXME: add convert SMSC to SMS packet format
+	mess->serviceCenterLength = 0xB;
+	DEBUG_I("%s : smsc = %s", __func__, smsc);
+	mess->serviceCenter[0] = 0x37;
+	mess->serviceCenter[1] = 0x39;
+	mess->serviceCenter[2] = 0x30;
+	mess->serviceCenter[3] = 0x33;
+	mess->serviceCenter[4] = 0x37;
+	mess->serviceCenter[5] = 0x30;
+	mess->serviceCenter[6] = 0x31;
+	mess->serviceCenter[7] = 0x31;
+	mess->serviceCenter[8] = 0x31;
+	mess->serviceCenter[9] = 0x31;
+	mess->serviceCenter[10] = 0x31;
+
+	mess->unknown5 = 0x01; //01
+	mess->unknown6 = 0x03; //03
+	for (i = 0; i < 6; i++) {
+	mess->unknown7[i] = 0x00; }// all is NULL
+	mess->unknown8 = 0xFF; //FF
+	for (i = 0; i < 17; i++) {
+	mess->unknown9[i] = 0x00;}// all is NULL 
+	mess->unknown10 = 0x04; //04	
+	mess->unknown11 = 0x04; //04
+	mess->unknown12[0] = 0x00;
+	mess->unknown12[1] = 0x00;
+
+	if (send_msg_type == 0)
+		mess->messageLength = pdu_hex[(numberLen / 2) + 6];
+	else	
+		mess->messageLength = pdu_hex[(numberLen / 2) + 6];
+
+	if (pdu_hex[(numberLen / 2) + 5] == 8)
+	{
+		DEBUG_I("%s : DCS - Unicode", __func__);
+		mess->messageDCS = 0x03; //Unicode
+		int k = (numberLen / 2) + 7;
+		for (i = 0; i < pdu_hex[(numberLen / 2) + 6]; i++)
+				mess->messageBody[i] = pdu_hex[i + k];
+			
+	}else{
+		DEBUG_I("%s : DCS - GSM7", __func__);
+		mess->messageDCS = 0x00; //GSM7
+		int k = (numberLen / 2) + 7;
+		message = malloc(((pdu_hex[(numberLen / 2) + 6]) * 2) + 1);
+		memset(message, 0, ((pdu_hex[(numberLen / 2) + 6]) * 2) + 1);
+		for (i = 0; i < pdu_hex[(numberLen / 2) + 6]; i++)
+		{
+			asprintf(&a, "%02x", pdu_hex[i + k]);
+			DEBUG_I("%s : a = %s", __func__, a);							
+			strncat(message, a, 2);		
+		}
+		DEBUG_I("%s : message = %s", __func__, message);
+		//FIXME: Add convert GSM7 to ASCII		
+		
+	}
+
+	tapi_nettext_set_net_burst(0);
+	tapi_nettext_send((uint8_t *)mess);
+	if (mess->messageDCS == 0x00)
+	{
+		free(message);
+	}
+
+	free(mess);
+	free(pdu_hex);
+
+	token = t;
 }
 
+#if 0
 void ipc_sms_send_msg_complete(struct ipc_message_info *info)
 {
 	struct ipc_gen_phone_res *phone_res = (struct ipc_gen_phone_res *) info->data;
@@ -803,7 +912,7 @@ void ipc_incoming_sms(void* data)
 	}else{
 		tapiNettextMultiInfo* messageInfo = (tapiNettextMultiInfo*)((uint8_t *)data + sizeof(tapiNettextInfo));
 	
-		message_length = messageInfo->messageLength;
+		message_length = strlen((char *)messageInfo->messageBody);
 		mess = messageInfo->messageBody;
 	}
 

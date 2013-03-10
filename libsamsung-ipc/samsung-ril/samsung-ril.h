@@ -262,6 +262,9 @@ void ril_state_update(ril_sim_state sim_state);
 void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen);
 
 /* SMS */
+void ipc_sms_send_status(void* data);
 void ipc_incoming_sms(void* data);
+void ril_request_send_sms(RIL_Token t, void *data, size_t length);
+void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsigned char *smsc, int smsc_length);
 
 #endif
