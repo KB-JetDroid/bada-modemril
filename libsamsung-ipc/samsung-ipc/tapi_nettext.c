@@ -47,6 +47,9 @@ void tapi_nettext_parser(uint16_t tapiNettextType, uint32_t tapiNettextLength, u
 	case TAPI_NETTEXT_INCOMING:
 		tapi_nettext_incoming(tapiNettextLength, tapiNettextData);
 		break;	
+	case TAPI_NETTEXT_SEND_CALLBACK:
+		tapi_nettext_send_callback(tapiNettextData);
+		break;	
     	default:
 		DEBUG_I("TapiNettext packet type 0x%X is not yet handled, len = 0x%x", tapiNettextType, tapiNettextLength);
 		hex_dump(tapiNettextData, tapiNettextLength);
@@ -110,3 +113,19 @@ void tapi_nettext_incoming(uint32_t tapiNettextLength, uint8_t *tapiNettextData)
 
 	ipc_invoke_ril_cb(NETTEXT_INCOMING, (void*)nettextInfo);
 }
+
+void tapi_nettext_send(uint8_t* tapiNettextOutgoingMessage)
+{	
+	struct tapiPacket pkt;
+	pkt.header.len = 0x138;
+	pkt.header.tapiService = TAPI_TYPE_NETTEXT;	
+	pkt.header.tapiServiceFunction = TAPI_NETTEXT_SEND;
+	pkt.buf = tapiNettextOutgoingMessage;	
+	tapi_send_packet(&pkt);
+}
+
+void tapi_nettext_send_callback(uint8_t *callBack)
+{
+	ipc_invoke_ril_cb(NETTEXT_SEND_CALLBACK, (void*)callBack);
+}
+

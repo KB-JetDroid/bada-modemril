@@ -73,6 +73,34 @@ typedef struct {
 	uint8_t messageBody[160];
 } __attribute__((__packed__)) tapiNettextMultiInfo;
 
+typedef struct {
+	uint32_t Unknown1[7]; // all is NULL
+	uint8_t Unknown2; // 00
+	uint8_t Unknown3; // 01
+	uint8_t numberType; // 00 -national, 01 - international
+	uint8_t numberLength;
+	char phoneNumber [24]; 
+	uint8_t unknown4[7]; 
+	uint8_t serviceCenterLength;
+	char serviceCenter [48]; 
+	uint8_t unknown5; //01
+	uint8_t unknown6; //03
+	uint8_t unknown7[6];// all is NULL
+	uint8_t unknown8; //FF
+	uint8_t unknown9[17];// all is NULL 
+	uint8_t messageDCS;
+	uint8_t unknown10; //04	
+	uint8_t unknown11; //04
+	uint32_t unknown12[2];	
+	uint8_t messageLength;
+	uint8_t messageBody[161]; 
+} __attribute__((__packed__)) tapiNettextOutgoingMessage;
+
+typedef struct {
+	uint32_t unknown1; 
+	uint32_t status;
+} __attribute__((__packed__)) tapiNettextCallBack;
+
 
 void tapi_nettext_parser(uint16_t tapiNettextType, uint32_t tapiNettextLength, uint8_t *tapiNettextData);
 
@@ -81,5 +109,7 @@ void tapi_nettext_set_preferred_memory(uint8_t preferredMemory);
 void tapi_nettext_set_net_burst(uint32_t bNetBurstEnabled);
 void tapi_nettext_set_cb_settings(uint8_t* cb_sett_buf);
 void tapi_nettext_incoming(uint32_t tapiNettextLength, uint8_t *tapiNettextData);
+void tapi_nettext_send(uint8_t* tapiNettextOutgoingMessage);
+void tapi_nettext_send_callback(uint8_t *callBack);
 
 #endif
