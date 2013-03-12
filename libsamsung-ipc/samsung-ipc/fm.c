@@ -150,7 +150,7 @@ int32_t FmOpenFile(struct fmRequest *rx_packet, struct fmResponse *tx_packet)
 	else if(mode & FM_NOUPDATE_TIME)
 		flags |= O_RDWR;
 #endif
-	retval = open(nameBuf, flags); //0777);
+	retval = open(nameBuf, flags, 0660);
 
 	if(retval < 0)
 		DEBUG_I("%s: error! %s", __func__, strerror(errno));
