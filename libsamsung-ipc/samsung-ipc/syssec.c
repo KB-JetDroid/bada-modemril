@@ -25,8 +25,11 @@
 #include <radio.h>
 #include <syssec.h>
 
-#define LOG_TAG "Mocha-RIL-SIM"
+
+#define LOG_TAG "Mocha-RIL-SYSSEC"
 #include <utils/Log.h>
+
+#include <drv.h>
 
 const uint8_t fake_imei[] = {0x08, 0x1A, 0x32, 0x54, 0x76, 0x98, 0x12, 0x34, 0x56};
 
@@ -46,10 +49,28 @@ void ipc_parse_syssec(struct ipc_client* client, struct modem_io *ipc_frame)
 
 void load_sec_data()
 {
+	uint8_t data[150];
+	uint8_t real_imei[9]; 	
+	int i;
 	DEBUG_I("Loading dat stuff.");
-	memcpy(cached_bcd_imei, fake_imei, 9);
+	get_nvm_data(data, 150);
+
+	if (data[137] == 0x08)
+	{
+		DEBUG_I("Real IMEI exist in nv_data");
+		for (i = 0; i < 9; i++) {
+			real_imei[i] = data[i+137];}
+		memcpy(cached_bcd_imei, real_imei, 9);
+
+		
+	}else{
+		DEBUG_I("We are using fake IMEI");
+		memcpy(cached_bcd_imei, fake_imei, 9);
+	}
+	
 	DEBUG_I("Converting IMEI out of dat stuff to ASCII.");
 	imei_bcd2ascii(cached_imei, cached_bcd_imei);
+
 }
 
 void syssec_send_imei(void)
@@ -69,7 +90,6 @@ void syssec_send_imei(void)
 	pkt_hdr->type = SYS_SEC_SETIMEI;
 	pkt_hdr->bufLen = 17;
 	memcpy(buffer + sizeof(struct sysSecPacketHeader) + 8, cached_bcd_imei, 9);	
-	
 	request.magic = 0xCAFECAFE;
 	request.cmd = FIFO_PKT_SECUREBOOT;
 	request.datasize = pkt_hdr->bufLen + sizeof(struct sysSecPacketHeader); // 17+16=33
