@@ -2,6 +2,8 @@
  * This file is part of libsamsung-ipc.
  *
  * Copyright (C) 2012 KB <kbjetdroid@gmail.com>
+ * Copyright (C) 2013 Dominik Marszk <dmarszk@gmail.com>
+ * Copyright (C) 2013 Nikolay Volkov <volk204@mail.ru>
  *
  * Implemented as per the Mocha AP-CP protocol analysis done by Dominik Marszk
  *
