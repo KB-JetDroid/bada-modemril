@@ -348,30 +348,34 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_STK_HANDLE_CALL_SETUP_REQUESTED_FROM_SIM:
 			ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 			break;
-		/* SIM */
+#endif		/* SIM */
 		case RIL_REQUEST_GET_SIM_STATUS:
-			ril_request_sim_status(t);
+			ril_request_get_sim_status(t);
 			break;
+#if 0
 		case RIL_REQUEST_SIM_IO:
 			ril_request_sim_io(t, data, datalen);
 			break;
+#endif
 		case RIL_REQUEST_ENTER_SIM_PIN:
 			ril_request_enter_sim_pin(t, data, datalen);
 			break;
+#if 0
 		case RIL_REQUEST_QUERY_FACILITY_LOCK:
 			ril_request_query_facility_lock(t, data, datalen);
 			break;
 		case RIL_REQUEST_SET_FACILITY_LOCK:
 			ril_request_set_facility_lock(t, data, datalen);
 			break;
-		/* NET */
+#endif		/* NET */
 		case RIL_REQUEST_OPERATOR:
 			ril_request_operator(t);
 			break;
-		case RIL_REQUEST_REGISTRATION_STATE:
+		case RIL_REQUEST_VOICE_REGISTRATION_STATE:
 			ril_request_registration_state(t);
 			break;
-		case RIL_REQUEST_GPRS_REGISTRATION_STATE:
+#if 0
+			case RIL_REQUEST_GPRS_REGISTRATION_STATE:
 			ril_request_gprs_registration_state(t);
 			break;
 		case RIL_REQUEST_QUERY_AVAILABLE_NETWORKS:
@@ -386,16 +390,17 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_SET_PREFERRED_NETWORK_TYPE:
 			ril_request_set_preffered_network_type(t, data, datalen);
 			break;
-		/* SMS */
+#endif		/* SMS */
 		case RIL_REQUEST_SEND_SMS:
 			ril_request_send_sms(t, data, datalen);
 			break;
+#if 0		
 		case RIL_REQUEST_SEND_SMS_EXPECT_MORE:
 			ril_request_send_sms_expect_more(t, data, datalen);
 			break;
 		case RIL_REQUEST_SMS_ACKNOWLEDGE:
 			ril_request_sms_acknowledge(t, data, datalen);
-			break;
+				break;
 #endif
 		/* CALL */
 		case RIL_REQUEST_DIAL:
@@ -435,12 +440,12 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		/* SND */
 		case RIL_REQUEST_SET_MUTE:
 			ril_request_set_mute(t, data, datalen);
-		/* OTHER */
+#endif		/* OTHER */
 		case RIL_REQUEST_SCREEN_STATE:
 			/* This doesn't affect anything */
 			ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 			break;
-#endif
+
 		default:
 			ALOGE("Request not implemented: %d", request);
 			ril_request_complete(t, RIL_E_REQUEST_NOT_SUPPORTED, NULL, 0);
@@ -479,6 +484,13 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(CP_SYSTEM_START, ipc_cp_system_start);
 	ipc_register_ril_cb(NETWORK_RADIO_INFO, ipc_network_radio_info);
 	ipc_register_ril_cb(NETWORK_SELECT, ipc_network_select);
+	ipc_register_ril_cb(NETWORK_CELL_INFO, ipc_cell_info);
+	ipc_register_ril_cb(CALL_INCOMING_IND, ipc_call_incoming);
+	ipc_register_ril_cb(CALL_END_IND, ipc_call_end);
+	ipc_register_ril_cb(SIM_STATUS, ipc_sim_status);
+	ipc_register_ril_cb(PIN_STATUS, ipc_pin_status);
+	ipc_register_ril_cb(NETTEXT_INCOMING, ipc_incoming_sms);
+	ipc_register_ril_cb(NETTEXT_SEND_CALLBACK, ipc_sms_send_status);
 }
  
 void ril_data_init(void)

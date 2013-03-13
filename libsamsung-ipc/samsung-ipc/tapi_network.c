@@ -115,6 +115,18 @@ void tapi_network_shutdown(uint8_t mode)
 	tapi_send_packet(&pkt);
 }
 
+void tapi_set_subscription_mode(uint8_t mode)
+{
+	struct tapiPacket pkt;
+	pkt.header.len = 1;
+	pkt.header.tapiService = TAPI_TYPE_NETWORK;	
+	pkt.header.tapiServiceFunction = TAPI_NETWORK_SET_SUBSCRIPTION_MODE;
+	pkt.buf = &mode;
+	
+	tapi_send_packet(&pkt);
+}
+
+
 void tapi_network_set_subscription_mode(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
 	uint8_t subscriptionMode = (uint8_t)tapiNetData[0];	
@@ -149,6 +161,6 @@ void tapi_network_cell_info(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {	
 	tapiCellInfo* cellInfo = (tapiCellInfo*)(tapiNetData);	
 	DEBUG_I("tapi_network_cell_info: cbchStatus:%d, bCellChanged:%d, bRACChanged:%d, bLACChanged:%d, bPLMNChanged:%d", cellInfo->cbchStatus, cellInfo->bCellChanged, cellInfo->bRACChanged, cellInfo->bLACChanged, cellInfo->bPLMNChanged);
-	DEBUG_I("tapi_network_cell_info: cellId:%x %x %x %x, racId:%x, ladId:%x %x, plmnId:%x %x %x\n", cellInfo->cellId[0], cellInfo->cellId[1], cellInfo->cellId[2], cellInfo->cellId[3], cellInfo->racId, cellInfo->ladId[0], cellInfo->ladId[1], cellInfo->plnmId[0], cellInfo->plnmId[1], cellInfo->plnmId[2]);
+	DEBUG_I("tapi_network_cell_info: cellId:%x %x %x %x, racId:%x, ladId:%x %x, plmnId:%x %x %x\n", cellInfo->cellId[0], cellInfo->cellId[1], cellInfo->cellId[2], cellInfo->cellId[3], cellInfo->racId, cellInfo->lacId[0], cellInfo->lacId[1], cellInfo->plmnId[0], cellInfo->plmnId[1], cellInfo->plmnId[2]);
 	ipc_invoke_ril_cb(NETWORK_CELL_INFO, (void*)cellInfo);
 }

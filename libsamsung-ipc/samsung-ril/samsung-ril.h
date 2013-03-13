@@ -234,6 +234,7 @@ void ril_request_get_imsi(RIL_Token t);
 /* CALL */
 void ipc_call_incoming(void* data);
 void ipc_call_status(void* data);
+void ipc_call_end(void* data);
 void ril_request_dial(RIL_Token t, void *data, size_t datalen);
 void ril_request_get_current_calls(RIL_Token t);
 void ril_request_hangup(RIL_Token t);
@@ -246,8 +247,24 @@ void ril_request_dtmf_stop(RIL_Token t);
 /* NETWORK */
 void ipc_network_radio_info(void* data);
 void ipc_network_select(void* data);
+void ipc_cell_info(void* data);
+void network_start(void);
+void ril_request_operator(RIL_Token t);
+void ril_request_registration_state(RIL_Token t);
+void ril_plmn_split(char *plmn_data, char **plmn, unsigned int *mcc, unsigned int *mnc);
 
 /* SIM */
 void ril_sim_init(void);
+void ipc_sim_status(void *data);
+void ipc_pin_status(void* data);
+void ril_request_get_sim_status(RIL_Token t);
+void ril_state_update(ril_sim_state sim_state);
+void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen);
+
+/* SMS */
+void ipc_sms_send_status(void* data);
+void ipc_incoming_sms(void* data);
+void ril_request_send_sms(RIL_Token t, void *data, size_t length);
+void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsigned char *smsc, int smsc_length);
 
 #endif

@@ -35,6 +35,7 @@
 #include <radio.h>
 #include <drv.h>
 #include <errno.h>
+#include <tm.h>
 
 #define LOG_TAG "Mocha-RIL-IPC_DRV"
 #include <utils/Log.h>
@@ -135,11 +136,15 @@ void handleSystemInfoRequest()
 	struct modem_io request;
 	
 	/* TODO: for WAVE add USB TA info sending if there's USB connected (it shouldn't be sent if USB is disconnected) */
+	tm_send_packet(0x0,0x0D, (uint8_t*)RCV_MSM_Data, sizeof(RCV_MSM_Data));
+	tm_send_packet(0x0,0x12, (uint8_t*)SPK_MSM_Data, sizeof(SPK_MSM_Data));
+	tm_send_packet(0x0,0x10, (uint8_t*)EAR_MSM_Data, sizeof(EAR_MSM_Data));
+	tm_send_packet(0x0,0x14, (uint8_t*)BTH_MSM_Data, sizeof(BTH_MSM_Data));
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)RCV_MSM_Data, sizeof(RCV_MSM_Data));
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)EAR_MSM_Data, sizeof(EAR_MSM_Data));
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)SPK_MSM_Data, sizeof(SPK_MSM_Data));
 	drv_send_packet(SOUND_CONFIG, (uint8_t*)BTH_MSM_Data, sizeof(BTH_MSM_Data));
-
+	memset(payload,0, sizeof(payload));
 	memcpy(payload, fake_apps_version, strlen(fake_apps_version));
 	drv_send_packet(HIDDEN_SW_VER, payload, 0x14);
 
@@ -160,7 +165,7 @@ void send_ta_info()
 		DEBUG_E("Couldn't open %s, %s", buf, strerror(errno));
 	else {
 		read(fd, buf, 1);
-		if(!strcmp(buf, "1"))
+		if(buf[0] == '1')
 			status = 5;
 		close(fd);
 	}
@@ -171,7 +176,7 @@ void send_ta_info()
 			DEBUG_E("Couldn't open %s", buf);
 		else {
 			read(fd, buf, 1);
-			if(!strcmp(buf, "1"))
+			if(buf[0] == '1')
 				status = 5;
 			close(fd);
 		}
