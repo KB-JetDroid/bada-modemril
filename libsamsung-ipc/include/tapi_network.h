@@ -83,8 +83,8 @@ typedef struct {
 	uint32_t bPLMNChanged;
 	uint8_t cellId[4];
 	uint8_t racId;
-	uint8_t ladId[2];
-	uint8_t plnmId[3];
+	uint8_t lacId[2];
+	uint8_t plmnId[3];
 	uint8_t cbchStatus;
 	uint8_t _unknown_;
 } __attribute__((__packed__)) tapiCellInfo;
@@ -111,5 +111,6 @@ void tapi_network_common_error(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_cell_info(uint32_t tapiNetLength, uint8_t *tapiNetData);
 
 void tapi_network_init(void);
+void tapi_set_subscription_mode(uint8_t mode);
 
 #endif

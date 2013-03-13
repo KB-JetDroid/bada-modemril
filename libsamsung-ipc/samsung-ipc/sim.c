@@ -2,6 +2,8 @@
  * This file is part of libsamsung-ipc.
  *
  * Copyright (C) 2012 KB <kbjetdroid@gmail.com>
+ * Copyright (C) 2013 Dominik Marszk <dmarszk@gmail.com>
+ * Copyright (C) 2013 Nikolay Volkov <volk204@mail.ru>
  *
  * Implemented as per the Mocha AP-CP protocol analysis done by Dominik Marszk
  *
@@ -35,6 +37,8 @@
 
 #include <radio.h>
 #include <sim.h>
+#include <tapi_nettext.h>
+#include <tapi_network.h>
 
 #define LOG_TAG "Mocha-RIL-SIM"
 #include <utils/Log.h>
@@ -44,6 +48,8 @@
  *
  */
 
+	
+
 void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 {
 	DEBUG_I("Entering ipc_parse_sim");
@@ -51,13 +57,15 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 	uint32_t diffedSubtype;
 	struct simPacketHeader *simHeader;
 	struct simPacket sim_packet;
-
 	struct modem_io request;
-    void *frame;
-    uint8_t *payload;
-    uint32_t frame_length;
+	tapi_nettext_cb_settings* cb_sett_buf;
+	void *frame;
+ 	uint8_t *payload;
+ 	uint32_t frame_length;
+	uint8_t buf[4];
+	int i;
 
-    struct fifoPacketHeader *fifoHeader;
+	struct fifoPacketHeader *fifoHeader;
 
 	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
 
@@ -86,8 +94,30 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 			ipc_hex_dump(oem_packet.oemBuf, oem_header->oemBufLen);
 */
 			break;
+		case 0x08:
+			sim_parse_event(sim_packet.simBuf, simHeader->bufLen);
+			break;
+		case 0x24:
+			DEBUG_I("SIM_READY");
+			sim_status(2);
+			sim_parse_event(sim_packet.simBuf, simHeader->bufLen);
+
+			tapi_set_subscription_mode(0x1);
+			cb_sett_buf = (tapi_nettext_cb_settings *)malloc(sizeof(tapi_nettext_cb_settings));
+			memset(cb_sett_buf, 0, sizeof(tapi_nettext_cb_settings));		
+			cb_sett_buf->ext_cb = 0x0;
+			cb_sett_buf->ext_cb_enable = 0x0;
+			cb_sett_buf->enable_all_combined_cb_channels = 0x1;
+			cb_sett_buf->combined_language_type = 0x0;
+			cb_sett_buf->number_of_combined_cbmi = 0x367FFF;
+			for (i = 0; i < 40; i++) {
+			cb_sett_buf->cb_info[i] = 0x0;}
+			tapi_nettext_set_cb_settings((uint8_t *)cb_sett_buf);
+			free(cb_sett_buf);
+			break;
 		default :
 			DEBUG_I("Unknown SIM subType %d", simHeader->subType);
+			sim_parse_event(sim_packet.simBuf, simHeader->bufLen);
 			break;
 		}
 	}
@@ -108,6 +138,9 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 					case 2: //in this subtype
 						//TODO: these 2 subtypes are somewhat special - apps does switch some bool if they are used, not sure what way they are special.
 						sim_parse_event(sim_packet.simBuf, simHeader->bufLen);
+						buf[0]=0;
+						buf[1]=0;		
+						sim_atk_send_packet(0x1, 0x31, 0x2, buf);
 						break;
 					default:
 						sim_parse_event(sim_packet.simBuf, simHeader->bufLen); 
@@ -126,7 +159,39 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 
 void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 {
+	simEventPacketHeader* simEvent = (simEventPacketHeader*)(buf);
+	switch(simEvent->eventType)
+	{
+		
+		case SIM_EVENT_BEGIN:
+			DEBUG_I("SIM_NOT_READY");			
+			sim_status(1);			
+		case SIM_EVENT_SIM_OPEN:
+			if (simEvent->eventStatus == SIM_CARD_NOT_PRESENT) {
+				DEBUG_I("SIM_ABSENT");
+				sim_status(0);}
+//		if (simEvent->eventStatus == 0x0) {
+//			sim_status(0);}
+			break;
+		case SIM_EVENT_VERIFY_PIN1_IND:
+			DEBUG_I("SIM_PIN");
+			sim_status(3);
+			break;
+		case SIM_EVENT_VERIFY_CHV:
+			if (simEvent->eventStatus == SIM_OK) {
+				pin_status(buf+sizeof(simEventPacketHeader));
+			} else {
+				DEBUG_I("SIM: something wrong with pin verify responce");
+				DEBUG_I("SIM_PIN");
+				sim_status(3);
+			}
+			break;
+		default:
+			DEBUG_I("SIM DEFAULT");
+			break;
 
+	}
+	DEBUG_I("%s: sim event = %d, sim event status = %d",__func__,simEvent->eventType,simEvent->eventStatus);
 }
 
 void sim_send_oem_req(uint8_t* simBuf, uint8_t simBufLen)
@@ -203,3 +268,46 @@ void sim_open_to_modem(uint8_t hSim)
 	DEBUG_I("sim_open_to_modem");
 	sim_send_oem_data(hSim, 0x1, NULL, 0); //why it starts from 4? hell knows
 }
+
+void sim_atk_send_packet(uint32_t atkType, uint32_t atkSubType, uint32_t atkBufLen, uint8_t* atkBuf)
+{	
+
+	DEBUG_I("Sending sim_atk_send_packet\n");
+	struct modem_io request;
+	sim_atk_packet_header* atk_header;
+	uint8_t* fifobuf;
+	uint32_t bufLen = sizeof(sim_atk_packet_header) + atkBufLen;
+
+	fifobuf = malloc(bufLen);
+	atk_header = (sim_atk_packet_header*)(fifobuf);
+
+	atk_header->atkType = atkType;
+	atk_header->atkSubType = atkSubType;
+	atk_header->atkBufLen = atkBufLen;
+
+	memcpy(fifobuf+sizeof(sim_atk_packet_header), atkBuf, atkBufLen);	
+
+	request.magic = 0xCAFECAFE;
+	request.cmd = FIFO_PKT_SIM;
+	request.datasize = bufLen;
+
+	request.data = fifobuf;
+
+	ipc_send(&request);
+
+	free(fifobuf);
+}
+
+void sim_status(int simCardStatus)
+{
+	DEBUG_I("SIM STATUS CHANGED");
+	ipc_invoke_ril_cb(SIM_STATUS, (void*)simCardStatus);
+}
+
+void pin_status(uint8_t *pinStatus)
+{
+	DEBUG_I("PIN STATUS CHANGED");
+	ipc_invoke_ril_cb(PIN_STATUS, (void*)pinStatus);
+}
+
+

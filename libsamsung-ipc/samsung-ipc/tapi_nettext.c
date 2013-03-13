@@ -2,6 +2,8 @@
  * This file is part of libsamsung-ipc.
  *
  * Copyright (C) 2012 KB <kbjetdroid@gmail.com>
+ * Copyright (C) 2013 Dominik Marszk <dmarszk@gmail.com>
+ * Copyright (C) 2013 Nikolay Volkov <volk204@mail.ru>
  *
  * Implemented as per the Mocha AP-CP protocol analysis done by Dominik Marszk
  *
@@ -44,10 +46,16 @@ void tapi_nettext_parser(uint16_t tapiNettextType, uint32_t tapiNettextLength, u
 
     switch(tapiNettextType)
     {
-    default:
+	case TAPI_NETTEXT_INCOMING:
+		tapi_nettext_incoming(tapiNettextLength, tapiNettextData);
+		break;	
+	case TAPI_NETTEXT_SEND_CALLBACK:
+		tapi_nettext_send_callback(tapiNettextData);
+		break;	
+    	default:
 		DEBUG_I("TapiNettext packet type 0x%X is not yet handled, len = 0x%x", tapiNettextType, tapiNettextLength);
 		hex_dump(tapiNettextData, tapiNettextLength);
-    	break;
+	    	break;
     }
 }
 
@@ -80,3 +88,46 @@ void tapi_nettext_set_net_burst(uint32_t bNetBurstEnabled)
 	pkt.buf = &bNetBurstEnabled;	
 	tapi_send_packet(&pkt);
 }
+
+void tapi_nettext_set_cb_settings(uint8_t* cb_sett_buf)
+{	
+	struct tapiPacket pkt;
+	pkt.header.len = 0x64;
+	pkt.header.tapiService = TAPI_TYPE_NETTEXT;	
+	pkt.header.tapiServiceFunction = TAPI_NETTEXT_SET_CB_SETTING;
+	pkt.buf = cb_sett_buf;	
+	tapi_send_packet(&pkt);
+}
+
+void tapi_nettext_incoming(uint32_t tapiNettextLength, uint8_t *tapiNettextData)
+{
+	tapiNettextInfo* nettextInfo = (tapiNettextInfo*)(tapiNettextData);
+	DEBUG_I("tapi_nettext_incoming: Incoming SMS received from %s", nettextInfo->phoneNumber);
+	
+	if (nettextInfo->nUDH == 0)
+	{
+		tapiNettextSingleInfo* message = (tapiNettextSingleInfo*)(tapiNettextData + sizeof(tapiNettextInfo));
+		DEBUG_I("tapi_nettext_incoming: SMS message: %s", message->messageBody);
+	}else{
+		tapiNettextMultiInfo* message = (tapiNettextMultiInfo*)(tapiNettextData + sizeof(tapiNettextInfo));
+		DEBUG_I("tapi_nettext_incoming: Multi-part message %d on %d , SMS message: %s", message->numberPart, message->quantityParts, message->messageBody);
+	} 
+
+	ipc_invoke_ril_cb(NETTEXT_INCOMING, (void*)nettextInfo);
+}
+
+void tapi_nettext_send(uint8_t* tapiNettextOutgoingMessage)
+{	
+	struct tapiPacket pkt;
+	pkt.header.len = 0x138;
+	pkt.header.tapiService = TAPI_TYPE_NETTEXT;	
+	pkt.header.tapiServiceFunction = TAPI_NETTEXT_SEND;
+	pkt.buf = tapiNettextOutgoingMessage;	
+	tapi_send_packet(&pkt);
+}
+
+void tapi_nettext_send_callback(uint8_t *callBack)
+{
+	ipc_invoke_ril_cb(NETTEXT_SEND_CALLBACK, (void*)callBack);
+}
+
