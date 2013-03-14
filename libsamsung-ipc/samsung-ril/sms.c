@@ -258,9 +258,8 @@ void ril_request_send_sms(RIL_Token t, void *data, size_t length)
 
 	if(smsc == NULL) {
 		ALOGD("We have no SMSC, let's ask one");
-		smsc = (unsigned char *)"07919730071111F1"; //FIXME: Add smsc request
-		smsc_length = strlen((char *) smsc);
-		smsc = (unsigned char *) strdup((char *) smsc);
+		smsc_length = strlen((char *) ril_data.smsc_number);
+		smsc = (unsigned char *) strdup((char *) ril_data.smsc_number);
 		ril_request_send_sms_complete(t, pdu, pdu_length, smsc, smsc_length);
 		
 	} else {
@@ -484,22 +483,22 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 	mess->unknown4[5] = 0x01; //fake
 	mess->unknown4[6] = 0x01; //fake
 
+	if (smsc[smsc_length - 2] == 'f' || smsc[smsc_length - 2] == 'F')
+	{
+		mess->serviceCenterLength = smsc_length - 5;
+	}else{
+		mess->serviceCenterLength = smsc_length - 4;
+	}
 
-	//fake serviceCenter number  - 79037011111
-	//FIXME: add convert SMSC to SMS packet format
-	mess->serviceCenterLength = 0xB;
-	DEBUG_I("%s : smsc = %s", __func__, smsc);
-	mess->serviceCenter[0] = 0x37;
-	mess->serviceCenter[1] = 0x39;
-	mess->serviceCenter[2] = 0x30;
-	mess->serviceCenter[3] = 0x33;
-	mess->serviceCenter[4] = 0x37;
-	mess->serviceCenter[5] = 0x30;
-	mess->serviceCenter[6] = 0x31;
-	mess->serviceCenter[7] = 0x31;
-	mess->serviceCenter[8] = 0x31;
-	mess->serviceCenter[9] = 0x31;
-	mess->serviceCenter[10] = 0x31;
+	i = 4;
+	while (i < smsc_length)
+	{
+		mess->serviceCenter[i] = smsc[i + 1];
+		if ( smsc[i] != 'f')
+		mess->serviceCenter[i+1] =smsc[i]; 	
+		i = i + 2;		
+	}
+
 
 	mess->unknown5 = 0x01; //01
 	mess->unknown6 = 0x03; //03
