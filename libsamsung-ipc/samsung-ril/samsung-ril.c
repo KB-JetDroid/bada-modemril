@@ -491,6 +491,7 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(PIN_STATUS, ipc_pin_status);
 	ipc_register_ril_cb(NETTEXT_INCOMING, ipc_incoming_sms);
 	ipc_register_ril_cb(NETTEXT_SEND_CALLBACK, ipc_sms_send_status);
+	ipc_register_ril_cb(SIM_IO_RESPONSE, ipc_sim_io_response);
 }
  
 void ril_data_init(void)

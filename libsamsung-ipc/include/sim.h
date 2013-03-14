@@ -126,6 +126,30 @@ typedef struct
 	uint8_t 	attempts;
 } __attribute__((__packed__))  pinStatus;
 
+typedef struct
+{
+	uint16_t 	simDataType;
+	uint8_t 	simInd1; //always 0x02
+	uint32_t 	unk0; //always 0x00
+	uint32_t 	dataCounter;
+	uint32_t 	unk1; //always 0x00
+	uint32_t 	unk2; //always 0x00
+	uint8_t 	simInd2; //always 0x01
+	uint16_t 	someType;
+	uint32_t 	unk3; //always 0x00
+	uint32_t 	unk4; //always 0x00
+	uint32_t 	unk5; //always 0x00
+	uint32_t 	unk6; //always 0x00
+	uint32_t 	unk7; //always 0x00
+} __attribute__((__packed__))  sim_data_request;
+
+typedef struct
+{
+	uint16_t 	simDataType;
+	uint32_t 	bufLen;
+	//uint8_t		*buf;
+} __attribute__((__packed__))  sim_data_response;
+
 
 void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame);
 void sim_parse_event(uint8_t* buf, uint32_t bufLen);
@@ -139,5 +163,9 @@ int sim_atk_open(void);
 void sim_open_to_modem(uint8_t hSim);
 void sim_status(int simCardStatus);
 void pin_status(uint8_t *pinStatus);
+
+void sim_get_data_from_modem(uint8_t hSim, sim_data_request *sim_data);
+void sim_data_request_to_modem(uint8_t hSim, uint16_t simDataType);
+void sim_io_response(uint8_t* buf);
 
 #endif
