@@ -47,8 +47,8 @@
  * TODO: Implement handling of all the SIM packets
  *
  */
-
-	
+sim_data_request sim_data;
+static uint32_t current_simDataCount;
 
 void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 {
@@ -145,6 +145,7 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 					default:
 						sim_parse_event(sim_packet.simBuf, simHeader->bufLen); 
 						break;
+					
 				}
 			}
 		}
@@ -156,10 +157,11 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 
     DEBUG_I("Leaving ipc_parse_sim");
 }
-
 void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 {
 	simEventPacketHeader* simEvent = (simEventPacketHeader*)(buf);
+	uint16_t current_simDataType;
+	uint16_t current_simSomeType;
 	switch(simEvent->eventType)
 	{
 		
@@ -170,8 +172,6 @@ void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 			if (simEvent->eventStatus == SIM_CARD_NOT_PRESENT) {
 				DEBUG_I("SIM_ABSENT");
 				sim_status(0);}
-//		if (simEvent->eventStatus == 0x0) {
-//			sim_status(0);}
 			break;
 		case SIM_EVENT_VERIFY_PIN1_IND:
 			DEBUG_I("SIM_PIN");
@@ -185,6 +185,46 @@ void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 				DEBUG_I("SIM_PIN");
 				sim_status(3);
 			}
+			break;
+		case SIM_EVENT_FILE_INFO:
+			DEBUG_I("SIM_EVENT_FILE_INFO");	
+			memcpy(&current_simDataCount, (buf + 30), 4);
+			DEBUG_I("%s : current_simDataCount = 0x%x", __func__, current_simDataCount);
+			if(current_simDataCount > 0) 
+			{	
+				memcpy(&current_simSomeType, (buf + 26), 2);
+				DEBUG_I("%s : current_simSomeType = 0x%x", __func__, current_simSomeType);
+					
+				memcpy(&current_simDataType, (buf + 15), 2);
+				DEBUG_I("%s : current_simDataType = 0x%x", __func__, current_simDataType);
+
+				sim_data.simDataType = current_simDataType;
+				sim_data.someType = current_simSomeType;
+				sim_data.simInd1 = 0x02;
+				sim_data.simInd2 = 0x01;
+				sim_data.unk0 = 0x00;
+				sim_data.unk1 = 0x00;
+				sim_data.unk2 = 0x00;
+				sim_data.unk3 = 0x00;
+				sim_data.unk4 = 0x00;
+				sim_data.unk5 = 0x00;
+				sim_data.unk6 = 0x00;
+				sim_data.unk7 = 0x00;
+				sim_data.dataCounter = 0x01;
+				DEBUG_I("Sent SIM Request type = 0x%x, packet no. %d, total packets = %d\n", sim_data.simDataType, sim_data.dataCounter, current_simDataCount);
+				
+				sim_get_data_from_modem(0x5, &sim_data);
+			}
+			break;
+		case SIM_EVENT_READ_FILE:
+			DEBUG_I("SIM_EVENT_READ_FILE");
+			sim_io_response(buf+sizeof(simEventPacketHeader));
+			sim_data.dataCounter += 1;
+			if (sim_data.dataCounter <= current_simDataCount)
+			{
+				DEBUG_I("Sent SIM Request type = 0x%x, packet no. %d, total packets = %d\n", sim_data.simDataType, sim_data.dataCounter, current_simDataCount);
+				sim_get_data_from_modem(0x5, &sim_data);
+			}		
 			break;
 		default:
 			DEBUG_I("SIM DEFAULT");
@@ -310,4 +350,37 @@ void pin_status(uint8_t *pinStatus)
 	ipc_invoke_ril_cb(PIN_STATUS, (void*)pinStatus);
 }
 
+void sim_get_data_from_modem(uint8_t hSim, sim_data_request *sim_data)
+{
+
+	ALOGE("%s: test me!", __func__);
+	//TODO: verify, create and initialize session, send real hSim
+	uint8_t *data;
+
+	data = malloc(sizeof(sim_data_request));
+	memcpy(data, sim_data, sizeof(sim_data_request));
+
+	DEBUG_I("Sending sim_get_data_from_modem\n");
+	sim_send_oem_data(hSim, 0x7, data, sizeof(sim_data_request));  //why it starts from 4? hell knows
+}
+
+void sim_data_request_to_modem(uint8_t hSim, uint16_t simDataType)
+{
+	ALOGE("%s: test me!", __func__);
+	//TODO: verify, create and initialize session, send real hSim
+	uint8_t *data;
+
+	data = malloc(sizeof(simDataType));
+	memcpy(data,&simDataType,sizeof(simDataType));
+
+	DEBUG_I("Sending sim_data_request_to_modem\n");
+
+	sim_send_oem_data(hSim, 0x3, data, sizeof(simDataType)); //why it starts from 4? hell knows
+	free(data);
+}
+
+void sim_io_response(uint8_t* buf)
+{
+	ipc_invoke_ril_cb(SIM_IO_RESPONSE, (void*)buf);
+}
 
