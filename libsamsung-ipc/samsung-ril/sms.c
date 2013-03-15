@@ -342,10 +342,8 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 	int pdu_hex_length;
 	void *data;
 	int length, i, numberLen, send_msg_type;
-	unsigned char *p;
+	unsigned char *p, *message_tmp;
 	char *a, *message;
-	message = NULL;
-
 
 	if (pdu == NULL || pdu_length <= 0 || smsc == NULL || smsc_length <= 0) {
 
@@ -529,25 +527,25 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 		DEBUG_I("%s : DCS - GSM7", __func__);
 		mess->messageDCS = 0x00; //GSM7
 		int k = (numberLen / 2) + 7;
-		message = malloc(((pdu_hex[(numberLen / 2) + 6]) * 2) + 1);
-		memset(message, 0, ((pdu_hex[(numberLen / 2) + 6]) * 2) + 1);
+
+		message_tmp = malloc(((pdu_hex[(numberLen / 2) + 6]) * 2) + 1);
+		memset(message_tmp, 0, ((pdu_hex[(numberLen / 2) + 6]) * 2) + 1);
 		for (i = 0; i < pdu_hex[(numberLen / 2) + 6]; i++)
-		{
-			asprintf(&a, "%02x", pdu_hex[i + k]);
-			DEBUG_I("%s : a = %s", __func__, a);							
-			strncat(message, a, 2);		
-		}
+			message_tmp[i] = pdu_hex[i + k];
+
+		DEBUG_I("%s : message_tmp = %s", __func__, message_tmp);
+
+		gsm72ascii(message_tmp, &message, pdu_hex[(numberLen / 2) + 6]);
 		DEBUG_I("%s : message = %s", __func__, message);
-		//FIXME: Add convert GSM7 to ASCII		
-		
+
+		for (i = 0; i < pdu_hex[(numberLen / 2) + 6]; i++)
+			mess->messageBody[i] = message[i];
+
+		free(message_tmp);
 	}
 
 	tapi_nettext_set_net_burst(0);
 	tapi_nettext_send((uint8_t *)mess);
-	if (mess->messageDCS == 0x00)
-	{
-		free(message);
-	}
 
 	free(mess);
 	free(pdu_hex);
