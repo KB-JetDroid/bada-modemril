@@ -74,6 +74,53 @@ void ipc_pin_status(void* data)
 	}
 }
 
+void ipc_sim_io_response(void* data)
+{
+	ALOGE("%s: test me!", __func__);
+
+	char *response, *a;
+	uint8_t *buf;
+	int i, dataLen;
+	RIL_SIM_IO_Response sim_io_response;
+	
+
+	sim_data_response* resp = (sim_data_response*)(data);
+
+	ALOGE("%s: FileId = %X", __func__, resp->simDataType);
+	ALOGE("%s: bufLen = %d", __func__, resp->bufLen);
+
+	buf = (uint8_t *)data + sizeof(sim_data_response);
+
+	dataLen = resp->bufLen;
+
+	if (resp->simDataType == 0x6f42 && ril_data.smsc_number[0] == 0)
+	{
+
+		for (i = dataLen - 15; i < dataLen - (int)buf[dataLen - 15]; i++)
+		{
+			asprintf(&a, "%02x", buf[i]);
+			strcat(ril_data.smsc_number,a);
+		}
+		DEBUG_I("%s : SMSC number: %s", __func__, ril_data.smsc_number);
+		return;				
+	}
+	
+	response = malloc((dataLen * 2) + 1);
+	memset(response, 0, (dataLen * 2) + 1);
+
+	for (i = 0; i < dataLen; i++)
+	{
+		asprintf(&a, "%02x", buf[i]);
+		strcat(response,a);
+	}
+	DEBUG_I("%s : SIM_IO_RESPONSE: %s", __func__, response);
+	sim_io_response.sw1 = 144;
+	sim_io_response.sw2 = 0;
+	sim_io_response.simResponse = response;
+//	ril_request_complete(token, RIL_E_SUCCESS, &sim_io_response, sizeof(sim_io_response));
+	free(response);
+}
+
 void ril_request_get_sim_status(RIL_Token t)
 {
 	ALOGE("%s: test me!", __func__);
@@ -162,6 +209,8 @@ void ril_state_update(ril_sim_state sim_state)
 	switch(sim_state) {
 		case SIM_STATE_READY:
 			radio_state = RADIO_STATE_SIM_READY;
+			//request SMSC number
+			sim_data_request_to_modem(4, 0x6f42);
 			break;
 		case SIM_STATE_NOT_READY:
 			radio_state = RADIO_STATE_SIM_NOT_READY;
