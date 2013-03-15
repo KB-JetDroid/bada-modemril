@@ -204,7 +204,7 @@ struct ril_data {
 	struct list_head *generic_responses;
 	struct list_head *requests;
 	int request_id;
-
+	char smsc_number[30];
 	struct ril_client *ipc_packet_client;
 	struct ril_client *srs_client;
 
@@ -257,6 +257,7 @@ void ril_plmn_split(char *plmn_data, char **plmn, unsigned int *mcc, unsigned in
 void ril_sim_init(void);
 void ipc_sim_status(void *data);
 void ipc_pin_status(void* data);
+void ipc_sim_io_response(void* data);
 void ril_request_get_sim_status(RIL_Token t);
 void ril_state_update(ril_sim_state sim_state);
 void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen);

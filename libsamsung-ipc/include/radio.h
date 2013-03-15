@@ -63,6 +63,7 @@ enum ipc_ril_cb_type {
     NETTEXT_SEND_CALLBACK,
     SIM_STATUS,
     PIN_STATUS,
+    SIM_IO_RESPONSE,
 	IPC_RIL_CB_LAST
 };
 

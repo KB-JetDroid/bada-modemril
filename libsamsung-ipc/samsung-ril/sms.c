@@ -258,9 +258,8 @@ void ril_request_send_sms(RIL_Token t, void *data, size_t length)
 
 	if(smsc == NULL) {
 		ALOGD("We have no SMSC, let's ask one");
-		smsc = (unsigned char *)"07919730071111F1"; //FIXME: Add smsc request
-		smsc_length = strlen((char *) smsc);
-		smsc = (unsigned char *) strdup((char *) smsc);
+		smsc_length = strlen((char *) ril_data.smsc_number);
+		smsc = (unsigned char *) strdup((char *) ril_data.smsc_number);
 		ril_request_send_sms_complete(t, pdu, pdu_length, smsc, smsc_length);
 		
 	} else {
@@ -343,10 +342,8 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 	int pdu_hex_length;
 	void *data;
 	int length, i, numberLen, send_msg_type;
-	unsigned char *p;
+	unsigned char *p, *message_tmp;
 	char *a, *message;
-	message = NULL;
-
 
 	if (pdu == NULL || pdu_length <= 0 || smsc == NULL || smsc_length <= 0) {
 
@@ -463,7 +460,16 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 
 	mess->Unknown2= 0x00; // 00
 	mess->Unknown3= 0x01; // 01
-	mess->numberType= 0x01; // 01 - international
+
+	if (pdu_hex[pdu_tp_da_index + 1] == 0x91)
+	{
+		DEBUG_I("%s : format phone number is international", __func__);
+		mess->numberType= 0x01; // 01 - international
+	}else{
+		DEBUG_I("%s : format phone number is national", __func__);
+		mess->numberType= 0x00; // 00 - national
+	}
+
 	mess->numberLength = numberLen;
 	if (numberLen % 2 > 0)
 		numberLen = numberLen + 1;		
@@ -484,22 +490,22 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 	mess->unknown4[5] = 0x01; //fake
 	mess->unknown4[6] = 0x01; //fake
 
+	if (smsc[smsc_length - 2] == 'f' || smsc[smsc_length - 2] == 'F')
+	{
+		mess->serviceCenterLength = smsc_length - 5;
+	}else{
+		mess->serviceCenterLength = smsc_length - 4;
+	}
 
-	//fake serviceCenter number  - 79037011111
-	//FIXME: add convert SMSC to SMS packet format
-	mess->serviceCenterLength = 0xB;
-	DEBUG_I("%s : smsc = %s", __func__, smsc);
-	mess->serviceCenter[0] = 0x37;
-	mess->serviceCenter[1] = 0x39;
-	mess->serviceCenter[2] = 0x30;
-	mess->serviceCenter[3] = 0x33;
-	mess->serviceCenter[4] = 0x37;
-	mess->serviceCenter[5] = 0x30;
-	mess->serviceCenter[6] = 0x31;
-	mess->serviceCenter[7] = 0x31;
-	mess->serviceCenter[8] = 0x31;
-	mess->serviceCenter[9] = 0x31;
-	mess->serviceCenter[10] = 0x31;
+	i = 4;
+	while (i < smsc_length)
+	{
+		mess->serviceCenter[i] = smsc[i + 1];
+		if ( smsc[i] != 'f')
+		mess->serviceCenter[i+1] =smsc[i]; 	
+		i = i + 2;		
+	}
+
 
 	mess->unknown5 = 0x01; //01
 	mess->unknown6 = 0x03; //03
@@ -530,25 +536,25 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 		DEBUG_I("%s : DCS - GSM7", __func__);
 		mess->messageDCS = 0x00; //GSM7
 		int k = (numberLen / 2) + 7;
-		message = malloc(((pdu_hex[(numberLen / 2) + 6]) * 2) + 1);
-		memset(message, 0, ((pdu_hex[(numberLen / 2) + 6]) * 2) + 1);
+
+		message_tmp = malloc(((pdu_hex[(numberLen / 2) + 6]) * 2) + 1);
+		memset(message_tmp, 0, ((pdu_hex[(numberLen / 2) + 6]) * 2) + 1);
 		for (i = 0; i < pdu_hex[(numberLen / 2) + 6]; i++)
-		{
-			asprintf(&a, "%02x", pdu_hex[i + k]);
-			DEBUG_I("%s : a = %s", __func__, a);							
-			strncat(message, a, 2);		
-		}
+			message_tmp[i] = pdu_hex[i + k];
+
+		DEBUG_I("%s : message_tmp = %s", __func__, message_tmp);
+
+		gsm72ascii(message_tmp, &message, pdu_hex[(numberLen / 2) + 6]);
 		DEBUG_I("%s : message = %s", __func__, message);
-		//FIXME: Add convert GSM7 to ASCII		
-		
+
+		for (i = 0; i < pdu_hex[(numberLen / 2) + 6]; i++)
+			mess->messageBody[i] = message[i];
+
+		free(message_tmp);
 	}
 
 	tapi_nettext_set_net_burst(0);
 	tapi_nettext_send((uint8_t *)mess);
-	if (mess->messageDCS == 0x00)
-	{
-		free(message);
-	}
 
 	free(mess);
 	free(pdu_hex);
