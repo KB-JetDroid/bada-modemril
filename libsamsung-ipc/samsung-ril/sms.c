@@ -460,7 +460,16 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 
 	mess->Unknown2= 0x00; // 00
 	mess->Unknown3= 0x01; // 01
-	mess->numberType= 0x01; // 01 - international
+
+	if (pdu_hex[pdu_tp_da_index + 1] == 0x91)
+	{
+		DEBUG_I("%s : format phone number is international", __func__);
+		mess->numberType= 0x01; // 01 - international
+	}else{
+		DEBUG_I("%s : format phone number is national", __func__);
+		mess->numberType= 0x00; // 00 - national
+	}
+
 	mess->numberLength = numberLen;
 	if (numberLen % 2 > 0)
 		numberLen = numberLen + 1;		
