@@ -449,113 +449,135 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 	pdu_end:
 
 	DEBUG_I("%s : pdu : %s", __func__, pdu);
-	DEBUG_I("%s : pdu_hex : %s", __func__, pdu_hex);
 
 	numberLen = (uint8_t)pdu_tp_da_len;	
 
 	mess = (tapiNettextOutgoingMessage *)malloc(sizeof(tapiNettextOutgoingMessage));
-	memset(mess, 0, sizeof(tapiNettextOutgoingMessage));		
-	for (i = 0; i < 7; i++) {
-	mess->Unknown1[i] = 0x0;}
+	memset(mess, 0, sizeof(tapiNettextOutgoingMessage));
 
-	mess->Unknown2= 0x00; // 00
-	mess->Unknown3= 0x01; // 01
+	mess->NPI_ToNumber= 0x01; // 01
 
 	if (pdu_hex[pdu_tp_da_index + 1] == 0x91)
 	{
 		DEBUG_I("%s : format phone number is international", __func__);
-		mess->numberType= 0x01; // 01 - international
+		mess->TON_ToNumber= 0x01; // 01 - international
 	}else{
 		DEBUG_I("%s : format phone number is national", __func__);
-		mess->numberType= 0x00; // 00 - national
+		mess->TON_ToNumber= 0x00; // 00 - national
 	}
 
-	mess->numberLength = numberLen;
+	mess->lengthToNumber = numberLen;
+
 	if (numberLen % 2 > 0)
-		numberLen = numberLen + 1;		
-	i = 0;	
+		numberLen = numberLen + 1;
+		
+	i = 0;
+	
 	while (i < numberLen)
 	{
-		mess->phoneNumber[i] = pdu[i + 9];
+		mess->szToNumber[i] = pdu[i + 9];
 		if ( pdu[i + 8] != 'f')
-		mess->phoneNumber[i+1] =pdu[i + 8]; 	
+		mess->szToNumber[i+1] =pdu[i + 8]; 	
 		i = i + 2;		
 	}
 
-	mess->unknown4[0] = 0xFF; //fake
-	mess->unknown4[1] = 0x46; //fake
-	mess->unknown4[2] = 0x3A; //fake
-	mess->unknown4[3] = 0x51; //fake
-	mess->unknown4[4] = 0x00; //fake
-	mess->unknown4[5] = 0x01; //fake
-	mess->unknown4[6] = 0x01; //fake
+
+	mess->timestamp = time(NULL);
+
+	mess->unknown2 = 0x00; 
+
+	mess->NPI_SMSC = 0x01;
+	mess->TON_SMSC = 0x01;
 
 	if (smsc[smsc_length - 2] == 'f' || smsc[smsc_length - 2] == 'F')
 	{
-		mess->serviceCenterLength = smsc_length - 5;
-	}else{
-		mess->serviceCenterLength = smsc_length - 4;
+		mess->lengthSMSC = smsc_length - 5;
+	}
+	else
+	{
+		mess->lengthSMSC = smsc_length - 4;
 	}
 
 	i = 4;
+
 	while (i < smsc_length)
 	{
-		mess->serviceCenter[i] = smsc[i + 1];
+		mess->SMSC[i - 4] = smsc[i + 1];
 		if ( smsc[i] != 'f')
-		mess->serviceCenter[i+1] =smsc[i]; 	
+		mess->SMSC[i - 3] =smsc[i]; 	
 		i = i + 2;		
 	}
 
+	mess->unknown4 = 0x0301; 
 
-	mess->unknown5 = 0x01; //01
-	mess->unknown6 = 0x03; //03
-	for (i = 0; i < 6; i++) {
-	mess->unknown7[i] = 0x00; }// all is NULL
-	mess->unknown8 = 0xFF; //FF
-	for (i = 0; i < 17; i++) {
-	mess->unknown9[i] = 0x00;}// all is NULL 
-	mess->unknown10 = 0x04; //04	
-	mess->unknown11 = 0x04; //04
-	mess->unknown12[0] = 0x00;
-	mess->unknown12[1] = 0x00;
+	mess->validityValue = 0xFF; //FF
 
-	if (send_msg_type == 0)
+	mess->classType = 0x04; //04	
+	mess->unknown6 = 0x04; //04
+
+	if (send_msg_type == 1)
+	{
+		mess->nUDH = 0x01; //multipart SMS
+		mess->bUDHI = 0x01;
+		mess->messageLength = pdu_hex[(numberLen / 2) + 6] - 1;
+	}
+	else
 		mess->messageLength = pdu_hex[(numberLen / 2) + 6];
-	else	
-		mess->messageLength = pdu_hex[(numberLen / 2) + 6];
-
+	
 	if (pdu_hex[(numberLen / 2) + 5] == 8)
 	{
 		DEBUG_I("%s : DCS - Unicode", __func__);
-		mess->messageDCS = 0x03; //Unicode
-		int k = (numberLen / 2) + 7;
-		for (i = 0; i < pdu_hex[(numberLen / 2) + 6]; i++)
+		mess->alphabetType = 0x03; //Unicode
+		if (send_msg_type == 0)
+		{
+			int k = (numberLen / 2) + 7;
+			for (i = 0; i < pdu_hex[(numberLen / 2) + 6]; i++)
 				mess->messageBody[i] = pdu_hex[i + k];
-			
+		}
+		else 
+		{
+			int k = (numberLen / 2) + 8;
+			for (i = 0; i < pdu_hex[(numberLen / 2) + 6] - 1; i++)
+				mess->messageBody[i] = pdu_hex[i + k];
+		}	
 	}else{
 		DEBUG_I("%s : DCS - GSM7", __func__);
-		mess->messageDCS = 0x00; //GSM7
+		mess->alphabetType = 0x00; //GSM7
 		int k = (numberLen / 2) + 7;
 
 		message_tmp = malloc(((pdu_hex[(numberLen / 2) + 6]) * 2) + 1);
 		memset(message_tmp, 0, ((pdu_hex[(numberLen / 2) + 6]) * 2) + 1);
-		for (i = 0; i < pdu_hex[(numberLen / 2) + 6]; i++)
-			message_tmp[i] = pdu_hex[i + k];
-
-		DEBUG_I("%s : message_tmp = %s", __func__, message_tmp);
+			for (i = 0; i < pdu_hex[(numberLen / 2) + 6]; i++)
+				message_tmp[i] = pdu_hex[i + k];
 
 		gsm72ascii(message_tmp, &message, pdu_hex[(numberLen / 2) + 6]);
-		DEBUG_I("%s : message = %s", __func__, message);
 
-		for (i = 0; i < pdu_hex[(numberLen / 2) + 6]; i++)
-			mess->messageBody[i] = message[i];
+
+		DEBUG_I("%s : message = %s", __func__, message);
+		
+		if (send_msg_type == 0)
+		{
+
+			for (i = 0; i < pdu_hex[(numberLen / 2) + 6]; i++)
+				mess->messageBody[i] = message[i];
+		}
+		else
+		{
+			mess->messageLength = mess->messageLength - 1;
+			for (i = 0; i < pdu_hex[(numberLen / 2) + 6] - 2; i++)
+				mess->messageBody[i] = message[i + 2];
+			for (i = 0; i < 5; i++)
+				mess->messageBody[i] = pdu_hex[(numberLen / 2) + 8 + i];
+
+		}
 
 		free(message_tmp);
+
 	}
 
 	tapi_nettext_set_net_burst(0);
 	tapi_nettext_send((uint8_t *)mess);
-
+	
 	free(mess);
 	free(pdu_hex);
 

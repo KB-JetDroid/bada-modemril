@@ -74,26 +74,50 @@ typedef struct {
 } __attribute__((__packed__)) tapiNettextMultiInfo;
 
 typedef struct {
-	uint32_t Unknown1[7]; // all is NULL
-	uint8_t Unknown2; // 00
-	uint8_t Unknown3; // 01
-	uint8_t numberType; // 00 -national, 01 - international
-	uint8_t numberLength;
-	char phoneNumber [24]; 
-	uint8_t unknown4[7]; 
-	uint8_t serviceCenterLength;
-	char serviceCenter [48]; 
-	uint8_t unknown5; //01
-	uint8_t unknown6; //03
-	uint8_t unknown7[6];// all is NULL
-	uint8_t unknown8; //FF
-	uint8_t unknown9[17];// all is NULL 
-	uint8_t messageDCS;
-	uint8_t unknown10; //04	
-	uint8_t unknown11; //04
-	uint32_t unknown12[2];	
+	uint8_t msgType;
+	uint8_t bearer;
+	uint8_t unknown0[2];
+	/* Here starts 0x8C bytes block memcopied from bada internal struct from offset 0x10 */
+
+	/* Info about sending number */
+	uint8_t unknown1; // 00
+	uint8_t NPI_FromNumber; /* Numbering Plan Identification */
+	uint8_t TON_FromNumber; /* Type Of Number */
+	uint8_t lengthFromNumber; /* Length of Number */
+	char szFromNumber[21];
+	
+	/* Info about receiving number */
+	uint8_t NPI_ToNumber; /* Numbering Plan Identification */
+	uint8_t TON_ToNumber; /* Type Of Number */
+	uint8_t lengthToNumber; /* Length of Number */
+	char szToNumber [24]; 
+
+	uint32_t timestamp; /*  TP-Service-Centre-Time-Stamp (TP-SCTS) */
+	uint8_t unknown2; // 00
+	uint8_t NPI_SMSC; /* Numbering Plan Identification */
+	uint8_t TON_SMSC; /* Type Of Number */
+	uint8_t lengthSMSC; /* Length of Number */
+	char SMSC [28];
+	uint32_t replyPath; /* TP-Reply-Path (TP-RP) */
+	uint32_t bUDHI; /*TP-User-Data-Header-Indicator (TP-UDHI) */
+	uint32_t bSRR; /* TP-Status-Report-Request (TP-SRR)*/
+	uint32_t unknown3; 
+	uint32_t timestamp2; /* used only in SMS-STATUS-REPORT PDU  */ 
+	uint32_t unknown4;
+	uint32_t validityType; /*TP-Validity-Period-Format (TP-VPF) */
+	uint32_t validityValue; /* TP-Validy-Period TP-VP) */
+	uint8_t unknown5[8];
+	uint32_t bMsgIndActive;
+	uint8_t codingGroupType;
+	uint8_t waitingType;
+	uint8_t alphabetType; /* TP-Data-Coding-Scheme (TP-DCS) */
+	uint8_t classType; //04
+	uint32_t unknown6; //04	
+	/* end of 0x8C memcpied block */
+	uint32_t unknown7; /* Value from nettextinfo offset 0x4 */
+	uint8_t nUDH;
 	uint8_t messageLength;
-	uint8_t messageBody[161]; 
+	uint8_t messageBody[160]; 
 } __attribute__((__packed__)) tapiNettextOutgoingMessage;
 
 typedef struct {
