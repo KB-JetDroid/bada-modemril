@@ -336,7 +336,7 @@ int ril_request_send_sms_next(void)
  */
 void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsigned char *smsc, int smsc_length)
 {
-	tapiNettextOutgoingMessage* mess;
+	tapiNettextInfo* mess;
 
 	unsigned char *pdu_hex;
 	int pdu_hex_length;
@@ -452,8 +452,8 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 
 	numberLen = (uint8_t)pdu_tp_da_len;	
 
-	mess = (tapiNettextOutgoingMessage *)malloc(sizeof(tapiNettextOutgoingMessage));
-	memset(mess, 0, sizeof(tapiNettextOutgoingMessage));
+	mess = (tapiNettextInfo *)malloc(sizeof(tapiNettextInfo));
+	memset(mess, 0, sizeof(tapiNettextInfo));
 
 	mess->NPI_ToNumber= 0x01; // 01
 
@@ -773,7 +773,6 @@ void ipc_incoming_sms(void* data)
 	char *message_tmp, *number_tmp;
 	uint8_t *mess;
 	unsigned int i , len_sca, len_oa, message_length;
-	char n;
 
 	number_tmp = NULL;
 	message_tmp = NULL;
@@ -784,9 +783,9 @@ void ipc_incoming_sms(void* data)
 	//SCA
 	//Convert nettextInfo->serviceCenter to SCA
 	
-	number_smsc = nettextInfo->serviceCenter;
-	if ((strlen(number_smsc) % 2) > 0) {
-		strcat(number_smsc, "F");}
+	number_smsc = nettextInfo->SMSC;
+	if ((strlen(number_smsc) % 2) > 0) 
+		strcat(number_smsc, "F");
 
 	DEBUG_I("%s : number_smsc = %s", __func__, number_smsc);	
 
@@ -842,25 +841,45 @@ void ipc_incoming_sms(void* data)
 	TP-RP:    00
 	TP-UDHI:  00		*/
 
-	pdu_type = "24";
+	if (nettextInfo->nUDH == 1 && nettextInfo->alphabetType == 3)
+		pdu_type = "44";
+	else 
+		pdu_type = "04";
 	strcat (pdu, pdu_type);
 
 	// TP-OA: TP- Originating-Address
 	//Convert nettextInfo->phoneNumber to TP-OA
 
-	number_oa = nettextInfo->phoneNumber;
+	number_oa = nettextInfo->szFromNumber;
 
 	DEBUG_I("%s : number_oa = %s", __func__, number_oa);
 
-	n = number_oa[0];	
+	if (nettextInfo->TON_FromNumber == 5 )
+	{	
+		ascii2gsm7(number_oa, (unsigned char **)&number_tmp, strlen(number_oa));
+		DEBUG_I("%s : number_tmp = %s", __func__, number_tmp);
 
-	if (n >= '0' && n <= '9')
+		number2 = malloc((strlen(number_tmp)* 2) + 1);
+		memset(number2, 0, (strlen(number_tmp)* 2) + 1);
+		
+		bin2hex((unsigned char *)number_tmp, strlen(number_tmp), number2);
+		DEBUG_I("%s : number2 = %s", __func__, number2);
+
+		tp_oa = malloc(strlen(number2)  + 5);
+		memset(tp_oa, 0, strlen(number2) + 5);
+
+		asprintf(&len_char, "%02X", strlen(number2));
+		strcat(tp_oa, len_char);
+		strcat(tp_oa, "D0");
+		strcat(tp_oa, number2);
+		DEBUG_I("%s : tp_oa = %s", __func__, tp_oa);		
+	}	
+	else
 	{
 		len_oa =  strlen(number_oa);
 
-		if ((strlen(number_oa) % 2) > 0) {
-			strcat(number_oa, "F");}
-
+		if ((strlen(number_oa) % 2) > 0) 
+			strcat(number_oa, "F");
 
 		DEBUG_I("%s : number_oa = %s", __func__, number_oa);	
 
@@ -885,30 +904,13 @@ void ipc_incoming_sms(void* data)
 		tp_oa = malloc(strlen(number2) + 5);
 		memset(tp_oa, 0, strlen(number2) + 5);
 		asprintf(&len_char, "%02X", len_oa);
-		strcat(tp_oa, len_char);	
-		strcat(tp_oa, "91");
+		strcat(tp_oa, len_char);
+			if (nettextInfo->TON_FromNumber == 1 )	
+				strcat(tp_oa, "91");
+			else
+				strcat(tp_oa, "81");
 		strcat(tp_oa, number2);
 		DEBUG_I("%s : tp_oa = %s", __func__, tp_oa);
-
-	}else{
-		
-		ascii2gsm7(number_oa, (unsigned char **)&number_tmp, strlen(number_oa));
-		DEBUG_I("%s : number_tmp = %s", __func__, number_tmp);
-
-		number2 = malloc((strlen(number_tmp)* 2) + 1);
-		memset(number2, 0, (strlen(number_tmp)* 2) + 1);
-		
-		bin2hex((unsigned char *)number_tmp, strlen(number_tmp), number2);
-		DEBUG_I("%s : number2 = %s", __func__, number2);
-
-		tp_oa = malloc(strlen(number2)  + 5);
-		memset(tp_oa, 0, strlen(number2) + 5);
-
-		asprintf(&len_char, "%02X", strlen(number2));
-		strcat(tp_oa, len_char);
-		strcat(tp_oa, "D0");
-		strcat(tp_oa, number2);
-		DEBUG_I("%s : tp_oa = %s", __func__, tp_oa);		
 	}
 
 	strcat (pdu, tp_oa);
@@ -928,66 +930,67 @@ void ipc_incoming_sms(void* data)
 
 	//TP-SCTS: TP-Service-Centre-Time-Stamp
  
-	//FIXME: now we use fake value, need to find this in sms packet	
+	//FIXME: now we use fake value, need to convert nettextInfo->timestamp	
+ 
 	tp_scts = "11101131521400";
 
-
-	if (nettextInfo->nUDH == 0)
-	{
-		tapiNettextSingleInfo* messageInfo = (tapiNettextSingleInfo*)((uint8_t *)data + sizeof(tapiNettextInfo));
-
-		message_length = messageInfo->messageLength;
-		mess = messageInfo->messageBody;
-	}else{
-		tapiNettextMultiInfo* messageInfo = (tapiNettextMultiInfo*)((uint8_t *)data + sizeof(tapiNettextInfo));
-	
-		message_length = strlen((char *)messageInfo->messageBody);
-		mess = messageInfo->messageBody;
-	}
-
-	//TP-UDL:TP-User-Data-Length
-
-	asprintf(&tp_udl, "%02X", message_length);
-	DEBUG_I("%s : tp_udl = %s", __func__, tp_udl);
 
 	//TP-UD: TP-User Data
 	//Convert messageBody to TP-UD
 
-	message = malloc((message_length * 2) + 1);
-	memset(message, 0, (message_length * 2) + 1);
+	mess = nettextInfo->messageBody;
+	message_length = nettextInfo->messageLength;
+
+	message = malloc((message_length * 2) + 3);
+	memset(message, 0, (message_length * 2) + 3);
 
 	i = 0;
-	while (i < message_length)
+
+	if (nettextInfo->nUDH == 1)
+	{
+		strcat(message, "05");
+		message_length += 1; 
+	}
+		
+	while (i < nettextInfo->messageLength)
 	{
 		sprintf(c, "%02X",mess[i]);
 		strcat(message, c);
 		i++;
 	}
-	if (message[0] == 0x30 && message[1] == 0x34) 
+
+	if (nettextInfo->alphabetType == 3) 
 	{
 		/*TP-DCS: TP-Data-Coding-Scheme */
 		tp_dcs = "08"; //Unicode
 		DEBUG_I("%s : TP-DCS = Unicode", __func__);
 
-		tp_ud = malloc(strlen(message) + 1);
-		memset(tp_ud, 0, strlen(message) + 1);
+		tp_ud = malloc(strlen(message) + 2);
+		memset(tp_ud, 0, strlen(message) + 2);
 
 		strcat(tp_ud,message);
-		DEBUG_I("%s : tp_ud = %s", __func__, tp_ud);
 	}else{
 		/*TP-DCS: TP-Data-Coding-Scheme */
 		tp_dcs = "00"; //gsm7
 		DEBUG_I("%s : TP-DCS = GSM7", __func__);
 
-		ascii2gsm7((char *)mess, (unsigned char **)&message_tmp, message_length);
-		DEBUG_I("%s : message_tmp = %s", __func__, message_tmp);
+		if (nettextInfo->nUDH == 1)
+			ascii2gsm7((char *)(mess + 5), (unsigned char **)&message_tmp, message_length - 6);
+		else
+			ascii2gsm7((char *)mess, (unsigned char **)&message_tmp, message_length);
 
 		tp_ud = malloc((strlen(message_tmp) * 2) + 1);
 		memset(tp_ud, 0, (strlen(message_tmp) * 2) + 1);
 
-		bin2hex((unsigned char *)message_tmp, strlen(message_tmp), tp_ud);
+		bin2hex((unsigned char *)message_tmp, strlen(message_tmp), tp_ud);		
 		DEBUG_I("%s : tp_ud = %s", __func__, tp_ud);
 	}
+
+
+	//TP-UDL:TP-User-Data-Length
+
+	asprintf(&tp_udl, "%02X", message_length);
+	DEBUG_I("%s : tp_udl = %s", __func__, tp_udl);
 
 	strcat (pdu, tp_dcs);
 	strcat (pdu, tp_scts);

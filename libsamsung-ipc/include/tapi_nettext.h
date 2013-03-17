@@ -47,18 +47,6 @@ typedef struct {
 } __attribute__((__packed__)) tapi_nettext_cb_settings;
 
 typedef struct {
-	uint8_t msgType; 
-	uint8_t bearer; 
-	uint8_t unknown1[6]; 
-	char phoneNumber [48]; 
-	uint8_t unknown2[8]; 
-	char serviceCenter [48]; 
-	uint8_t unknown3[32]; 
-	uint32_t unknown4; 
-	uint8_t nUDH; 
-} __attribute__((__packed__)) tapiNettextInfo;
-
-typedef struct {
 	uint8_t messageLength; 
 	uint8_t messageBody[160];
 } __attribute__((__packed__)) tapiNettextSingleInfo;
@@ -118,7 +106,7 @@ typedef struct {
 	uint8_t nUDH;
 	uint8_t messageLength;
 	uint8_t messageBody[160]; 
-} __attribute__((__packed__)) tapiNettextOutgoingMessage;
+} __attribute__((__packed__)) tapiNettextInfo;
 
 typedef struct {
 	uint32_t unknown1; 
