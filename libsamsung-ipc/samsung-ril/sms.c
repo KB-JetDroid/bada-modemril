@@ -770,9 +770,9 @@ void ipc_incoming_sms(void* data)
 	char *pdu_type, *tp_pid, *tp_dcs, *tp_scts, *tp_udl, *tp_ud, *message; 
 	char pdu[400] = {0}, c[3] = {0};
 	char *number, *number2, *len_char;
-	char *message_tmp, *number_tmp;
+	char *message_tmp, *number_tmp, *message_bin;
 	uint8_t *mess;
-	unsigned int i , len_sca, len_oa, message_length;
+	unsigned int i , len_sca, len_oa, message_length, len_mess;
 
 	number_tmp = NULL;
 	message_tmp = NULL;
@@ -841,7 +841,7 @@ void ipc_incoming_sms(void* data)
 	TP-RP:    00
 	TP-UDHI:  00		*/
 
-	if (nettextInfo->nUDH == 1 && nettextInfo->alphabetType == 3)
+	if (nettextInfo->nUDH == 1)
 		pdu_type = "44";
 	else 
 		pdu_type = "04";
@@ -949,7 +949,7 @@ void ipc_incoming_sms(void* data)
 	if (nettextInfo->nUDH == 1)
 	{
 		strcat(message, "05");
-		message_length += 1; 
+		message_length += 2; 
 	}
 		
 	while (i < nettextInfo->messageLength)
@@ -975,17 +975,43 @@ void ipc_incoming_sms(void* data)
 		DEBUG_I("%s : TP-DCS = GSM7", __func__);
 
 		if (nettextInfo->nUDH == 1)
-			ascii2gsm7((char *)(mess + 5), (unsigned char **)&message_tmp, message_length - 6);
+		{
+			message_bin = malloc(strlen(message) + 3);
+			memset(message_bin, 0, strlen(message) + 3);
+
+			strcat(message_bin, "0000000");
+			strcat(message_bin, (char *)(mess + 5));
+
+			len_mess = ascii2gsm7(message_bin, (unsigned char **)&message_tmp, strlen(message) + 2);
+
+			tp_ud = malloc(len_mess  + 1);
+			memset(tp_ud, 0, len_mess + 1);
+
+			bin2hex((unsigned char *)(message_tmp), len_mess / 2, tp_ud);
+			
+			i = 0;
+			while (i < 12)
+			{
+				tp_ud[i] = message[i];
+				i++;
+			}
+
+			if (message_bin != NULL)	
+				free (message_bin);
+
+		}	
 		else
+		{
 			ascii2gsm7((char *)mess, (unsigned char **)&message_tmp, message_length);
 
-		tp_ud = malloc((strlen(message_tmp) * 2) + 1);
-		memset(tp_ud, 0, (strlen(message_tmp) * 2) + 1);
+			tp_ud = malloc((strlen(message_tmp) * 2) + 1);
+			memset(tp_ud, 0, (strlen(message_tmp) * 2) + 1);
 
-		bin2hex((unsigned char *)message_tmp, strlen(message_tmp), tp_ud);		
-		DEBUG_I("%s : tp_ud = %s", __func__, tp_ud);
+			bin2hex((unsigned char *)message_tmp, strlen(message_tmp), tp_ud);		
+		}
 	}
 
+	DEBUG_I("%s : tp_ud = %s", __func__, tp_ud);
 
 	//TP-UDL:TP-User-Data-Length
 
