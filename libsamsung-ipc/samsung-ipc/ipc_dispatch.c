@@ -1,9 +1,8 @@
 /**
  * This file is part of libsamsung-ipc.
  *
- * Copyright (C) 	2011-2012 KB <kbjetdroid@gmail.com>
- * 					2011-2012 Dominik Marszk <dmarszk@gmail.com>
- *
+ * Copyright (C) 	2011-2013 KB <kbjetdroid@gmail.com>
+ * 					2011-2013 Dominik Marszk <dmarszk@gmail.com>
  *
  * libsamsung-ipc is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,6 +56,9 @@ void ipc_dispatch(struct ipc_client *client, struct modem_io *ipc_frame)
         		sim_open_to_modem(0);
         	}*/
         break;
+		case FIFO_PKT_SOUND:
+            ipc_parse_sound(client, ipc_frame);
+		break;
         case FIFO_PKT_DVB_H_DebugLevel:
             ipc_parse_dbg_level(client, ipc_frame);
         break;
