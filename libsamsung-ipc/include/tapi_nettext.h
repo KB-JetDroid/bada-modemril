@@ -100,9 +100,9 @@ typedef struct {
 	uint8_t waitingType;
 	uint8_t alphabetType; /* TP-Data-Coding-Scheme (TP-DCS) */
 	uint8_t classType; //04
-	uint32_t unknown6; //04	
+	uint32_t time_zone; /* part of TP-SCTS */	
 	/* end of 0x8C memcpied block */
-	uint32_t unknown7; /* Value from nettextinfo offset 0x4 */
+	uint32_t unknown6; /* Value from nettextinfo offset 0x4 */
 	uint8_t nUDH;
 	uint8_t messageLength;
 	uint8_t messageBody[160]; 

@@ -484,8 +484,6 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 
 	mess->timestamp = time(NULL);
 
-	mess->unknown2 = 0x00; 
-
 	mess->NPI_SMSC = 0x01;
 	mess->TON_SMSC = 0x01;
 
@@ -513,7 +511,6 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 	mess->validityValue = 0xFF; //FF
 
 	mess->classType = 0x04; //04	
-	mess->unknown6 = 0x04; //04
 
 	if (send_msg_type == 1)
 	{
@@ -773,6 +770,8 @@ void ipc_incoming_sms(void* data)
 	char *message_tmp, *number_tmp, *message_bin;
 	uint8_t *mess;
 	unsigned int i , len_sca, len_oa, message_length, len_mess;
+	char buf[50];
+	time_t l_time;
 
 	number_tmp = NULL;
 	message_tmp = NULL;
@@ -929,12 +928,31 @@ void ipc_incoming_sms(void* data)
 	strcat (pdu, tp_pid);
 
 	//TP-SCTS: TP-Service-Centre-Time-Stamp
- 
-	//FIXME: now we use fake value, need to convert nettextInfo->timestamp	
- 
-	tp_scts = "11101131521400";
+	//Convert nettextInfo->timestamp and nettextInfo->time_zone to TP-SCTS
 
+	tp_scts = malloc(15);
+	memset(tp_scts, 0, 15);
+	
+	l_time = nettextInfo->timestamp;
 
+	strftime(buf, sizeof(buf), "%y%m%d%H%M%S", gmtime(&l_time));
+
+	asprintf(&a, "%02d", nettextInfo->time_zone);
+
+	strcat(buf, a);
+
+	i = 0;
+	while (i < 14) 
+	{
+		a = &(buf[i+1]);
+		strncat(tp_scts, a, 1);
+		b = &(buf[i]);
+		strncat(tp_scts, b, 1);
+		i = i + 2;
+	}
+
+	DEBUG_I("%s : timestamp = %s", __func__, tp_scts);	
+ 
 	//TP-UD: TP-User Data
 	//Convert messageBody to TP-UD
 
@@ -1032,6 +1050,9 @@ void ipc_incoming_sms(void* data)
 
 	if (tp_ud != NULL)	
 		free (tp_ud);
+
+	if (tp_scts != NULL)	
+		free (tp_scts);
 
 }
 
