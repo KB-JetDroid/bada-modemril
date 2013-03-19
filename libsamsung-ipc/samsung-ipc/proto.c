@@ -63,38 +63,38 @@ void ipc_parse_proto(struct ipc_client* client, struct modem_io *ipc_frame)
 
     switch (rx_header->type)
     {
-	case PROTO_PACKET_ID_STARTUP:
-		DEBUG_I("PROTO_PACKET_ID_STARTUP packet received");
+	case PROTO_PACKET_STARTUP:
+		DEBUG_I("PROTO_PACKET_STARTUP packet received");
 		break;
-	case PROTO_PACKET_ID_CLEANUP:
-		DEBUG_I("PROTO_PACKET_ID_CLEANUP packet received");
+	case PROTO_PACKET_CLEANUP:
+		DEBUG_I("PROTO_PACKET_CLEANUP packet received");
 		break;
-	case PROTO_PACKET_ID_STARTNETWORK:
-		DEBUG_I("PROTO_PACKET_ID_STARTNETWORK packet received");
+	case PROTO_PACKET_START_NETWORK:
+		DEBUG_I("PROTO_PACKET_STARTNETWORK packet received");
 		break;
-	case PROTO_PACKET_ID_STOPNETWORK:
-		DEBUG_I("PROTO_PACKET_ID_STOPNETWORK packet received");
+	case PROTO_PACKET_STOP_NETWORK:
+		DEBUG_I("PROTO_PACKET_STOPNETWORK packet received");
 		break;
-	case PROTO_PACKET_ID_STARTINGNETWORKIND:
-		DEBUG_I("PROTO_PACKET_ID_STARTINGNETWORKIND packet received");
+	case PROTO_PACKET_STARTING_NETWORK_IND:
+		DEBUG_I("PROTO_PACKET_STARTINGNETWORKIND packet received");
 		break;
-	case PROTO_PACKET_ID_STARTNETWORKCNF:
-		DEBUG_I("PROTO_PACKET_ID_STARTNETWORKCNF packet received");
+	case PROTO_PACKET_START_NETWORK_CNF:
+		DEBUG_I("PROTO_PACKET_STARTNETWORKCNF packet received");
 		break;
-	case PROTO_PACKET_ID_STARTNETWORKIND:
-		DEBUG_I("PROTO_PACKET_ID_STARTNETWORKIND packet received");
+	case PROTO_PACKET_START_NETWORK_IND:
+		DEBUG_I("PROTO_PACKET_STARTNETWORKIND packet received");
 		break;
-	case PROTO_PACKET_ID_STOPNETWORKCNF:
-		DEBUG_I("PROTO_PACKET_ID_STOPNETWORKCNF packet received");
+	case PROTO_PACKET_STOP_NETWORK_CNF:
+		DEBUG_I("PROTO_PACKET_STOPNETWORKCNF packet received");
 		break;
-	case PROTO_PACKET_ID_STOPNETWORKIND:
-		DEBUG_I("PROTO_PACKET_ID_STOPNETWORKIND packet received");
+	case PROTO_PACKET_STOP_NETWORK_IND:
+		DEBUG_I("PROTO_PACKET_STOPNETWORKIND packet received");
 		break;
-	case PROTO_PACKET_ID_SUSPENDNETWORKIND:
-		DEBUG_I("PROTO_PACKET_ID_SUSPENDNETWORKIND packet received");
+	case PROTO_PACKET_SUSPEND_NETWORK_IND:
+		DEBUG_I("PROTO_PACKET_SUSPENDNETWORKIND packet received");
 		break;
-	case PROTO_PACKET_ID_RESUMENETWORKIND:
-		DEBUG_I("PROTO_PACKET_ID_RESUMENETWORKIND packet received");
+	case PROTO_PACKET_RESUME_NETWORK_IND:
+		DEBUG_I("PROTO_PACKET_RESUMENETWORKIND packet received");
 		break;
 	default :
     	DEBUG_I("Unknown Proto Packet");
@@ -129,7 +129,7 @@ void proto_send_packet(struct protoPacket* protoReq)
 void proto_startup(void)
 {
 	struct protoPacket pkt;
-	pkt.header.type = PROTO_PACKET_ID_STARTUP;
+	pkt.header.type = PROTO_PACKET_STARTUP;
 	pkt.header.apiId = 0;
 	pkt.buf = NULL;
 	pkt.bufLen = 0;
