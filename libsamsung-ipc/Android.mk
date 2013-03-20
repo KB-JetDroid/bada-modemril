@@ -20,6 +20,7 @@ samsung-ipc_files := \
 	samsung-ipc/drv.c \
 	samsung-ipc/tm.c \
 	samsung-ipc/syssec.c \
+	samsung-ipc/sound.c \
 	samsung-ipc/tapi.c \
 	samsung-ipc/tapi_call.c \
 	samsung-ipc/tapi_nettext.c \

@@ -63,6 +63,9 @@ void tapi_network_parser(uint16_t tapiNetType, uint32_t tapiNetLength, uint8_t *
 	case TAPI_NETWORK_CELL_INFO:
 		tapi_network_cell_info(tapiNetLength, tapiNetData);
 		break;
+	case TAPI_NETWORK_NITZ_INFO_IND:
+		tapi_network_nitz_info_ind(tapiNetLength, tapiNetData);
+		break;
     default:
 		DEBUG_I("TapiNetwork packet type 0x%X is not yet handled, len = 0x%x", tapiNetType, tapiNetLength);
     	break;
@@ -163,4 +166,9 @@ void tapi_network_cell_info(uint32_t tapiNetLength, uint8_t *tapiNetData)
 	DEBUG_I("tapi_network_cell_info: cbchStatus:%d, bCellChanged:%d, bRACChanged:%d, bLACChanged:%d, bPLMNChanged:%d", cellInfo->cbchStatus, cellInfo->bCellChanged, cellInfo->bRACChanged, cellInfo->bLACChanged, cellInfo->bPLMNChanged);
 	DEBUG_I("tapi_network_cell_info: cellId:%x %x %x %x, racId:%x, ladId:%x %x, plmnId:%x %x %x\n", cellInfo->cellId[0], cellInfo->cellId[1], cellInfo->cellId[2], cellInfo->cellId[3], cellInfo->racId, cellInfo->lacId[0], cellInfo->lacId[1], cellInfo->plmnId[0], cellInfo->plmnId[1], cellInfo->plmnId[2]);
 	ipc_invoke_ril_cb(NETWORK_CELL_INFO, (void*)cellInfo);
+}
+
+void tapi_network_nitz_info_ind(uint32_t tapiNetLength, uint8_t *tapiNetData)
+{
+	ipc_invoke_ril_cb(NETWORK_NITZ_INFO_IND, (void*)tapiNetData);
 }
