@@ -171,7 +171,8 @@ void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 		case SIM_EVENT_SIM_OPEN:
 			if (simEvent->eventStatus == SIM_CARD_NOT_PRESENT) {
 				DEBUG_I("SIM_ABSENT");
-				sim_status(0);}
+				sim_status(0);
+			}
 			break;
 		case SIM_EVENT_VERIFY_PIN1_IND:
 			DEBUG_I("SIM_PIN");
@@ -179,7 +180,7 @@ void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 			break;
 		case SIM_EVENT_VERIFY_CHV:
 			if (simEvent->eventStatus == SIM_OK) {
-				pin_status(buf+sizeof(simEventPacketHeader));
+				pin_status(buf + sizeof(simEventPacketHeader));
 			} else {
 				DEBUG_I("SIM: something wrong with pin verify responce");
 				DEBUG_I("SIM_PIN");
@@ -218,7 +219,7 @@ void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 			break;
 		case SIM_EVENT_READ_FILE:
 			DEBUG_I("SIM_EVENT_READ_FILE");
-			sim_io_response(buf+sizeof(simEventPacketHeader));
+			sim_io_response(buf + sizeof(simEventPacketHeader));
 			sim_data.dataCounter += 1;
 			if (sim_data.dataCounter <= current_simDataCount)
 			{
@@ -269,7 +270,6 @@ void sim_send_oem_data(uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint3
 	oem_header.hSim = hSim; //session id
 	oem_header.oemBufLen = oemBufLen;
 	
-
 	uint32_t simBufLen = oemBufLen + sizeof(struct oemSimPacketHeader) + 1; /* Looks like bug in Bada, but there's always 1 redundant, zero byte */
 	uint8_t* simBuf = malloc(simBufLen);
 	memset(simBuf, 0x00, simBufLen);
@@ -283,10 +283,10 @@ void sim_send_oem_data(uint8_t hSim, uint8_t packetType, uint8_t* dataBuf, uint3
 
 void sim_verify_chv(uint8_t hSim, uint8_t pinType, char* pin)
 {	
+	uint8_t packetBuf[10];	
 	SIM_VALIDATE_SID(hSim);
 	//TODO: obtain session context, check if session is busy, print exception if it is busy and return failure
 	//TODO: if session is not busy, mark it busy
-	uint8_t* packetBuf = malloc(10);	
 	memset(packetBuf, 0x00, 10);
 
 	packetBuf[0] = pinType;
@@ -311,7 +311,6 @@ void sim_open_to_modem(uint8_t hSim)
 
 void sim_atk_send_packet(uint32_t atkType, uint32_t atkSubType, uint32_t atkBufLen, uint8_t* atkBuf)
 {	
-
 	DEBUG_I("Sending sim_atk_send_packet\n");
 	struct modem_io request;
 	sim_atk_packet_header* atk_header;
@@ -325,7 +324,7 @@ void sim_atk_send_packet(uint32_t atkType, uint32_t atkSubType, uint32_t atkBufL
 	atk_header->atkSubType = atkSubType;
 	atk_header->atkBufLen = atkBufLen;
 
-	memcpy(fifobuf+sizeof(sim_atk_packet_header), atkBuf, atkBufLen);	
+	memcpy(fifobuf + sizeof(sim_atk_packet_header), atkBuf, atkBufLen);	
 
 	request.magic = 0xCAFECAFE;
 	request.cmd = FIFO_PKT_SIM;
@@ -352,7 +351,6 @@ void pin_status(uint8_t *pinStatus)
 
 void sim_get_data_from_modem(uint8_t hSim, sim_data_request *sim_data)
 {
-
 	ALOGE("%s: test me!", __func__);
 	//TODO: verify, create and initialize session, send real hSim
 	uint8_t *data;
@@ -362,6 +360,7 @@ void sim_get_data_from_modem(uint8_t hSim, sim_data_request *sim_data)
 
 	DEBUG_I("Sending sim_get_data_from_modem\n");
 	sim_send_oem_data(hSim, 0x7, data, sizeof(sim_data_request));  //why it starts from 4? hell knows
+	free(data);
 }
 
 void sim_data_request_to_modem(uint8_t hSim, uint16_t simDataType)
