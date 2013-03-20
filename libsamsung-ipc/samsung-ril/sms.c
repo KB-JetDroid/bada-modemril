@@ -29,12 +29,6 @@
 
 
 /**
- * SMS global vars
- */
-
-RIL_Token token;
-
-/**
  * Format conversion utils
  */
 
@@ -53,13 +47,13 @@ void ipc_sms_send_status(void* data)
 		case 0:
 			DEBUG_I("%s : Message sent  ", __func__);
 			response.errorCode = -1;
-			ril_request_complete(token, RIL_E_SUCCESS, &response, sizeof(response));
+			ril_request_complete(ril_data.tokens.outgoing_sms, RIL_E_SUCCESS, &response, sizeof(response));
 			return;
 
 		default:
 			DEBUG_I("%s : Message sending error  ", __func__);
 			response.errorCode = 500;
-			ril_request_complete(token, RIL_E_GENERIC_FAILURE, &response, sizeof(response));
+			ril_request_complete(ril_data.tokens.outgoing_sms, RIL_E_GENERIC_FAILURE, &response, sizeof(response));
 			return;
 	}
 
@@ -366,10 +360,10 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 	tapi_nettext_set_net_burst(0);
 	tapi_nettext_send((uint8_t *)mess);
 	
+	ril_data.tokens.outgoing_sms = t;
+	
 	free(mess);
 	free(pdu_hex);
-
-	token = t;
 }
 
 
