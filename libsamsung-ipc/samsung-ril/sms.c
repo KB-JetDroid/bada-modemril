@@ -130,28 +130,22 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 	char *a, *message;
 
 	if (pdu == NULL || pdu_length <= 0 || smsc == NULL || smsc_length <= 0) {
-
 		ALOGE("Provided PDU or SMSC is invalid! Aborting");
 		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 		// Send the next SMS in the list
 		//ril_request_send_sms_next();
 		return;
-
 	}
 
 	if ((pdu_length / 2 + smsc_length) > 0xfe) {
-
 		ALOGE("PDU or SMSC too large, aborting");
 		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 		// Send the next SMS in the list
 		//ril_request_send_sms_next();
 		return;
-
 	}
 
-	pdu_hex_length = pdu_length % 2 == 0 ? pdu_length / 2 :
-
-		(pdu_length ^ 1) / 2;
+	pdu_hex_length = pdu_length % 2 == 0 ? pdu_length / 2 :	(pdu_length ^ 1) / 2;
 
 	// Length of the final message
 
@@ -322,7 +316,7 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 			for (i = 0; i < pdu_hex[(numberLen / 2) + 6] - 1; i++)
 				mess->messageBody[i] = pdu_hex[i + k];
 		}	
-	}else{
+	} else {
 		DEBUG_I("%s : DCS - GSM7", __func__);
 		mess->alphabetType = 0x00; //GSM7
 		int k = (numberLen / 2) + 7;
@@ -384,8 +378,10 @@ void ipc_incoming_sms(void* data)
 	tapiNettextInfo* nettextInfo = (tapiNettextInfo*)(data);
 	char *number_smsc, *da_len, *sca, *a, *b;
 	char *number_oa, *tp_oa;
-	char *pdu_type, *tp_pid, *tp_dcs, *tp_scts, *tp_udl, *tp_ud, *message; 
-	char pdu[400] = {0}, c[3] = {0};
+	char *pdu_type, *tp_pid, *tp_dcs, *tp_udl, *tp_ud, *message; 
+	char tp_scts[15];
+	char pdu[400];
+	char c[3];
 	char *number, *number2, *len_char;
 	char *message_tmp, *number_tmp, *message_bin;
 	uint8_t *mess;
@@ -395,6 +391,10 @@ void ipc_incoming_sms(void* data)
 
 	number_tmp = NULL;
 	message_tmp = NULL;
+	
+	memset(tp_scts, 0, sizeof(tp_scts));
+	memset(pdu, 0, sizeof(pdu));
+	memset(c, 0, sizeof(c));
 
 	/* Convert sms packet to SMS-DELIVER PDU type  format
 	SMS = SCA + TPDU */
@@ -411,18 +411,15 @@ void ipc_incoming_sms(void* data)
 
 	i = 0;	
 	
-	if (number)
+	while (i < strlen(number_smsc)) 
 	{
-		while (i < strlen(number_smsc)) 
-		{
-			a = &(number_smsc[i+1]);
-			strncat(number, a, 1);
-			b = &(number_smsc[i]);
-			strncat(number, b, 1);
-			i = i + 2;
-		}
+		a = &(number_smsc[i+1]);
+		strncat(number, a, 1);
+		b = &(number_smsc[i]);
+		strncat(number, b, 1);
+		i = i + 2;
 	}
-	
+
 	sca = malloc(strlen(number) + 5);
 	memset(sca, 0, strlen(number) + 5);
 
@@ -503,9 +500,7 @@ void ipc_incoming_sms(void* data)
 		strcat(tp_oa, "D0");
 		strcat(tp_oa, number2);
 		DEBUG_I("%s : tp_oa = %s", __func__, tp_oa);		
-	}	
-	else
-	{
+	} else {
 		len_oa =  strlen(number_oa);
 
 		if ((strlen(number_oa) % 2) > 0) 
@@ -515,16 +510,13 @@ void ipc_incoming_sms(void* data)
 		memset(number2, 0, strlen(number_oa) + 1);
 
 		i = 0;	
-		if (number2)
+		while (i < strlen(number_oa)) 
 		{
-			while (i < strlen(number_oa)) 
-			{
-				a = &(number_oa[i+1]);
-				strncat(number2, a, 1);
-				b = &(number_oa[i]);
-				strncat(number2, b, 1);
-				i = i + 2;
-			}
+			a = &(number_oa[i+1]);
+			strncat(number2, a, 1);
+			b = &(number_oa[i]);
+			strncat(number2, b, 1);
+			i = i + 2;
 		}
 	
 		tp_oa = malloc(strlen(number2) + 5);
@@ -559,9 +551,6 @@ void ipc_incoming_sms(void* data)
 
 	//TP-SCTS: TP-Service-Centre-Time-Stamp
 	//Convert nettextInfo->timestamp and nettextInfo->time_zone to TP-SCTS
-
-	tp_scts = malloc(15);
-	memset(tp_scts, 0, 15);
 	
 	l_time = nettextInfo->scTime;
 
@@ -620,12 +609,7 @@ void ipc_incoming_sms(void* data)
 	
 		ril_request_unsolicited(RIL_UNSOL_RESPONSE_NEW_SMS_STATUS_REPORT, pdu, strlen(pdu));
 
-		if (tp_scts != NULL)	
-			free (tp_scts);
-
 		return;
-	
-
 	}
  
 	//TP-UD: TP-User Data
@@ -662,7 +646,7 @@ void ipc_incoming_sms(void* data)
 		memset(tp_ud, 0, strlen(message) + 2);
 
 		strcat(tp_ud,message);
-	}else{
+	} else {
 		/*TP-DCS: TP-Data-Coding-Scheme */
 		tp_dcs = "00"; //gsm7
 		DEBUG_I("%s : TP-DCS = GSM7", __func__);
@@ -690,8 +674,7 @@ void ipc_incoming_sms(void* data)
 			}
 
 			if (message_bin != NULL)	
-				free (message_bin);
-
+				free(message_bin);
 		}	
 		else
 		{
@@ -725,9 +708,5 @@ void ipc_incoming_sms(void* data)
 
 	if (tp_ud != NULL)	
 		free (tp_ud);
-
-	if (tp_scts != NULL)	
-		free (tp_scts);
-
 }
 
