@@ -205,7 +205,7 @@ struct ril_data {
 	struct list_head *requests;
 	int request_id;
 	char smsc_number[30];
-	char *SPN;
+	char SPN[NET_MAX_SPN_LEN];
 	struct ril_client *ipc_packet_client;
 	struct ril_client *srs_client;
 
