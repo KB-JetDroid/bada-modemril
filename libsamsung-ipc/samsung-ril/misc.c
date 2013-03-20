@@ -24,6 +24,7 @@
 
 #include "samsung-ril.h"
 #include "util.h"
+#include <misc.h>
 
 void ril_request_get_imei(RIL_Token t)
 {
@@ -45,6 +46,18 @@ void ril_request_baseband_version(RIL_Token t)
 }
 
 
+void ril_request_screen_state(RIL_Token t, void *data, size_t datalen)
+{
+	if (((int *)data)[0] == 0 )
+		ipc_power_mode(0);
+	else
+		ipc_power_mode(6);
+
+	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+
+}
+
+
 /**
  * In: RIL_REQUEST_GET_IMSI
  *   Get the SIM IMSI
@@ -57,4 +70,5 @@ void ril_request_get_imsi(RIL_Token t)
 {
 
 	//ipc_send_get(IPC_MISC_ME_IMSI, reqGetId(t));
+
 }

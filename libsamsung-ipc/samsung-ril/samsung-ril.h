@@ -230,6 +230,7 @@ void ril_request_get_imei(RIL_Token t);
 void ril_request_get_imeisv(RIL_Token t);
 void ril_request_baseband_version(RIL_Token t);
 void ril_request_get_imsi(RIL_Token t);
+void ril_request_screen_state(RIL_Token t, void *data, size_t datalen);
 
 /* CALL */
 void ipc_call_incoming(void* data);

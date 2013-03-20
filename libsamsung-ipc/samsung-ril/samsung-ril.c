@@ -442,8 +442,7 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 			ril_request_set_mute(t, data, datalen);
 #endif		/* OTHER */
 		case RIL_REQUEST_SCREEN_STATE:
-			/* This doesn't affect anything */
-			ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+			ril_request_screen_state(t, data, datalen);			
 			break;
 
 		default:
