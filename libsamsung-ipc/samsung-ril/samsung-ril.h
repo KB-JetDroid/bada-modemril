@@ -253,7 +253,7 @@ void ipc_cell_info(void* data);
 void ipc_network_nitz_info(void* data);
 void network_start(void);
 void ril_request_operator(RIL_Token t);
-void ril_request_registration_state(RIL_Token t);
+void ril_request_voice_registration_state(RIL_Token t);
 
 /* SIM */
 void ril_sim_init(void);
