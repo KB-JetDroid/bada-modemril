@@ -74,7 +74,7 @@ void ipc_network_select(void* data)
 			break;
 	}
 
-	ril_data.SPN = netInfo->spn;
+	strcpy(ril_data.SPN, netInfo->spn);
 
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED, NULL, 0);
 	
