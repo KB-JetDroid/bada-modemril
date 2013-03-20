@@ -89,6 +89,22 @@ void ipc_cell_info(void* data)
 	//TODO: implement cell id and LAC convertion to android RIL format 
 }
 
+
+void ipc_network_nitz_info(void* data)
+{
+	tapiNitzInfo* nitz;
+	char str[128];
+	
+	ALOGD("Received NITZ... dumping");
+	hex_dump(data, 0x70);
+	
+	nitz = (tapiNitzInfo*) data;
+	sprintf(str, "%02u/%02u/%02u,%02u:%02u:%02u+%02d,%02d",
+		nitz->year, nitz->month, nitz->day, nitz->hour, nitz->minute, nitz->second, nitz->tz, 0);
+
+	ril_request_unsolicited(RIL_UNSOL_NITZ_TIME_RECEIVED, str, strlen(str) + 1);
+}
+
 void network_start(void)
 {
 
@@ -111,7 +127,6 @@ void network_start(void)
 	tapi_nettext_set_net_burst(0); /* disable */
 	
 	ril_sim_init();
-
 }
 
 void ril_plmn_split(char *plmn_data, char **plmn, unsigned int *mcc, unsigned int *mnc)
@@ -140,8 +155,6 @@ void ril_request_operator(RIL_Token t)
 	int plmn_entries;
 	int i;
 
-
-
 	if (reg_state == 1) {
 		
 		ril_plmn_split(proper_plmn, &plmn, &mcc, &mnc);
@@ -165,8 +178,6 @@ void ril_request_operator(RIL_Token t)
 		ril_request_complete(t, RIL_E_OP_NOT_ALLOWED_BEFORE_REG_TO_NW, NULL, 0);
 		
 	}
-
-
 }
 
 void ril_request_registration_state(RIL_Token t)
