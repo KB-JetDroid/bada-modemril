@@ -26,7 +26,6 @@
 #include "util.h"
 #include <tapi_network.h>
 #include <tapi_nettext.h>
-#include <plmn_list.h>
 
 int reg_state = 0;
 char proper_plmn[10];
@@ -74,6 +73,8 @@ void ipc_network_select(void* data)
 			reg_state = 0;
 			break;
 	}
+
+	strcpy(ril_data.SPN, netInfo->spn);
 
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED, NULL, 0);
 	
@@ -129,24 +130,6 @@ void network_start(void)
 	ril_sim_init();
 }
 
-void ril_plmn_split(char *plmn_data, char **plmn, unsigned int *mcc, unsigned int *mnc)
-{
-	char plmn_t[7];
-
-	memset(plmn_t, 0, sizeof(plmn_t));
-	memcpy(plmn_t, plmn_data, 6);
-//	if (plmn_t[5] == 'f')
-//		plmn_t[5] = '\0';
-//	DEBUG_I("TAPI: plmn_t = %s",plmn_t);
-	if (plmn != NULL) {
-		*plmn = malloc(sizeof(plmn_t));
-		memcpy(*plmn, plmn_t, sizeof(plmn_t));
-	}
-	if (mcc == NULL || mnc == NULL)
-		return;
-	sscanf(plmn_t, "%3u%2u", mcc, mnc);
-}
-
 void ril_request_operator(RIL_Token t)
 {
 	char *response[3];
@@ -157,20 +140,13 @@ void ril_request_operator(RIL_Token t)
 
 	if (reg_state == 1) {
 		
-		ril_plmn_split(proper_plmn, &plmn, &mcc, &mnc);
-		plmn_entries = sizeof(plmn_list) / sizeof(struct plmn_list_entry);
-		
+
 		memset(response, 0, sizeof(response));
 
-		asprintf(&response[2], "%s", plmn);
-		free(plmn);
+		asprintf(&response[0], "%s", ril_data.SPN);
+		asprintf(&response[2], "%s", proper_plmn);
 
-		for (i=0 ; i < plmn_entries ; i++) {
-			if (plmn_list[i].mcc == mcc && plmn_list[i].mnc == mnc) {
-				asprintf(&response[0], "%s", plmn_list[i].operator_short);
-				asprintf(&response[1], "%s", plmn_list[i].operator_long);
-			}
-		}
+
 		ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
 	}
 	else
