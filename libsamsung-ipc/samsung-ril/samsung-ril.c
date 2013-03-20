@@ -485,6 +485,7 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(NETWORK_RADIO_INFO, ipc_network_radio_info);
 	ipc_register_ril_cb(NETWORK_SELECT, ipc_network_select);
 	ipc_register_ril_cb(NETWORK_CELL_INFO, ipc_cell_info);
+	ipc_register_ril_cb(NETWORK_NITZ_INFO_IND, ipc_network_nitz_info);
 	ipc_register_ril_cb(CALL_INCOMING_IND, ipc_call_incoming);
 	ipc_register_ril_cb(CALL_END_IND, ipc_call_end);
 	ipc_register_ril_cb(SIM_STATUS, ipc_sim_status);

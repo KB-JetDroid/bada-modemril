@@ -96,6 +96,21 @@ typedef struct {
 } __attribute__((__packed__)) tapiRadioInfo;
 
 typedef struct {
+	uint8_t unknown1[16];
+	uint8_t someName[40];
+	uint8_t networkName[40];
+	uint8_t year;
+	uint8_t month;
+	uint8_t day;
+	uint8_t hour;
+	uint8_t minute;
+	uint8_t second;
+	uint8_t tz; /* In quarters,  */
+	uint8_t unknown2; /* Probably daysaving time (1 or 0) */
+	uint8_t systemInfo[8]; /* Null if there's no network name given */
+} __attribute__((__packed__)) tapiNitzInfo;
+
+typedef struct {
 	tapiNetworkInfo networkInfo;
 	uint8_t networkOrder;
 } tapiNetwork;
@@ -109,6 +124,7 @@ void tapi_network_radio_info(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_network_select_ind(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_common_error(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_cell_info(uint32_t tapiNetLength, uint8_t *tapiNetData);
+void tapi_network_nitz_info_ind(uint32_t tapiNetLength, uint8_t *tapiNetData);
 
 void tapi_network_init(void);
 void tapi_set_subscription_mode(uint8_t mode);
