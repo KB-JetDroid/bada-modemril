@@ -168,6 +168,12 @@ struct ril_state {
 	RIL_RadioState radio_state;
 	ril_sim_state sim_state;
 	int power_state;
+	int reg_state;
+	uint32_t cell_id;
+	uint8_t rac_id;
+	uint16_t lac_id;
+	char proper_plmn[9];
+	char SPN[NET_MAX_SPN_LEN];
 #if 0
 	struct ipc_sec_sim_status_response sim_pin_status;
 	struct ipc_sec_sim_icc_type sim_type;
@@ -205,7 +211,6 @@ struct ril_data {
 	struct list_head *requests;
 	int request_id;
 	char smsc_number[30];
-	char SPN[NET_MAX_SPN_LEN];
 	struct ril_client *ipc_packet_client;
 	struct ril_client *srs_client;
 

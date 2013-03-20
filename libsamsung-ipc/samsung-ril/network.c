@@ -26,9 +26,6 @@
 #include "util.h"
 #include <tapi_network.h>
 #include <tapi_nettext.h>
-
-int reg_state = 0;
-char proper_plmn[10];
  
 void ipc_network_radio_info(void* data)
 {
@@ -61,20 +58,20 @@ void ipc_network_select(void* data)
 	/* Converts IPC network registration status to Android RIL format */
 	switch(netInfo->serviceType) {
 		case 0x1:
-			reg_state = 0;//Not registered, MT is not currently searching a new operator to register
+			ril_data.state.reg_state = 0;//Not registered, MT is not currently searching a new operator to register
 			break;
 		case 0x2:
-			reg_state = 2;//Not registered, but MT is currently searching a new operator to register
+			ril_data.state.reg_state = 2;//Not registered, but MT is currently searching a new operator to register
 			break;
 		case 0x4:
-			reg_state = 1; //Registered, home network
+			ril_data.state.reg_state = 1; //Registered, home network
 			break;
 		default:
-			reg_state = 0;
+			ril_data.state.reg_state = 0;
 			break;
 	}
 
-	strcpy(ril_data.SPN, netInfo->spn);
+	strcpy(ril_data.state.SPN, netInfo->spn);
 
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED, NULL, 0);
 }
@@ -83,10 +80,24 @@ void ipc_cell_info(void* data)
 {
 	tapiCellInfo* cellInfo = (tapiCellInfo*)(data);
 
-	uint16_t mcc = ((cellInfo->plmnId[0] & 0xF) * 100) + (((cellInfo->plmnId[0] >> 4) & 0xF) * 10) + (((cellInfo->plmnId[1]) & 0xF) * 1);
-	uint16_t mnc = ((cellInfo->plmnId[2] & 0xF) * 10) + (((cellInfo->plmnId[2] >> 4) & 0xF) * 1);
-	sprintf(proper_plmn, "%3u%2u", mcc, mnc);
-	//TODO: implement cell id and LAC convertion to android RIL format 
+	if(cellInfo->bCellChanged)
+	{
+		ril_data.state.cell_id = (uint32_t)cellInfo->cellId[0] << 24 | (uint32_t)cellInfo->cellId[1] << 16 | (uint32_t)cellInfo->cellId[2] << 8 | (uint32_t)cellInfo->cellId[3];
+	}
+	if(cellInfo->bRACChanged)
+	{
+		ril_data.state.rac_id = cellInfo->racId;
+	}
+	if(cellInfo->bLACChanged)
+	{
+		ril_data.state.lac_id = (uint16_t)cellInfo->lacId[0] << 8 | (uint16_t)cellInfo->lacId[1];
+	}
+	if(cellInfo->bPLMNChanged)
+	{
+		uint16_t mcc = ((cellInfo->plmnId[0] & 0xF) * 100) + (((cellInfo->plmnId[0] >> 4) & 0xF) * 10) + (((cellInfo->plmnId[1]) & 0xF) * 1);
+		uint16_t mnc = ((cellInfo->plmnId[2] & 0xF) * 10) + (((cellInfo->plmnId[2] >> 4) & 0xF) * 1);
+		sprintf(ril_data.state.proper_plmn, "%3u%2u", mcc, mnc);
+	}
 }
 
 
@@ -134,13 +145,13 @@ void ril_request_operator(RIL_Token t)
 	char *plmn;
 	unsigned int mcc, mnc;
 	int plmn_entries;
-	int i;
+	unsigned int i;
 
-	if (reg_state == 1) {
+	if (ril_data.state.reg_state == 1) {
 		memset(response, 0, sizeof(response));
 
-		asprintf(&response[0], "%s", ril_data.SPN);
-		asprintf(&response[2], "%s", proper_plmn);
+		asprintf(&response[0], "%s", ril_data.state.SPN);
+		asprintf(&response[2], "%s", ril_data.state.proper_plmn);
 
 		ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
 		for (i = 0; i < sizeof(response) / sizeof(char *); i++) {
@@ -151,23 +162,22 @@ void ril_request_operator(RIL_Token t)
 	else
 	{
 		ril_request_complete(t, RIL_E_OP_NOT_ALLOWED_BEFORE_REG_TO_NW, NULL, 0);
-		
 	}
 }
 
 void ril_request_voice_registration_state(RIL_Token t)
 {
 	char *response[15];
-	int i;
+	unsigned int i;
 
 	memset(response, 0, sizeof(response));
 
-	asprintf(&response[0], "%d", reg_state);
-	asprintf(&response[1], "%x", 0x0f69);
-	asprintf(&response[2], "%x", 0x00000637);
+	asprintf(&response[0], "%d", ril_data.state.reg_state);
+	asprintf(&response[1], "%x", ril_data.state.lac_id);
+	asprintf(&response[2], "%x", ril_data.state.cell_id);
 	asprintf(&response[3], "%d", 0);
 	
-	if(reg_state == 3) /* If registration failed */
+	if(ril_data.state.reg_state == 3) /* If registration failed */
 		asprintf(&response[13], "%d", 0); /* Set "General" reason of failure - can we get real reason? Do we need to? */
 
 	ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
