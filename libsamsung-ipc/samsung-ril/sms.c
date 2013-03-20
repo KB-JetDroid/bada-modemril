@@ -701,12 +701,12 @@ void ipc_incoming_sms(void* data)
 		}	
 		else
 		{
-			ascii2gsm7((char *)mess, (unsigned char **)&message_tmp, message_length);
+			len_mess = ascii2gsm7((char *)mess, (unsigned char **)&message_tmp, strlen(message));
 
-			tp_ud = malloc((strlen(message_tmp) * 2) + 1);
-			memset(tp_ud, 0, (strlen(message_tmp) * 2) + 1);
+			tp_ud = malloc(len_mess + 1);
+			memset(tp_ud, 0, len_mess + 1);
 
-			bin2hex((unsigned char *)message_tmp, strlen(message_tmp), tp_ud);		
+			bin2hex((unsigned char *)message_tmp, len_mess / 2, tp_ud);		
 		}
 	}
 
