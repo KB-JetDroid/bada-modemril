@@ -482,7 +482,7 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 	}
 
 
-	mess->timestamp = time(NULL);
+	mess->scTime = time(NULL);
 
 	mess->NPI_SMSC = 0x01;
 	mess->TON_SMSC = 0x01;
@@ -506,7 +506,10 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 		i = i + 2;		
 	}
 
-	mess->unknown4 = 0x0301; 
+	if (pdu_hex[0] == 0x21 || pdu_hex[0] == 0x61)
+		mess->bSRR = 0x01;
+
+//	mess->unknown4 = 0x0301; 
 
 	mess->validityValue = 0xFF; //FF
 
@@ -840,11 +843,30 @@ void ipc_incoming_sms(void* data)
 	TP-RP:    00
 	TP-UDHI:  00		*/
 
-	if (nettextInfo->nUDH == 1)
-		pdu_type = "44";
-	else 
-		pdu_type = "04";
-	strcat (pdu, pdu_type);
+	if (nettextInfo->dischargeTime == 0x00)
+	{
+		if (nettextInfo->nUDH == 1)
+		{
+			pdu_type = "44";
+		}
+		else 
+		{
+			pdu_type = "04";
+		}
+		DEBUG_I("%s : pdu_type = %s", __func__, pdu_type);		
+		strcat (pdu, pdu_type);
+	}
+
+	else
+	{
+		pdu_type = "06";
+		DEBUG_I("%s : pdu_type = %s", __func__, pdu_type);		
+		strcat (pdu, pdu_type);
+		strcat (pdu, "00");
+
+	}
+
+
 
 	// TP-OA: TP- Originating-Address
 	//Convert nettextInfo->phoneNumber to TP-OA
@@ -924,8 +946,11 @@ void ipc_incoming_sms(void* data)
 
 	//TP-PID : TP-Protocol-Identifier 
 
-	tp_pid = "00";
-	strcat (pdu, tp_pid);
+	if (nettextInfo->dischargeTime == 0x00)
+	{
+		tp_pid = "00";
+		strcat (pdu, tp_pid);
+	}
 
 	//TP-SCTS: TP-Service-Centre-Time-Stamp
 	//Convert nettextInfo->timestamp and nettextInfo->time_zone to TP-SCTS
@@ -933,7 +958,7 @@ void ipc_incoming_sms(void* data)
 	tp_scts = malloc(15);
 	memset(tp_scts, 0, 15);
 	
-	l_time = nettextInfo->timestamp;
+	l_time = nettextInfo->scTime;
 
 	strftime(buf, sizeof(buf), "%y%m%d%H%M%S", gmtime(&l_time));
 
@@ -951,7 +976,52 @@ void ipc_incoming_sms(void* data)
 		i = i + 2;
 	}
 
-	DEBUG_I("%s : timestamp = %s", __func__, tp_scts);	
+	DEBUG_I("%s : scTime = %s", __func__, tp_scts);
+
+	if (nettextInfo->dischargeTime != 0x00)
+	{
+		strcat (pdu, tp_scts);
+		
+		memset(tp_scts, 0, 15);
+	
+		l_time = nettextInfo->dischargeTime;
+
+		strftime(buf, sizeof(buf), "%y%m%d%H%M%S", gmtime(&l_time));
+
+		asprintf(&a, "%02d", nettextInfo->time_zone);
+
+		strcat(buf, a);
+
+			i = 0;
+		while (i < 14) 
+		{
+			a = &(buf[i+1]);
+			strncat(tp_scts, a, 1);
+			b = &(buf[i]);
+			strncat(tp_scts, b, 1);
+			i = i + 2;
+		}
+
+		DEBUG_I("%s : dischargeTime = %s", __func__, tp_scts);
+
+		strcat (pdu, tp_scts);
+		
+		if (nettextInfo->statusReport == 0)
+			strcat (pdu, "00"); 
+		else 
+			strcat (pdu, "01");
+
+		DEBUG_I("%s : pdu = %s", __func__, pdu);
+	
+		ril_request_unsolicited(RIL_UNSOL_RESPONSE_NEW_SMS_STATUS_REPORT, pdu, strlen(pdu));
+
+		if (tp_scts != NULL)	
+			free (tp_scts);
+
+		return;
+	
+
+	}
  
 	//TP-UD: TP-User Data
 	//Convert messageBody to TP-UD

@@ -68,7 +68,7 @@ typedef struct {
 	/* Here starts 0x8C bytes block memcopied from bada internal struct from offset 0x10 */
 
 	/* Info about sending number */
-	uint8_t unknown1; // 00
+	uint8_t msgRef; // 00
 	uint8_t NPI_FromNumber; /* Numbering Plan Identification */
 	uint8_t TON_FromNumber; /* Type Of Number */
 	uint8_t lengthFromNumber; /* Length of Number */
@@ -80,21 +80,25 @@ typedef struct {
 	uint8_t lengthToNumber; /* Length of Number */
 	char szToNumber [24]; 
 
-	uint32_t timestamp; /*  TP-Service-Centre-Time-Stamp (TP-SCTS) */
-	uint8_t unknown2; // 00
+	uint32_t scTime; /*  TP-Service-Centre-Time-Stamp (TP-SCTS) */
+	uint8_t priority; // 00
 	uint8_t NPI_SMSC; /* Numbering Plan Identification */
 	uint8_t TON_SMSC; /* Type Of Number */
 	uint8_t lengthSMSC; /* Length of Number */
-	char SMSC [28];
+	char SMSC [24];
+	uint32_t bReject;
 	uint32_t replyPath; /* TP-Reply-Path (TP-RP) */
 	uint32_t bUDHI; /*TP-User-Data-Header-Indicator (TP-UDHI) */
 	uint32_t bSRR; /* TP-Status-Report-Request (TP-SRR)*/
 	uint32_t unknown3; 
-	uint32_t timestamp2; /* used only in SMS-STATUS-REPORT PDU  */ 
-	uint32_t unknown4;
-	uint32_t validityType; /*TP-Validity-Period-Format (TP-VPF) */
+	uint32_t dischargeTime; /* used only in SMS-STATUS-REPORT PDU  */ 
+	uint32_t statusReport;
+	uint8_t validityType; /*TP-Validity-Period-Format (TP-VPF) */
+	uint8_t validityRelativeType;
+	uint8_t unknown4[2]; /* Padding probably */
 	uint32_t validityValue; /* TP-Validy-Period TP-VP) */
-	uint8_t unknown5[8];
+	uint32_t bMsgClassSet;
+	uint32_t unknown5;
 	uint32_t bMsgIndActive;
 	uint8_t codingGroupType;
 	uint8_t waitingType;
@@ -102,7 +106,7 @@ typedef struct {
 	uint8_t classType; //04
 	uint32_t time_zone; /* part of TP-SCTS */	
 	/* end of 0x8C memcpied block */
-	uint32_t unknown6; /* Value from nettextinfo offset 0x4 */
+	uint32_t hNetTextInfo; /* Value from nettextinfo offset 0x4 */
 	uint8_t nUDH;
 	uint8_t messageLength;
 	uint8_t messageBody[160]; 
