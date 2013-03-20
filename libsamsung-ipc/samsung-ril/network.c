@@ -57,8 +57,8 @@ void ipc_network_radio_info(void* data)
 void ipc_network_select(void* data)
 {	
 	tapiNetworkInfo* netInfo = (tapiNetworkInfo*)(data);
-
-        /* Converts IPC network registration status to Android RIL format */
+	
+	/* Converts IPC network registration status to Android RIL format */
 	switch(netInfo->serviceType) {
 		case 0x1:
 			reg_state = 0;//Not registered, MT is not currently searching a new operator to register
@@ -77,7 +77,6 @@ void ipc_network_select(void* data)
 	strcpy(ril_data.SPN, netInfo->spn);
 
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED, NULL, 0);
-	
 }
 
 void ipc_cell_info(void* data)
@@ -108,7 +107,6 @@ void ipc_network_nitz_info(void* data)
 
 void network_start(void)
 {
-
 	tapiStartupNetworkInfo start_info;
 	start_info.bAutoSelection = 1;
 	start_info.bPoweronGprsAttach = 1;
@@ -139,15 +137,16 @@ void ril_request_operator(RIL_Token t)
 	int i;
 
 	if (reg_state == 1) {
-		
-
 		memset(response, 0, sizeof(response));
 
 		asprintf(&response[0], "%s", ril_data.SPN);
 		asprintf(&response[2], "%s", proper_plmn);
 
-
 		ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
+		for (i = 0; i < sizeof(response) / sizeof(char *); i++) {
+			if (response[i] != NULL)
+				free(response[i]);
+		}
 	}
 	else
 	{
@@ -156,9 +155,10 @@ void ril_request_operator(RIL_Token t)
 	}
 }
 
-void ril_request_registration_state(RIL_Token t)
+void ril_request_voice_registration_state(RIL_Token t)
 {
 	char *response[15];
+	int i;
 
 	memset(response, 0, sizeof(response));
 
@@ -166,6 +166,14 @@ void ril_request_registration_state(RIL_Token t)
 	asprintf(&response[1], "%x", 0x0f69);
 	asprintf(&response[2], "%x", 0x00000637);
 	asprintf(&response[3], "%d", 0);
+	
+	if(reg_state == 3) /* If registration failed */
+		asprintf(&response[13], "%d", 0); /* Set "General" reason of failure - can we get real reason? Do we need to? */
 
 	ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
+	
+	for (i = 0; i < sizeof(response) / sizeof(char *); i++) {
+		if (response[i] != NULL)
+			free(response[i]);
+	}
 }
