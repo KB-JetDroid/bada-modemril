@@ -26,13 +26,10 @@
 #include "util.h"
 #include <sim.h>
 
-RIL_Token token;
-
 void ril_sim_init(void)
 {
 	sim_atk_open();	
 	sim_open_to_modem(4);
-	
 }
 
 void ipc_sim_status(void *data)
@@ -57,18 +54,17 @@ void ipc_pin_status(void* data)
 	switch(pinSt->status){
 		case 0:
 			DEBUG_I("%s : Correct password ", __func__);
-			ril_request_complete(token, RIL_E_SUCCESS, &attempts, sizeof(attempts));
+			ril_request_complete(ril_data.tokens.pin_status, RIL_E_SUCCESS, &attempts, sizeof(attempts));
 			return;
-
 		case 1:
 			DEBUG_I("%s : Wrong password ", __func__);
 			attempts = pinSt->attempts;
-			ril_request_complete(token, RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(attempts));
+			ril_request_complete(ril_data.tokens.pin_status, RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(attempts));
 			return;
 		case 2:
 			DEBUG_I("%s : Wrong password and no attempts left!", __func__);
 			attempts = 0;
-			ril_request_complete(token, RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(attempts));
+			ril_request_complete(ril_data.tokens.pin_status, RIL_E_PASSWORD_INCORRECT, &attempts, sizeof(attempts));
 			sim_status(4);
 			return;	
 	}
@@ -242,8 +238,6 @@ void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen)
 		ALOGE("%s: pin exceeds maximum length", __FUNCTION__);
 		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
-	ALOGE("%s: pin = %s", __FUNCTION__, pin);
 	sim_verify_chv(0x4, 0x0, pin);
-	token = t;
-
+	ril_data.tokens.pin_status = t;
 }

@@ -269,7 +269,6 @@ void ril_tokens_check(void)
 	}
 }
 
-
 void srs_dispatch(struct srs_message *message)
 {
 	if(message == NULL)

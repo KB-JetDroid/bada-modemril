@@ -131,8 +131,6 @@ struct ril_tokens {
 	RIL_Token get_imeisv;
 	RIL_Token baseband_version;
 
-	RIL_Token registration_state;
-	RIL_Token gprs_registration_state;
 	RIL_Token operator;
 	
 	RIL_Token outgoing_sms;
