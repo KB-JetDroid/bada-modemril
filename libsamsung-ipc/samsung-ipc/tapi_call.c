@@ -80,37 +80,24 @@ void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
 void tapi_call_release(uint8_t callType,uint32_t callId, uint8_t releaseCause)
 {
 	struct tapiPacket tx_packet;
-	tapiCallRelease* callRelease;
-	callRelease = (tapiCallRelease*)malloc(sizeof(tapiCallRelease));
-	memset(callRelease, 0, sizeof(tapiCallRelease));
-	callRelease->callType = callType;
-	callRelease->align0[0] = 0x0;
-	callRelease->align0[1] = 0x0;
-	callRelease->align0[2] = 0x0;
-	callRelease->callId = callId;
-	callRelease->releaseCause = releaseCause; 
-	callRelease->align1[0] = 0x0;
-	callRelease->align1[1] = 0x0;
-	callRelease->align1[2] = 0x0;
-	tx_packet.buf = (uint8_t *)callRelease;
+	tapiCallRelease callRelease;
+	callRelease.callType = callType;
+	callRelease.callId = callId;
+	callRelease.releaseCause = releaseCause;
+	tx_packet.buf = (uint8_t *)&callRelease;
 	tx_packet.header.tapiService = 0;
 	tx_packet.header.tapiServiceFunction = TAPI_CALL_RELEASE;
-	tx_packet.header.len = 12;
+	tx_packet.header.len = sizeof(tapiCallRelease);
 	tapi_send_packet(&tx_packet);
 }
 
 void tapi_call_answer(uint8_t callType, uint32_t callId)
 {
 	struct tapiPacket tx_packet;
-	tapiCallAnswer* callAnswer;
-	callAnswer = (tapiCallAnswer*)malloc(sizeof(tapiCallAnswer));
-	memset(callAnswer, 0, sizeof(tapiCallAnswer));
-	callAnswer->callType = callType;
-	callAnswer->align[0] = 0x0;
-	callAnswer->align[1] = 0x0;
-	callAnswer->align[2] = 0x0;
-	callAnswer->callId = callId; 
-	tx_packet.buf = (uint8_t *)callAnswer;
+	tapiCallAnswer callAnswer;
+	callAnswer.callType = callType;
+	callAnswer.callId = callId; 
+	tx_packet.buf = (uint8_t *)&callAnswer;
 	tx_packet.header.tapiService = 0;
 	tx_packet.header.tapiServiceFunction = TAPI_CALL_ANSWER;
 	tx_packet.header.len = 8;
