@@ -122,7 +122,7 @@ void ipc_client_send_get(struct ipc_client *client, const unsigned short command
 void ipc_client_send_exec(struct ipc_client *client, const unsigned short command, unsigned char mseq);
 
 /* Utility functions */
-void ipc_imei_bcd2ascii(char* out, const uint8_t* in);
+void imei_bcd2ascii(char* out, const char* in);
 void ipc_hex_dump(struct ipc_client *client, void *data, int size);
 void *ipc_mtd_read(struct ipc_client *client, char *mtd_name, int size, int block_size);
 void *ipc_file_read(struct ipc_client *client, char *file_name, int size, int block_size);

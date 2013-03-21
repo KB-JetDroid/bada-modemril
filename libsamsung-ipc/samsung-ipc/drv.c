@@ -57,11 +57,9 @@ char *power_dev_path = "/sys/devices/platform/i2c-gpio.6/i2c-6/6-0066/max8998-ch
 char *fake_apps_version = "S8530JPKA1";
 #endif
 
-
 /*
  * TODO: Read sound config data from file
  */
-
 int32_t get_nvm_data(void *data, uint32_t size)
 {
 	int32_t fd, retval;
@@ -77,7 +75,12 @@ int32_t get_nvm_data(void *data, uint32_t size)
 	retval = read(fd, data, size);
 	DEBUG_I("file %s read status = %d", nvm_file_path, retval);
 	if(retval < 0)
+	{
 		DEBUG_I("%s: error! %s", __func__, strerror(errno));
+		if (fd > 0)
+			close(fd);
+		return retval;
+	}
 		
 	if (fd > 0)
 		close(fd);

@@ -28,10 +28,10 @@
 #include <sys/types.h>
 #include <asm/types.h>
 #include <mtd/mtd-abi.h>
+#include <errno.h>
 
 #include <radio.h>
 #include "ipc_private.h"
-
 
 void imei_bcd2ascii(char* out, const char* in)
 {

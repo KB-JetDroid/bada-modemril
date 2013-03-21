@@ -25,7 +25,6 @@
 #include <radio.h>
 #include <syssec.h>
 
-
 #define LOG_TAG "Mocha-RIL-SYSSEC"
 #include <utils/Log.h>
 
@@ -44,7 +43,6 @@ void ipc_parse_syssec(struct ipc_client* client, struct modem_io *ipc_frame)
 	DEBUG_I("Syssec packet type = 0x%x\n  Syssec packet unk1 = 0x%X\n  packet length = 0x%X, unk2= 0x%X", rx_header->type, rx_header->unknown1, rx_header->bufLen, rx_header->unknown2);
 	ipc_hex_dump(client, ipc_frame->data, rx_header->bufLen);
 	DEBUG_I("Exiting");
-	
 }
 
 void load_sec_data()
@@ -70,7 +68,6 @@ void load_sec_data()
 	
 	DEBUG_I("Converting IMEI out of dat stuff to ASCII.");
 	imei_bcd2ascii(cached_imei, cached_bcd_imei);
-
 }
 
 void syssec_send_imei(void)

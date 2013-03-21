@@ -54,5 +54,6 @@ struct drvRequest {
 
 void ipc_parse_drv(struct ipc_client* client, struct modem_io *ipc_frame);
 void drv_send_packet(uint8_t type, uint8_t *data, int32_t data_size);
+int32_t get_nvm_data(void *data, uint32_t size);
 
 #endif
