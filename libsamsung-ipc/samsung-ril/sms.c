@@ -626,7 +626,7 @@ void ipc_incoming_sms(void* data)
 	if (nettextInfo->nUDH == 1)
 	{
 		strcat(message, "05");
-		message_length += 2; 
+		message_length += 1; 
 	}
 		
 	while (i < nettextInfo->messageLength)
@@ -672,6 +672,8 @@ void ipc_incoming_sms(void* data)
 				tp_ud[i] = message[i];
 				i++;
 			}
+
+			message_length += 1; 
 
 			if (message_bin != NULL)	
 				free(message_bin);
