@@ -98,6 +98,7 @@ void ipc_cell_info(void* data)
 		uint16_t mnc = ((cellInfo->plmnId[2] & 0xF) * 10) + (((cellInfo->plmnId[2] >> 4) & 0xF) * 1);
 		sprintf(ril_data.state.proper_plmn, "%3u%2u", mcc, mnc);
 	}
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED, NULL, 0);
 }
 
 
