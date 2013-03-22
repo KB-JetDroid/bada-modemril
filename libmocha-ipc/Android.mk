@@ -163,3 +163,19 @@ else
 	LOCAL_MODULE := mocha-ril
 	include $(BUILD_EXECUTABLE)
 endif
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := srs-client/srs-client.c
+
+LOCAL_C_INCLUDES := \
+	$(LOCAL_PATH)/include \
+	$(LOCAL_PATH)/srs-client/include \
+
+LOCAL_SHARED_LIBRARIES := liblog libcutils
+
+LOCAL_PRELINK_MODULE := false
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE := libsrs-client
+
+include $(BUILD_SHARED_LIBRARY)
