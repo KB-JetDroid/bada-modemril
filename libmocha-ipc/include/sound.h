@@ -69,5 +69,6 @@ typedef struct { /* structure valid for SET_MUTE and SET_SND_PATH */
 } __attribute__((__packed__)) soundSetMuteSndPathPacket;
 
 void ipc_parse_sound(struct ipc_client* client, struct modem_io *ipc_frame);
+void sound_send_packet(uint8_t *data, int32_t data_size);
 
 #endif
