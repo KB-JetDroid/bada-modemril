@@ -273,4 +273,10 @@ void ipc_incoming_sms(void* data);
 void ril_request_send_sms(RIL_Token t, void *data, size_t length);
 void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsigned char *smsc, int smsc_length);
 
+/* SND */
+void ril_request_set_mute(RIL_Token t, void *data, size_t datalen);
+void srs_snd_set_call_clock_sync(struct srs_message *message);
+void srs_snd_set_call_volume(struct srs_message *message);
+void srs_snd_set_call_audio_path(struct srs_message *message);
+
 #endif
