@@ -129,7 +129,7 @@ void network_start(void)
 	start_info.serviceDomain = 0;
 	start_info.unknown1[0] = 0xE5;
 	start_info.unknown1[1] = 0x69;
-	start_info.networkMode = 0x00007FF8;
+	start_info.networkMode = TAPI_NETWORK_MODE_AUTOMATIC;
 	start_info.subscriptionMode = 0;
 	start_info.bFlightMode = 0;	
 	start_info.unknown2[0] = 0x02;
