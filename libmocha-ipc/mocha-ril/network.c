@@ -56,15 +56,18 @@ void ipc_network_select(void* data)
 	tapiNetworkInfo* netInfo = (tapiNetworkInfo*)(data);
 	
 	/* Converts IPC network registration status to Android RIL format */
-	switch(netInfo->serviceType) {
-		case 0x1:
-			ril_data.state.reg_state = 0;//Not registered, MT is not currently searching a new operator to register
+	switch(netInfo->serviceLevel) {
+		case TAPI_SERVICE_LEVEL_NONE:
+			ril_data.state.reg_state = 0;//0 - Not registered, MT is not currently searching a new operator to register
 			break;
-		case 0x2:
-			ril_data.state.reg_state = 2;//Not registered, but MT is currently searching a new operator to register
+		case TAPI_SERVICE_LEVEL_EMERGENCY:
+			ril_data.state.reg_state = 12;//12 - Same as 2, but indicates that emergency calls are enabled.
 			break;
-		case 0x4:
-			ril_data.state.reg_state = 1; //Registered, home network
+		case TAPI_SERVICE_LEVEL_FULL:
+			ril_data.state.reg_state = 1; //1 - Registered, home network
+			break;
+		case TAPI_SERVICE_LEVEL_SEARCHING:
+			ril_data.state.reg_state = 2;//2 - Not registered, but MT is currently searching a new operator to register
 			break;
 		default:
 			ril_data.state.reg_state = 0;
