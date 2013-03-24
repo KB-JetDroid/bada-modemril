@@ -95,8 +95,17 @@ typedef struct {
 	uint8_t unknown; //always 0x00?
 } __attribute__((__packed__)) tapiRadioInfo;
 
+enum TAPI_NETWORK_DLS_ADJ {
+	TAPI_NETWORK_DLS_ADJ_NO_ADJUSTMENT = 0,
+	TAPI_NETWORK_DLS_ADJ_PLUS_ONE_HOUR = 1,
+	TAPI_NETWORK_DLS_ADJ_PLUS_TWO_HOURS = 2,
+	
+};
 typedef struct {
-	uint8_t unknown1[16];
+	uint32_t bNetworkInfoAvail; /* Le wild guess */
+	uint32_t bNetworkTimeAvail;
+	uint32_t bNetworkTimeZoneAvail;
+	uint32_t bNetworkDLSAvail;
 	uint8_t someName[40];
 	uint8_t networkName[40];
 	uint8_t year;
@@ -106,8 +115,10 @@ typedef struct {
 	uint8_t minute;
 	uint8_t second;
 	uint8_t tz; /* In quarters,  */
-	uint8_t unknown2; /* Probably daysaving time (1 or 0) */
-	uint8_t systemInfo[8]; /* Null if there's no network name given */
+	uint8_t dls;
+	uint8_t unknown3[4]; /* Unused or some system info */
+	uint16_t mcc; /* low bytes of U32 systemId */
+	uint16_t mnc; /* high bytes of U32 systemId */
 } __attribute__((__packed__)) tapiNitzInfo;
 
 typedef struct {
