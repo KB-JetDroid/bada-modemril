@@ -114,8 +114,12 @@ void ipc_network_nitz_info(void* data)
 	hex_dump(data, 0x70);
 	
 	nitz = (tapiNitzInfo*) data;
+
+	if (nitz->bNetworkTimeAvail == 0)
+		return;
+
 	sprintf(str, "%02u/%02u/%02u,%02u:%02u:%02u+%02d,%02d",
-		nitz->year, nitz->month, nitz->day, nitz->hour, nitz->minute, nitz->second, nitz->tz, 0);
+		nitz->year, nitz->month, nitz->day, nitz->hour, nitz->minute, nitz->second, nitz->tz, nitz->dls);
 
 	ril_request_unsolicited(RIL_UNSOL_NITZ_TIME_RECEIVED, str, strlen(str) + 1);
 }
