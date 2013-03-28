@@ -56,15 +56,18 @@ void ipc_network_select(void* data)
 	tapiNetworkInfo* netInfo = (tapiNetworkInfo*)(data);
 	
 	/* Converts IPC network registration status to Android RIL format */
-	switch(netInfo->serviceType) {
-		case 0x1:
-			ril_data.state.reg_state = 0;//Not registered, MT is not currently searching a new operator to register
+	switch(netInfo->serviceLevel) {
+		case TAPI_SERVICE_LEVEL_NONE:
+			ril_data.state.reg_state = 0;//0 - Not registered, MT is not currently searching a new operator to register
 			break;
-		case 0x2:
-			ril_data.state.reg_state = 2;//Not registered, but MT is currently searching a new operator to register
+		case TAPI_SERVICE_LEVEL_EMERGENCY:
+			ril_data.state.reg_state = 12;//12 - Same as 2, but indicates that emergency calls are enabled.
 			break;
-		case 0x4:
-			ril_data.state.reg_state = 1; //Registered, home network
+		case TAPI_SERVICE_LEVEL_FULL:
+			ril_data.state.reg_state = 1; //1 - Registered, home network
+			break;
+		case TAPI_SERVICE_LEVEL_SEARCHING:
+			ril_data.state.reg_state = 2;//2 - Not registered, but MT is currently searching a new operator to register
 			break;
 		default:
 			ril_data.state.reg_state = 0;
@@ -111,8 +114,12 @@ void ipc_network_nitz_info(void* data)
 	hex_dump(data, 0x70);
 	
 	nitz = (tapiNitzInfo*) data;
+
+	if (nitz->bNetworkTimeAvail == 0)
+		return;
+
 	sprintf(str, "%02u/%02u/%02u,%02u:%02u:%02u+%02d,%02d",
-		nitz->year, nitz->month, nitz->day, nitz->hour, nitz->minute, nitz->second, nitz->tz, 0);
+		nitz->year, nitz->month, nitz->day, nitz->hour, nitz->minute, nitz->second, nitz->tz, nitz->dls);
 
 	ril_request_unsolicited(RIL_UNSOL_NITZ_TIME_RECEIVED, str, strlen(str) + 1);
 }
@@ -126,7 +133,7 @@ void network_start(void)
 	start_info.serviceDomain = 0;
 	start_info.unknown1[0] = 0xE5;
 	start_info.unknown1[1] = 0x69;
-	start_info.networkMode = 0x00007FF8;
+	start_info.networkMode = TAPI_NETWORK_MODE_AUTOMATIC;
 	start_info.subscriptionMode = 0;
 	start_info.bFlightMode = 0;	
 	start_info.unknown2[0] = 0x02;
