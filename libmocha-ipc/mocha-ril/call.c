@@ -184,3 +184,25 @@ void ril_request_dtmf_stop(RIL_Token t)
 
 	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 }
+
+
+void ril_request_switch_holding_and_active(RIL_Token t)
+{
+     if(call_state == RIL_CALL_ACTIVE) 
+     {
+         tapi_call_hold(callId);
+         call_state = RIL_CALL_HOLDING;
+     } 
+     else if(call_state == RIL_CALL_HOLDING) 
+     { 
+        tapi_call_activate(callId); 
+        call_state = RIL_CALL_ACTIVE;
+     }
+
+     /* FIXME: This should actually be sent based on the response from baseband */
+     ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+
+     /* FIXME: Do we really need to send this? */
+     ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+
+}

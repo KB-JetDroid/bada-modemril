@@ -64,5 +64,6 @@ void tapi_call_incoming_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_release(uint8_t callType,uint32_t callId, uint8_t releaseCause);
 void tapi_call_answer(uint8_t callType, uint32_t callId);
-
+void tapi_call_hold(uint32_t callId);
+void tapi_call_activate(uint32_t callId);
 #endif
