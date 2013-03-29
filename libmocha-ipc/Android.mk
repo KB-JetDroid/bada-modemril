@@ -120,6 +120,7 @@ mocha-ril_files := \
 	mocha-ril/network.c \
 	mocha-ril/sim.c \
 	mocha-ril/sms.c \
+	mocha-ril/ss.c \
 	mocha-ril/util.c
 
 LOCAL_SHARED_LIBRARIES := \

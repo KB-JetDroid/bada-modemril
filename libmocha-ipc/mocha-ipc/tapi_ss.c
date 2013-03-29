@@ -36,15 +36,54 @@ void tapi_ss_parser(uint16_t tapiSsType, uint32_t tapiSsLength, uint8_t *tapiSsD
 	struct tapiPacket tx_packet;
 
 	struct modem_io request;
-    uint8_t *frame;
-    uint8_t *payload;
-    uint32_t frame_length;
+	uint8_t *frame;
+	uint8_t *payload;
+	uint32_t frame_length;
 
-    switch(tapiSsType)
-    {
-    case 0x01:
-    	break;
-    default:
-    	break;
+	switch(tapiSsType)
+	{
+	case 0x01:
+    		break;
+	case TAPI_SS_USSD_CNF:
+		tapi_ss_ussd_cnf(tapiSsData);
+	    	break;
+	case TAPI_SS_USSD_IND:
+		tapi_ss_ussd_ind(tapiSsData);
+	    	break;
+	case TAPI_SS_COMMON_ERROR_IND:
+		tapi_ss_error(tapiSsData);
+	    	break;	
+	default:
+	    	break;
     }
+	DEBUG_I("Tapi SS type = 0x%x\n tapiSsLength = 0x%x", tapiSsType, tapiSsLength);
+	hex_dump(tapiSsData, tapiSsLength);
 }
+
+void tapi_ss_send_ussd_string_request(tapiSsSendUssd* ussd_req)
+{
+	struct tapiPacket pkt;
+	pkt.header.len = sizeof(tapiSsSendUssd);
+	pkt.header.tapiService = TAPI_TYPE_SS;	
+	pkt.header.tapiServiceFunction = TAPI_SS_SEND_USSD_STRING_REQ;
+	pkt.buf = (uint8_t*)ussd_req;
+	
+	tapi_send_packet(&pkt);
+
+}
+
+void tapi_ss_ussd_cnf(uint8_t *response)
+{
+	ipc_invoke_ril_cb(SS_USSD_CNF, (void*)response);
+}
+
+void tapi_ss_ussd_ind(uint8_t *response)
+{
+	ipc_invoke_ril_cb(SS_USSD_IND, (void*)response);
+}
+
+void tapi_ss_error(uint8_t *response)
+{
+	ipc_invoke_ril_cb(SS_ERROR, (void*)response);
+}
+

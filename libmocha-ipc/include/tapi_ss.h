@@ -36,6 +36,38 @@
 struct tapiSS {
 };
 
+typedef struct {
+	uint32_t bUnknown;
+	uint8_t dcs;
+	uint8_t align[3];
+	uint32_t strLen;
+	char ussdStr[0xB8]; /* ANSI C string */
+} __attribute__((__packed__)) tapiSsSendUssd;
+
+typedef struct {
+	uint8_t cnfType;
+	uint8_t iEncoderType;
+	uint8_t dcs;
+	uint8_t unknown3;
+	uint32_t strLen;
+	char ussdStr[0xB8]; /* ANSI C string */
+} __attribute__((__packed__)) tapiSsCnf;  
+
+typedef struct {
+	uint8_t indType;
+	uint8_t iEncoderType;
+	uint8_t dcs;
+	uint8_t unknown3;
+	uint32_t strLen;
+	char ussdStr[0xB8]; /* ANSI C string */
+} __attribute__((__packed__)) tapiSsInd;
+
+
 void tapi_ss_parser(uint16_t tapiSsType, uint32_t tapiSsLength, uint8_t *tapiSsData);
+
+void tapi_ss_send_ussd_string_request(tapiSsSendUssd* ussd_req);
+void tapi_ss_ussd_cnf(uint8_t *response);
+void tapi_ss_ussd_ind(uint8_t *response);
+void tapi_ss_error(uint8_t *response);
 
 #endif

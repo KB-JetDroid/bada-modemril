@@ -273,4 +273,11 @@ void ipc_incoming_sms(void* data);
 void ril_request_send_sms(RIL_Token t, void *data, size_t length);
 void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsigned char *smsc, int smsc_length);
 
+/* SS */
+void ril_request_send_ussd(RIL_Token t, void *data, size_t datalen);
+void ril_request_cancel_ussd(RIL_Token t, void *data, size_t datalen);
+void ipc_ss_ussd_cnf_response(void* data);
+void ipc_ss_ussd_ind_response(void* data);
+void ipc_ss_error_response(void* data);
+
 #endif
