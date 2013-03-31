@@ -65,8 +65,7 @@ enum ipc_ril_cb_type {
     SIM_STATUS,
     PIN_STATUS,
     SIM_IO_RESPONSE,
-    SS_USSD_CNF,
-    SS_USSD_IND,
+    SS_USSD_CALLBACK,
     SS_ERROR,
 	IPC_RIL_CB_LAST
 };

@@ -442,6 +442,7 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 #endif		/* SS */
 		case RIL_REQUEST_SEND_USSD:
 			ril_request_send_ussd(t, data, datalen);
+			break;
 		case RIL_REQUEST_CANCEL_USSD:
 			ril_request_cancel_ussd(t, data, datalen);
 			break;
@@ -497,8 +498,7 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(NETTEXT_INCOMING, ipc_incoming_sms);
 	ipc_register_ril_cb(NETTEXT_SEND_CALLBACK, ipc_sms_send_status);
 	ipc_register_ril_cb(SIM_IO_RESPONSE, ipc_sim_io_response);
-	ipc_register_ril_cb(SS_USSD_CNF, ipc_ss_ussd_cnf_response);
-	ipc_register_ril_cb(SS_USSD_IND, ipc_ss_ussd_ind_response);
+	ipc_register_ril_cb(SS_USSD_CALLBACK, ipc_ss_ussd_response);
 	ipc_register_ril_cb(SS_ERROR, ipc_ss_error_response);
 }
  

@@ -1,6 +1,7 @@
 /**
  * This file is part of mocha-ril.
  *
+ * Copyright (C) 2012 Paul Kocialkowski <contact@paulk.fr>
  * Copyright (C) 2013 Dominik Marszk <dmarszk@gmail.com>
  * Copyright (C) 2013 Nikolay Volkov <volk204@mail.ru>
  *
@@ -27,22 +28,29 @@
 #include <tapi_ss.h>
 
 
-void ipc_ss_ussd_cnf_response(void* data)
+void ipc_ss_ussd_response(void* data)
 {
 	ALOGE("%s: test me!", __func__);
 
 	char *message[2];
-	int i, result = 0;
+	unsigned int i,data_dec_len = 0;; 
+	int result = 0;
 	char *data_dec = NULL;
-	int data_dec_len = 0;
-	int len;
-	tapiSsCnf* ssResp = (tapiSsCnf*)(data);
+	tapiSsCallback* ssResp = (tapiSsCallback*)(data);
 
 	memset(message, 0, sizeof(message));
 
 	data_dec_len = ssResp->strLen;
 
-	asprintf(&message[0], "%d", 0);
+	/* receiving "DONE!" from AMSS*/
+	if (data_dec_len == 5)
+	{
+		ALOGD("receiving DONE!, ignore it");
+		return;
+	} 
+
+	asprintf(&message[0], "%d", ssResp->SsType);
+	ril_data.state.ussd_state = ssResp->SsType;
 
 	switch (ssResp->dcs)
 	{
@@ -59,12 +67,12 @@ void ipc_ss_ussd_cnf_response(void* data)
 			}
 			message[1][result] = '\0';
 			break;
-		case 0xf:
+		case 0xF:
 
-			ALOGD("USSD Rx encoding is GSM7");
+			ALOGD("USSD Rx encoding is GSM7, but we receive it in ASCII from AMSS");
 
 			asprintf(&message[1], "%s", (char*)ssResp->ussdStr);
-		DEBUG_I("%s: message -  %s ", __func__, (char*)ssResp->ussdStr);
+			DEBUG_I("%s: message -  %s ", __func__, (char*)ssResp->ussdStr);
 			message[1][data_dec_len] = '\0';
 			break;
 
@@ -80,53 +88,111 @@ void ipc_ss_ussd_cnf_response(void* data)
 
 	}
 
-
 	ril_request_unsolicited(RIL_UNSOL_ON_USSD, message, sizeof(message));
-}
 
-void ipc_ss_ussd_ind_response(void* data)
-{
-	ALOGE("%s: implement me!", __func__);
-
-	char *message[2];
-
-	asprintf(&message[0], "%d", 2);
-	ril_request_unsolicited(RIL_UNSOL_ON_USSD, message, sizeof(message));
+	for (i = 0; i < sizeof(message) / sizeof(char *); i++) {
+		if (message[i] != NULL)
+			free(message[i]);
+	}
 }
 
 void ipc_ss_error_response(void* data)
 {
 	ALOGE("%s: test me!", __func__);
 	char *message[2];
+	unsigned int i,data_dec_len = 0;; 
+	char *data_dec = NULL;
 
-	asprintf(&message[0], "%d", 2);
-	ril_request_unsolicited(RIL_UNSOL_ON_USSD, message, sizeof(message));	
+	memset(message, 0, sizeof(message));
+
+	asprintf(&message[0], "%d", USSD_TERMINATED_BY_NET);
+	ril_data.state.ussd_state = USSD_TERMINATED_BY_NET;
+
+	ril_request_unsolicited(RIL_UNSOL_ON_USSD, message, sizeof(message));
 
 }
 
 void ril_request_send_ussd(RIL_Token t, void *data, size_t datalen)
 {
 	ALOGE("%s: test me!", __func__);
-	DEBUG_I("%s: data - %s , len = %d", __func__, (char *)data, datalen);	
-	tapiSsSendUssd ussd_req;
-	ussd_req.bUnknown = 0;
-	ussd_req.dcs = 0xF;
-	ussd_req.align[0] = 0;
-	ussd_req.align[1] = 0;
-	ussd_req.align[2] = 0;
-	ussd_req.strLen = strlen((char *)data);
-	memset(ussd_req.ussdStr, 0, strlen((char *)data));
-	memcpy(ussd_req.ussdStr, data, strlen((char *)data));
+	tapiSsSendUssd *ussd_req;
+	tapiSsResponse *ss_resp;
 
-	tapi_ss_send_ussd_string_request(&ussd_req);
+	DEBUG_I("%s: message - %s ", __func__, (char *)data);
 
-	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+	switch(ril_data.state.ussd_state) {
+		case USSD_NO_ACTION_REQUIRE:
+		case USSD_TERMINATED_BY_NET:
+		case USSD_OTHER_CLIENT:
+		case USSD_NOT_SUPPORT:
+		case USSD_TIME_OUT:
+
+			ussd_req = malloc(sizeof(tapiSsSendUssd));
+			memset(ussd_req, 0, sizeof(tapiSsSendUssd));	
+
+			ussd_req->bUnknown = 0;
+			ussd_req->dcs = 0xF;
+			ussd_req->strLen = strlen((char *)data);
+			memcpy(ussd_req->ussdStr, data, strlen((char *)data));
+
+			tapi_ss_send_ussd_string_request(ussd_req);
+
+			if (ussd_req != NULL)
+				free(ussd_req);
+
+			break;
+		case USSD_ACTION_REQUIRE:
+		default:
+			ss_resp = malloc(sizeof(tapiSsResponse));
+			memset(ss_resp, 0, sizeof(tapiSsResponse));
+
+			if (strlen((char *)data) > 0)
+			{
+				ss_resp->rspType = 2;
+				ss_resp->indType = USSD_ACTION_REQUIRE; 
+				ss_resp->dcs = 0xF;
+				ss_resp->strLen = strlen((char *)data);
+				memcpy(ss_resp->rspString, data, strlen((char *)data));
+			}
+			else
+			{
+				DEBUG_I("%s: message is NULL", __func__);
+				
+				ss_resp->rspType = 3;
+				ss_resp->indType = USSD_ACTION_REQUIRE; 
+			}
+			tapi_ss_ussd_resp(ss_resp);
+
+			if (ss_resp != NULL)
+				free(ss_resp);
+			break;
+		}
+
+	if (strlen((char *)data) > 0)
+		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+	else
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 
 }
 
 void ril_request_cancel_ussd(RIL_Token t, void *data, size_t datalen)
 {
-	ALOGE("%s: implement me!", __func__);
+	ALOGE("%s: test me!", __func__);
+	ril_data.state.ussd_state = USSD_TERMINATED_BY_NET;
+	tapiSsResponse *ss_resp;
+
+	ss_resp = malloc(sizeof(tapiSsResponse));
+	memset(ss_resp, 0, sizeof(tapiSsResponse));
+
+	ss_resp->rspType = 3;
+	ss_resp->indType = USSD_ACTION_REQUIRE; 
+
+	tapi_ss_ussd_resp(ss_resp);
+
+	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+
+	if (ss_resp != NULL)
+		free(ss_resp); 
 }
 
 

@@ -45,10 +45,10 @@ void tapi_ss_parser(uint16_t tapiSsType, uint32_t tapiSsLength, uint8_t *tapiSsD
 	case 0x01:
     		break;
 	case TAPI_SS_USSD_CNF:
-		tapi_ss_ussd_cnf(tapiSsData);
+		tapi_ss_ussd_callback(tapiSsData);
 	    	break;
 	case TAPI_SS_USSD_IND:
-		tapi_ss_ussd_ind(tapiSsData);
+		tapi_ss_ussd_callback(tapiSsData);
 	    	break;
 	case TAPI_SS_COMMON_ERROR_IND:
 		tapi_ss_error(tapiSsData);
@@ -72,14 +72,21 @@ void tapi_ss_send_ussd_string_request(tapiSsSendUssd* ussd_req)
 
 }
 
-void tapi_ss_ussd_cnf(uint8_t *response)
+void tapi_ss_ussd_resp(tapiSsResponse* ussd_req)
 {
-	ipc_invoke_ril_cb(SS_USSD_CNF, (void*)response);
+	struct tapiPacket pkt;
+	pkt.header.len = sizeof(tapiSsResponse);
+	pkt.header.tapiService = TAPI_TYPE_SS;	
+	pkt.header.tapiServiceFunction = TAPI_SS_USSD_RSP;
+	pkt.buf = (uint8_t*)ussd_req;
+	
+	tapi_send_packet(&pkt);
+
 }
 
-void tapi_ss_ussd_ind(uint8_t *response)
+void tapi_ss_ussd_callback(uint8_t *response)
 {
-	ipc_invoke_ril_cb(SS_USSD_IND, (void*)response);
+	ipc_invoke_ril_cb(SS_USSD_CALLBACK, (void*)response);
 }
 
 void tapi_ss_error(uint8_t *response)
