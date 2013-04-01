@@ -42,8 +42,6 @@ void tapi_ss_parser(uint16_t tapiSsType, uint32_t tapiSsLength, uint8_t *tapiSsD
 
 	switch(tapiSsType)
 	{
-	case 0x01:
-    		break;
 	case TAPI_SS_USSD_CNF:
 		tapi_ss_ussd_callback(tapiSsData);
 	    	break;
