@@ -25,12 +25,11 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/un.h>
-#include <sys/queue.h>
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#include <mocha-ril-socket.h>
+#include <samsung-ril-socket.h>
 
 #define SRS_CLIENT_LOCK() pthread_mutex_lock(&client_data->mutex)
 #define SRS_CLIENT_UNLOCK() pthread_mutex_unlock(&client_data->mutex)

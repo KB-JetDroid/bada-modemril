@@ -281,13 +281,13 @@ void srs_dispatch(struct srs_message *message)
 			srs_control_ping(message);
 			break;
 		case SRS_SND_SET_CALL_CLOCK_SYNC:
-//			srs_snd_set_call_clock_sync(message);
+			srs_snd_set_call_clock_sync(message);
 			break;
 		case SRS_SND_SET_CALL_VOLUME:
-//			srs_snd_set_call_volume(message);
+			srs_snd_set_call_volume(message);
 			break;
 		case SRS_SND_SET_CALL_AUDIO_PATH:
-//			srs_snd_set_call_audio_path(message);
+			srs_snd_set_call_audio_path(message);
 			break;
 		default:
 			ALOGD("Unhandled command: (%04x)", message->command);
@@ -436,10 +436,10 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_DEACTIVATE_DATA_CALL:
 			ril_request_deactivate_data_call(t, data, datalen);
 			break;
-		/* SND */
+#endif		/* SND */
 		case RIL_REQUEST_SET_MUTE:
 			ril_request_set_mute(t, data, datalen);
-#endif		/* SS */
+		/* SS */
 		case RIL_REQUEST_SEND_USSD:
 			ril_request_send_ussd(t, data, datalen);
 			break;

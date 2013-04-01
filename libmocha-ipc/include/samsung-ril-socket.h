@@ -1,7 +1,7 @@
 /**
  * This file is part of mocha-ril.
  *
- * Copyright (C) 2011 Paul Kocialkowski <contact@oaulk.fr>
+ * Copyright (C) 2011-2012 Paul Kocialkowski <contact@oaulk.fr>
  *
  * mocha-ril is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #define SRS_GROUP(m)    (m >> 8)
 #define SRS_INDEX(m)    (m & 0xff)
 
-#define SRS_SOCKET_NAME			"mocha-ril-socket"
+#define SRS_SOCKET_NAME			"samsung-ril-socket"
 #define SRS_DATA_MAX_SIZE		0x1000
 
 #define SRS_CONTROL			0x01
@@ -39,6 +39,19 @@
 #define SRS_SND_SET_CALL_CLOCK_SYNC	0x0203
 
 #define SRS_CONTROL_CAFFE		0xCAFFE
+
+struct srs_header {
+	unsigned int length;
+	unsigned char group;
+	unsigned char index;
+} __attribute__((__packed__));
+
+struct srs_message {
+	unsigned short command;
+	int length;
+	void *data;
+};
+
 
 enum srs_snd_type {
 	SRS_SND_TYPE_VOICE,
@@ -66,16 +79,16 @@ struct srs_snd_call_volume {
 	int volume;
 } __attribute__((__packed__));
 
-struct srs_header {
-	unsigned int length;
-	unsigned char group;
-	unsigned char index;
+struct srs_snd_call_audio_path {
+	enum srs_snd_path path;
 } __attribute__((__packed__));
 
-struct srs_message {
-	unsigned short command;
-	int data_len;
-	void *data;
+struct srs_snd_call_clock_sync {
+	unsigned char sync;
+} __attribute__((__packed__));
+
+struct srs_control_ping {
+	int caffe;
 } __attribute__((__packed__));
 
 #endif

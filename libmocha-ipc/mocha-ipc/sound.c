@@ -36,3 +36,14 @@ void ipc_parse_sound(struct ipc_client* client, struct modem_io *ipc_frame)
 	DEBUG_I("Sound packet type = 0x%x\n  Total packet length = 0x%X", packet->buffer[0], ipc_frame->datasize);
 	ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);	
 }
+
+void sound_send_packet(uint8_t *data, int32_t data_size)
+{
+	struct modem_io request;
+	request.data = data;
+	request.magic = 0xCAFECAFE;
+	request.cmd = FIFO_PKT_SOUND;
+	request.datasize = sizeof(soundPacket);
+	ipc_send(&request);
+}
+

@@ -27,7 +27,7 @@
 /**
  * Format conversion utils
  */
-
+#if 0
 unsigned char srs2ipc_call_type(int type)
 {
 	switch(type) {
@@ -66,44 +66,54 @@ unsigned char srs2ipc_audio_path(int path)
 	}
 }
 
+#endif
+
 void ril_request_set_mute(RIL_Token t, void *data, size_t datalen)
 {
+	ALOGE("%s: Implement me!", __func__);
+
 	unsigned char mute_data = ((int *)data)[0] > 0 ? 1 : 0;
 
 	ALOGD("Mute data is %d\n", mute_data);
 
-	ipc_gen_phone_res_expect_to_complete(reqGetId(t), IPC_SND_MIC_MUTE_CTRL);
+	//ipc_gen_phone_res_expect_to_complete(reqGetId(t), IPC_SND_MIC_MUTE_CTRL);
 
-	ipc_send(IPC_SND_MIC_MUTE_CTRL, IPC_TYPE_SET, (void *) &mute_data, sizeof(mute_data), reqGetId(t));
+	//ipc_send(IPC_SND_MIC_MUTE_CTRL, IPC_TYPE_SET, (void *) &mute_data, sizeof(mute_data), reqGetId(t));
 }
 
 void srs_snd_set_call_clock_sync(struct srs_message *message)
 {
+	ALOGE("%s: Implement me!", __func__);
+
 	unsigned char data = *((unsigned char *) message->data);
 	ALOGD("Clock sync data is 0x%x\n", data);
 
-	ipc_send(IPC_SND_CLOCK_CTRL, IPC_TYPE_EXEC, &data, sizeof(data), reqIdNew());
+	//ipc_send(IPC_SND_CLOCK_CTRL, IPC_TYPE_EXEC, &data, sizeof(data), reqIdNew());
 }
 
 void srs_snd_set_call_volume(struct srs_message *message)
 {
 	struct srs_snd_call_volume *call_volume = (struct srs_snd_call_volume *) message->data;
-	struct ipc_snd_spkr_volume_ctrl volume_ctrl;
+	//struct ipc_snd_spkr_volume_ctrl volume_ctrl;
+
+	ALOGE("%s: Implement me!", __func__);
 
 	ALOGD("Call volume for: 0x%x vol = 0x%x\n", call_volume->type, call_volume->volume);
 
-	volume_ctrl.type = srs2ipc_call_type(call_volume->type);
-	volume_ctrl.volume = call_volume->volume;
+	//volume_ctrl.type = srs2ipc_call_type(call_volume->type);
+	//volume_ctrl.volume = call_volume->volume;
 
-	ipc_send(IPC_SND_SPKR_VOLUME_CTRL, IPC_TYPE_SET, (void *) &volume_ctrl, sizeof(volume_ctrl), reqIdNew());
+	//ipc_send(IPC_SND_SPKR_VOLUME_CTRL, IPC_TYPE_SET, (void *) &volume_ctrl, sizeof(volume_ctrl), reqIdNew());
 }
 
 void srs_snd_set_call_audio_path(struct srs_message *message)
 {
+	ALOGE("%s: Implement me!", __func__);
+
 	int audio_path = ((int *) message->data)[0];
-	unsigned char path = srs2ipc_audio_path(audio_path);
+	//unsigned char path = srs2ipc_audio_path(audio_path);
 
-	ALOGD("Audio path to: 0x%x\n", path);
+	ALOGD("Audio path to: 0x%x\n",audio_path);
 
-	ipc_send(IPC_SND_AUDIO_PATH_CTRL, IPC_TYPE_SET, (void *) &path, sizeof(path), reqIdNew());
+	//ipc_send(IPC_SND_AUDIO_PATH_CTRL, IPC_TYPE_SET, (void *) &path, sizeof(path), reqIdNew());
 }
