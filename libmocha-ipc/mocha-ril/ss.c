@@ -106,9 +106,16 @@ void ipc_ss_error_response(void* data)
 	memset(message, 0, sizeof(message));
 
 	asprintf(&message[0], "%d", USSD_TERMINATED_BY_NET);
+	asprintf(&message[1], "%d", (int)(data));
+
 	ril_data.state.ussd_state = USSD_TERMINATED_BY_NET;
 
 	ril_request_unsolicited(RIL_UNSOL_ON_USSD, message, sizeof(message));
+
+	for (i = 0; i < sizeof(message) / sizeof(char *); i++) {
+		if (message[i] != NULL)
+			free(message[i]);
+	}
 
 }
 
@@ -160,6 +167,7 @@ void ril_request_send_ussd(RIL_Token t, void *data, size_t datalen)
 				
 				ss_resp->rspType = 3;
 				ss_resp->indType = USSD_ACTION_REQUIRE; 
+				ril_data.state.ussd_state = USSD_NOT_SUPPORT;
 			}
 			tapi_ss_ussd_resp(ss_resp);
 
