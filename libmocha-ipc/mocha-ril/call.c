@@ -21,7 +21,7 @@
  *
  */
 
-#define LOG_TAG "Mocha-RIL-CALL"
+#define LOG_TAG "RIL-Mocha-CALL"
 #include <utils/Log.h>
 
 #include "mocha-ril.h"

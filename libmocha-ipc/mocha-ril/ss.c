@@ -20,7 +20,7 @@
  *
  */
 
-#define LOG_TAG "Mocha-RIL-SS"
+#define LOG_TAG "RIL-Mocha-SS"
 #include <utils/Log.h>
 
 #include "mocha-ril.h"

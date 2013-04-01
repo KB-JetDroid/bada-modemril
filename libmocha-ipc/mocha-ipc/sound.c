@@ -25,7 +25,7 @@
 #include <radio.h>
 #include <sound.h>
 
-#define LOG_TAG "Mocha-RIL-SOUND"
+#define LOG_TAG "RIL-Mocha-SOUND"
 #include <utils/Log.h>
 
 void ipc_parse_sound(struct ipc_client* client, struct modem_io *ipc_frame)

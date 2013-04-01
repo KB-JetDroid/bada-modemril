@@ -20,7 +20,7 @@
 
 #include <pthread.h>
 
-#define LOG_TAG "Mocha-RIL-Client"
+#define LOG_TAG "RIL-Mocha-Client"
 #include <utils/Log.h>
 
 #include "mocha-ril.h"

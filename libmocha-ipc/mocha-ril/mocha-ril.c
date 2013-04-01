@@ -21,7 +21,7 @@
  *
  */
 
-#define LOG_TAG "Mocha-RIL"
+#define LOG_TAG "RIL-Mocha"
 
 #include <time.h>
 #include <pthread.h>

@@ -27,7 +27,7 @@
 #include <tapi.h>
 #include <tapi_call.h>
 
-#define LOG_TAG "Mocha-RIL-TAPI-CALL"
+#define LOG_TAG "RIL-Mocha-TAPI-CALL"
 #include <utils/Log.h>
 
 /*
