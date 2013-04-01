@@ -163,7 +163,7 @@ void ril_request_send_ussd(RIL_Token t, void *data, size_t datalen)
 			}
 			else
 			{
-				DEBUG_I("%s: message is NULL", __func__);
+				DEBUG_I("%s: USSD message is empty, aborting", __func__);
 				
 				ss_resp->rspType = 3;
 				ss_resp->indType = USSD_ACTION_REQUIRE; 
