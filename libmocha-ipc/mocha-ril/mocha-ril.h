@@ -130,9 +130,7 @@ struct ril_tokens {
 	RIL_Token get_imei;
 	RIL_Token get_imeisv;
 	RIL_Token baseband_version;
-
 	RIL_Token operator;
-	
 	RIL_Token outgoing_sms;
 };
 
@@ -162,11 +160,21 @@ typedef enum {
 	SIM_STATE_SERVICE_PROVIDER_PERSO	= 9,
 } ril_sim_state;
 
+typedef enum {
+	USSD_NO_ACTION_REQUIRE 			= 0,
+	USSD_ACTION_REQUIRE			= 1,
+	USSD_TERMINATED_BY_NET			= 2,
+	USSD_OTHER_CLIENT			= 3,
+	USSD_NOT_SUPPORT 			= 4,
+	USSD_TIME_OUT				= 5,
+} ril_ussd_state;
+
 struct ril_state {
 	RIL_RadioState radio_state;
 	ril_sim_state sim_state;
 	int power_state;
 	int reg_state;
+	int ussd_state;
 	uint32_t cell_id;
 	uint8_t rac_id;
 	uint16_t lac_id;
@@ -272,6 +280,12 @@ void ipc_sms_send_status(void* data);
 void ipc_incoming_sms(void* data);
 void ril_request_send_sms(RIL_Token t, void *data, size_t length);
 void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsigned char *smsc, int smsc_length);
+
+/* SS */
+void ril_request_send_ussd(RIL_Token t, void *data, size_t datalen);
+void ril_request_cancel_ussd(RIL_Token t, void *data, size_t datalen);
+void ipc_ss_ussd_response(void* data);
+void ipc_ss_error_response(void* data);
 
 /* SND */
 void ril_request_set_mute(RIL_Token t, void *data, size_t datalen);

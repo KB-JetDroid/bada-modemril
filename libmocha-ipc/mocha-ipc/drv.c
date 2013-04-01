@@ -37,7 +37,7 @@
 #include <errno.h>
 #include <tm.h>
 
-#define LOG_TAG "Mocha-RIL-IPC_DRV"
+#define LOG_TAG "RIL-Mocha-IPC_DRV"
 #include <utils/Log.h>
 
 /*

@@ -25,7 +25,7 @@
 #include <tapi.h>
 #include <tapi_dmh.h>
 
-#define LOG_TAG "Mocha-RIL-TAPI-DMH"
+#define LOG_TAG "RIL-Mocha-TAPI-DMH"
 #include <utils/Log.h>
 
 /*

@@ -23,7 +23,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#define LOG_TAG "Mocha-RIL-UTIL"
+#define LOG_TAG "RIL-Mocha-UTIL"
 #include <utils/Log.h>
 #include "util.h"
 
