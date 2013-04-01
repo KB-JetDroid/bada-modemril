@@ -43,7 +43,7 @@ void ipc_ss_ussd_response(void* data)
 	data_dec_len = ssResp->strLen;
 
 	/* receiving "DONE!" from AMSS*/
-	if (data_dec_len == 5)
+	if (strncmp("DONE!", (char*)ssResp->ussdStr, 5) == 0)
 	{
 		ALOGD("receiving DONE!, ignore it");
 		return;
