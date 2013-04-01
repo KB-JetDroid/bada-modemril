@@ -54,7 +54,7 @@
 #include <dirent.h>
 #include <errno.h>
 
-#define LOG_TAG "Mocha-RIL-FM"
+#define LOG_TAG "RIL-Mocha-FM"
 #include <utils/Log.h>
 
 #define MAX_OPEN_DIRS 	10

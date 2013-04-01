@@ -27,7 +27,7 @@
 #include <tapi.h>
 #include <tapi_nettext.h>
 
-#define LOG_TAG "Mocha-RIL-TAPI-SMS"
+#define LOG_TAG "RIL-Mocha-TAPI-SMS"
 #include <utils/Log.h>
 
 /*

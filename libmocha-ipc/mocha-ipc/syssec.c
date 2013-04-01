@@ -25,7 +25,7 @@
 #include <radio.h>
 #include <syssec.h>
 
-#define LOG_TAG "Mocha-RIL-SYSSEC"
+#define LOG_TAG "RIL-Mocha-SYSSEC"
 #include <utils/Log.h>
 
 #include <drv.h>

@@ -21,7 +21,7 @@
  *
  */
 
-#define LOG_TAG "Mocha-RIL"
+#define LOG_TAG "RIL-Mocha"
 
 #include <time.h>
 #include <pthread.h>
@@ -439,6 +439,13 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 #endif		/* SND */
 		case RIL_REQUEST_SET_MUTE:
 			ril_request_set_mute(t, data, datalen);
+		/* SS */
+		case RIL_REQUEST_SEND_USSD:
+			ril_request_send_ussd(t, data, datalen);
+			break;
+		case RIL_REQUEST_CANCEL_USSD:
+			ril_request_cancel_ussd(t, data, datalen);
+			break;
 		/* OTHER */
 		case RIL_REQUEST_SCREEN_STATE:
 			ril_request_screen_state(t, data, datalen);			
@@ -491,6 +498,8 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(NETTEXT_INCOMING, ipc_incoming_sms);
 	ipc_register_ril_cb(NETTEXT_SEND_CALLBACK, ipc_sms_send_status);
 	ipc_register_ril_cb(SIM_IO_RESPONSE, ipc_sim_io_response);
+	ipc_register_ril_cb(SS_USSD_CALLBACK, ipc_ss_ussd_response);
+	ipc_register_ril_cb(SS_ERROR, ipc_ss_error_response);
 }
  
 void ril_data_init(void)

@@ -20,7 +20,7 @@
  *
  */
 
-#define LOG_TAG "Mocha-RIL-PWR"
+#define LOG_TAG "RIL-Mocha-PWR"
 #include <time.h>
 #include <utils/Log.h>
 

@@ -30,7 +30,7 @@
 #include <misc.h>
 #include <proto.h>
 
-#define LOG_TAG "Mocha-RIL-IPC-PARSER"
+#define LOG_TAG "RIL-Mocha-IPC-PARSER"
 #include <utils/Log.h>
 
 void ipc_dispatch(struct ipc_client *client, struct modem_io *ipc_frame)

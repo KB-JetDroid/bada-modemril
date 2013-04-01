@@ -40,7 +40,7 @@
 #include <tapi_nettext.h>
 #include <tapi_network.h>
 
-#define LOG_TAG "Mocha-RIL-SIM"
+#define LOG_TAG "RIL-Mocha-SIM"
 #include <utils/Log.h>
 
 /*
