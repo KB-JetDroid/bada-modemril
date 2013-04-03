@@ -712,3 +712,19 @@ void ipc_incoming_sms(void* data)
 		free (tp_ud);
 }
 
+void nettext_cb_setup(void)
+{
+	tapi_nettext_cb_settings cb_sett_buf;
+	int i;
+
+	cb_sett_buf.ext_cb = 0x0;
+	cb_sett_buf.ext_cb_enable = 0x0;
+	cb_sett_buf.enable_all_combined_cb_channels = 0x1;
+	cb_sett_buf.combined_language_type = 0x0;
+	cb_sett_buf.number_of_combined_cbmi = 0x367FFF;
+	for (i = 0; i < 40; i++)
+		cb_sett_buf.cb_info[i] = 0x0;
+	tapi_nettext_set_cb_settings(&cb_sett_buf);
+}
+
+

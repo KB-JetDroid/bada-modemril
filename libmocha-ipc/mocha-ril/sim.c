@@ -25,8 +25,8 @@
 #include "mocha-ril.h"
 #include "util.h"
 #include <sim.h>
-#include <tapi_nettext.h>
 #include <tapi_network.h>
+
 
 
 void ril_sim_init(void)
@@ -200,8 +200,6 @@ void ril_request_get_sim_status(RIL_Token t)
 void ril_state_update(ril_sim_state sim_state)
 {
 	RIL_RadioState radio_state;
-	tapi_nettext_cb_settings* cb_sett_buf;
-	int i;
 
 	/* If power mode isn't at least normal, don't update RIL state */
 	if (ril_data.state.power_state != POWER_STATE_NORMAL)
@@ -215,18 +213,7 @@ void ril_state_update(ril_sim_state sim_state)
 			//request SMSC number
 			sim_data_request_to_modem(4, 0x6f42);
 			tapi_set_subscription_mode(0x1);
-			cb_sett_buf = (tapi_nettext_cb_settings *)malloc(sizeof(tapi_nettext_cb_settings));
-			memset(cb_sett_buf, 0, sizeof(tapi_nettext_cb_settings));		
-			cb_sett_buf->ext_cb = 0x0;
-			cb_sett_buf->ext_cb_enable = 0x0;
-			cb_sett_buf->enable_all_combined_cb_channels = 0x1;
-			cb_sett_buf->combined_language_type = 0x0;
-			cb_sett_buf->number_of_combined_cbmi = 0x367FFF;
-			for (i = 0; i < 40; i++) {
-			cb_sett_buf->cb_info[i] = 0x0;}
-			tapi_nettext_set_cb_settings((uint8_t *)cb_sett_buf);
-			free(cb_sett_buf); 
-			
+			nettext_cb_setup();
 			break;
 		case SIM_STATE_NOT_READY:
 			radio_state = RADIO_STATE_SIM_NOT_READY;

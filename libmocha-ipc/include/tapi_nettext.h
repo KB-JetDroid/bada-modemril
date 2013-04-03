@@ -47,21 +47,6 @@ typedef struct {
 } __attribute__((__packed__)) tapi_nettext_cb_settings;
 
 typedef struct {
-	uint8_t messageLength; 
-	uint8_t messageBody[160];
-} __attribute__((__packed__)) tapiNettextSingleInfo;
-
-typedef struct {
-	uint8_t messageLength; 
-	uint8_t unknownUDH1; 
-	uint8_t unknownUDH2; 
-	uint8_t unknownUDH3; 
-	uint8_t quantityParts; 
-	uint8_t numberPart; 	
-	uint8_t messageBody[160];
-} __attribute__((__packed__)) tapiNettextMultiInfo;
-
-typedef struct {
 	uint8_t msgType;
 	uint8_t bearer;
 	uint8_t unknown0[2];
@@ -123,7 +108,7 @@ void tapi_nettext_parser(uint16_t tapiNettextType, uint32_t tapiNettextLength, u
 void tapi_nettext_set_mem_available(uint32_t bMemAvail);
 void tapi_nettext_set_preferred_memory(uint8_t preferredMemory);
 void tapi_nettext_set_net_burst(uint32_t bNetBurstEnabled);
-void tapi_nettext_set_cb_settings(uint8_t* cb_sett_buf);
+void tapi_nettext_set_cb_settings(tapi_nettext_cb_settings* cb_sett_buf);
 void tapi_nettext_incoming(uint32_t tapiNettextLength, uint8_t *tapiNettextData);
 void tapi_nettext_send(uint8_t* tapiNettextOutgoingMessage);
 void tapi_nettext_send_callback(uint8_t *callBack);
