@@ -25,6 +25,9 @@
 #include "mocha-ril.h"
 #include "util.h"
 #include <sim.h>
+#include <tapi_network.h>
+
+
 
 void ril_sim_init(void)
 {
@@ -55,6 +58,8 @@ void ipc_pin_status(void* data)
 		case 0:
 			DEBUG_I("%s : Correct password ", __func__);
 			ril_request_complete(ril_data.tokens.pin_status, RIL_E_SUCCESS, &attempts, sizeof(attempts));
+			DEBUG_I("SIM_READY");
+			sim_status(2);
 			return;
 		case 1:
 			DEBUG_I("%s : Wrong password ", __func__);
@@ -207,6 +212,8 @@ void ril_state_update(ril_sim_state sim_state)
 			radio_state = RADIO_STATE_SIM_READY;
 			//request SMSC number
 			sim_data_request_to_modem(4, 0x6f42);
+			tapi_set_subscription_mode(0x1);
+			nettext_cb_setup();
 			break;
 		case SIM_STATE_NOT_READY:
 			radio_state = RADIO_STATE_SIM_NOT_READY;
