@@ -507,6 +507,7 @@ void ril_data_init(void)
 	memset(&ril_data, 0, sizeof(ril_data));
 
 	pthread_mutex_init(&ril_data.mutex, NULL);
+	ril_data.state.sim_state = SIM_STATE_NOT_READY;
 }
 
 /**
