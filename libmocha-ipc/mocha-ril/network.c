@@ -30,10 +30,8 @@
 int ipc2ril_net_mode(uint32_t mode)
 {
 	switch (mode) {
-		case TAPI_NETWORK_MODE_GSM1800:
+		case TAPI_NETWORK_MODE_GSM_900_1800_1900:
 			return 1;
-		case TAPI_NETWORK_MODE_UMTS_900_2100:
-			return 2;
 		case TAPI_NETWORK_MODE_AUTOMATIC:
 		default:
 			return 0;
@@ -44,9 +42,7 @@ uint32_t ril2ipc_net_mode(int mode)
 {
 	switch (mode) {
 		case 1: // GSM 900/1800
-			return TAPI_NETWORK_MODE_GSM1800;
-		case 2: // UMTS 900/2100
-			return TAPI_NETWORK_MODE_UMTS_900_2100;
+			return TAPI_NETWORK_MODE_GSM_900_1800_1900;
 		case 0:
 		default: // automatic
 			return TAPI_NETWORK_MODE_AUTOMATIC;
