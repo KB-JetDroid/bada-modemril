@@ -139,5 +139,6 @@ void tapi_network_nitz_info_ind(uint32_t tapiNetLength, uint8_t *tapiNetData);
 
 void tapi_network_init(void);
 void tapi_set_subscription_mode(uint8_t mode);
+void tapi_network_set_mode(uint32_t mode);
 
 #endif
