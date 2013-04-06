@@ -23,6 +23,7 @@
 
 #include "mocha-ril.h"
 #include "util.h"
+#include <sound.h>
 
 /**
  * Format conversion utils
@@ -70,15 +71,26 @@ unsigned char srs2ipc_audio_path(int path)
 
 void ril_request_set_mute(RIL_Token t, void *data, size_t datalen)
 {
+	soundSetMuteSndPathPacket set_mute;
+
 	ALOGE("%s: Implement me!", __func__);
 
 	unsigned char mute_data = ((int *)data)[0] > 0 ? 1 : 0;
 
 	ALOGD("Mute data is %d\n", mute_data);
 
-	//ipc_gen_phone_res_expect_to_complete(reqGetId(t), IPC_SND_MIC_MUTE_CTRL);
+	set_mute.packetType = SOUND_PACKET_SET_MUTE; 
+	set_mute.align = 0; /* random stuff */
+	set_mute.inDevice = 0x100;
+	set_mute.outDevice = 2;
+	set_mute.inDeviceMuted = mute_data;
+	set_mute.outDeviceMuted = mute_data;
+	set_mute.soundType = 0xD; //fake 
+	set_mute.oemVolume = 6; /* always 6 for mute packet */
 
-	//ipc_send(IPC_SND_MIC_MUTE_CTRL, IPC_TYPE_SET, (void *) &mute_data, sizeof(mute_data), reqGetId(t));
+	sound_send_packet((uint8_t *)&set_mute, sizeof(soundSetMuteSndPathPacket));
+
+	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 }
 
 void srs_snd_set_call_clock_sync(struct srs_message *message)
@@ -88,32 +100,52 @@ void srs_snd_set_call_clock_sync(struct srs_message *message)
 	unsigned char data = *((unsigned char *) message->data);
 	ALOGD("Clock sync data is 0x%x\n", data);
 
-	//ipc_send(IPC_SND_CLOCK_CTRL, IPC_TYPE_EXEC, &data, sizeof(data), reqIdNew());
 }
 
 void srs_snd_set_call_volume(struct srs_message *message)
 {
-	struct srs_snd_call_volume *call_volume = (struct srs_snd_call_volume *) message->data;
-	//struct ipc_snd_spkr_volume_ctrl volume_ctrl;
-
 	ALOGE("%s: Implement me!", __func__);
+
+	soundSetVolumePacket set_vol;
+
+	struct srs_snd_call_volume *call_volume = (struct srs_snd_call_volume *) message->data;
 
 	ALOGD("Call volume for: 0x%x vol = 0x%x\n", call_volume->type, call_volume->volume);
 
-	//volume_ctrl.type = srs2ipc_call_type(call_volume->type);
-	//volume_ctrl.volume = call_volume->volume;
+	set_vol.packetType = SOUND_PACKET_SET_VOLUME; 
+	set_vol.align[0] = 0; /* random stuff */
+	set_vol.align[1] = 0; /* random stuff */
+	set_vol.align[2] = 0; /* random stuff */
+	set_vol.outDevice = 2;
+	set_vol.inDeviceMuted = 0;
+	set_vol.outDeviceMuted = 0;
+	set_vol.soundType = 0xD; //fake
+	set_vol.oemVolume = 1; //fake
 
-	//ipc_send(IPC_SND_SPKR_VOLUME_CTRL, IPC_TYPE_SET, (void *) &volume_ctrl, sizeof(volume_ctrl), reqIdNew());
+	sound_send_packet((uint8_t *)&set_vol, sizeof(soundSetVolumePacket));
+
+
 }
 
 void srs_snd_set_call_audio_path(struct srs_message *message)
 {
 	ALOGE("%s: Implement me!", __func__);
 
+	soundSetMuteSndPathPacket a_path;
+
 	int audio_path = ((int *) message->data)[0];
 	//unsigned char path = srs2ipc_audio_path(audio_path);
 
 	ALOGD("Audio path to: 0x%x\n",audio_path);
 
-	//ipc_send(IPC_SND_AUDIO_PATH_CTRL, IPC_TYPE_SET, (void *) &path, sizeof(path), reqIdNew());
+	a_path.packetType = SOUND_PACKET_SET_SND_PATH;
+	a_path.align = 0; /* random stuff */ 
+	a_path.inDevice = 0x100;
+	a_path.outDevice = 2;
+	a_path.inDeviceMuted = 0;
+	a_path.outDeviceMuted = 0;
+	a_path.soundType = 0xD; //fake 
+	a_path.oemVolume = 1; //fake
+	sound_send_packet((uint8_t *)&a_path, sizeof(soundSetMuteSndPathPacket));
+
 }
