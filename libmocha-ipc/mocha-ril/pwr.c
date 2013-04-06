@@ -67,7 +67,6 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 	} else {	
 		ALOGD("Request power to NORMAL");
-		ipc_send_lpm_mode(0);
 		tapi_init();
 		proto_startup();
 		lbs_init();
