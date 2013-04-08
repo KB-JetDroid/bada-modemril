@@ -61,12 +61,14 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 		return;
 	}
 	if(power_state <= 0) {
-		ALOGD("Request power to LPM, IMPLEMENT ME!");
+		ALOGD("Request power to OFF");
 		ril_data.state.power_state = POWER_STATE_LPM;
 		ril_data.state.radio_state = RADIO_STATE_OFF;
+		tapi_set_offline_mode(TAPI_NETWORK_OFFLINE_MODE_ON);
 		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 	} else {	
 		ALOGD("Request power to NORMAL");
+		tapi_set_offline_mode(TAPI_NETWORK_OFFLINE_MODE_OFF);
 		tapi_init();
 		proto_startup();
 		lbs_init();
