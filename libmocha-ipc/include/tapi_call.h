@@ -59,10 +59,37 @@ typedef struct{
 	uint8_t align1[3];
 } __attribute__((__packed__)) tapiCallRelease;
 
+typedef struct{
+	uint32_t unknown0; //01
+	uint32_t unknown1; //01
+	uint32_t unknown2; // 01 or 03
+	uint32_t unknown3; //5C 25 C8 41
+	uint32_t unknown4; // FF
+	uint32_t unknown5; //01
+	uint8_t unknown6; //02
+	char number1[83];
+	uint32_t timestamp0;
+	uint32_t timestamp1;
+	uint8_t unknown7; // 00
+	uint8_t unknown8; //01
+	uint8_t unknown9[82]; //00
+	uint8_t unknown10; //01
+	uint8_t unknown11[759]; //00
+	uint32_t unknown12; //3A
+	uint8_t unknown13[284]; //00
+	uint8_t unknown14; //01
+	uint8_t unknown15[268]; //00
+	char number2[551];	
+} __attribute__((__packed__)) tapiCallSetup;
+
+
 void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_incoming_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
+void tapi_call_setup_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
+void tapi_call_connected_number_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_release(uint8_t callType,uint32_t callId, uint8_t releaseCause);
 void tapi_call_answer(uint8_t callType, uint32_t callId);
+void tapi_call_setup(tapiCallSetup* callSetup);
 
 #endif
