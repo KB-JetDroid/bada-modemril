@@ -93,21 +93,23 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 	callSetup = (tapiCallSetup *)malloc(sizeof(tapiCallSetup));
 	memset(callSetup, 0, sizeof(tapiCallSetup));
 
-	callSetup->unknown0 = 1;
-	callSetup->unknown1 = 1;
-	callSetup->unknown2 = 3;
-	callSetup->unknown3 = 0x41C8255C;//5C 25 C8 41
-	callSetup->unknown4 = 0xFF;
-	callSetup->unknown5 = 1;
-	callSetup->unknown6 = 2;
-	strcpy(callSetup->number1, dial->address);
-	callSetup->timestamp0 = time(NULL);
-	callSetup->timestamp1 = time(NULL);
-	callSetup->unknown8 = 1;
+	callSetup->contextType = TAPI_CALL_CONTEXT_TYPE_VOICE;
+	callSetup->bUsed = 1;
+	callSetup->hCall = 3;
+	callSetup->hClient = 0x41C8255C;//5C 25 C8 41
+	callSetup->callNo = 0xFF;
+	callSetup->bOriginated = 1;
+	callSetup->nameMode = 2;
+	strcpy(callSetup->callNum1, dial->address);
+	callSetup->startTime = time(NULL);
+	callSetup->endTime = time(NULL);
+	callSetup->callType1 = TAPI_CALL_CALLTYPE_VOICE1;
+	callSetup->callState = TAPI_CALL_STATE_ORIG;
 	callSetup->unknown10 = 1;
 	callSetup->unknown12 = 0x3A;
 	callSetup->unknown14 = 1;
-	strcpy(callSetup->number2, dial->address);
+	callSetup->callType2 = TAPI_CALL_CALLTYPE_VOICE1;
+	strcpy(callSetup->callNum2, dial->address);
 
 	tapi_call_setup(callSetup);
 

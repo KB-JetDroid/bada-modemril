@@ -59,27 +59,59 @@ typedef struct{
 	uint8_t align1[3];
 } __attribute__((__packed__)) tapiCallRelease;
 
+typedef struct 
+{
+	uint32_t acm;
+	uint32_t acmMax;
+	uint32_t ccm;
+} __attribute__((__packed__)) AocInfoStruct;
+
 typedef struct{
-	uint32_t unknown0; //01
-	uint32_t unknown1; //01
-	uint32_t unknown2; // 01 or 03
-	uint32_t unknown3; //5C 25 C8 41
-	uint32_t unknown4; // FF
-	uint32_t unknown5; //01
-	uint8_t unknown6; //02
-	char number1[83];
-	uint32_t timestamp0;
-	uint32_t timestamp1;
-	uint8_t unknown7; // 00
-	uint8_t unknown8; //01
-	uint8_t unknown9[82]; //00
+	/* TapiCallContext */
+	uint8_t contextType; //01
+	uint8_t align1[3];
+	uint32_t bUsed; //01
+	uint32_t hCall; // 01 or 03
+	uint32_t hClient; //5C 25 C8 41
+	uint32_t callNo; // FF
+	uint32_t bOriginated; //01
+	uint8_t nameMode; //02
+	char callNum1[48];
+	uint8_t field_49[35];
+	uint32_t startTime;
+	uint32_t endTime;
+	uint8_t callType1; // 00
+	uint8_t callState; //01
+	uint8_t activeState;
+	uint8_t conferenceState;
+	uint8_t currentLine;
+	uint8_t align2[3];
+	AocInfoStruct aocInfo_acm;
+	uint8_t unknown9[64]; //00
 	uint8_t unknown10; //01
 	uint8_t unknown11[759]; //00
 	uint32_t unknown12; //3A
 	uint8_t unknown13[284]; //00
 	uint8_t unknown14; //01
-	uint8_t unknown15[268]; //00
-	char number2[551];	
+	uint8_t unknown15[267]; //00
+	/*TapiSetupCallInfo */
+	uint8_t callType2;
+	char callNum2[48];
+	uint8_t field_31[38];
+	uint8_t szCalledPartySubaddress[32];
+	uint8_t gap_77[9];
+	uint8_t identityMode;
+	uint8_t align3[3];
+	uint32_t field_84;
+	uint32_t field_88;
+	uint16_t field_8C;
+	uint16_t align4;
+	uint32_t field_90;
+	uint32_t field_94;
+	uint8_t field_98[397];
+	uint8_t field_225;
+	uint8_t field_226;
+	uint8_t emergencyCategory;
 } __attribute__((__packed__)) tapiCallSetup;
 
 
