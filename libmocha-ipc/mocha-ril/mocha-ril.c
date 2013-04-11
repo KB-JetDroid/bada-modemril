@@ -494,6 +494,8 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(NETWORK_NITZ_INFO_IND, ipc_network_nitz_info);
 	ipc_register_ril_cb(CALL_INCOMING_IND, ipc_call_incoming);
 	ipc_register_ril_cb(CALL_END_IND, ipc_call_end);
+	ipc_register_ril_cb(CALL_SETUP_IND, ipc_call_setup_ind);
+	ipc_register_ril_cb(CALL_CONNECTED_NUMBER_IND, ipc_call_connected_number_ind);
 	ipc_register_ril_cb(SIM_STATUS, ipc_sim_status);
 	ipc_register_ril_cb(PIN_STATUS, ipc_pin_status);
 	ipc_register_ril_cb(NETTEXT_INCOMING, ipc_incoming_sms);
