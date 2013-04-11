@@ -152,7 +152,7 @@ void tapi_network_network_select_ind(uint32_t tapiNetLength, uint8_t *tapiNetDat
 {	
 	tapiNetworkInfo* netInfo = (tapiNetworkInfo*)(tapiNetData);	
 	
-	DEBUG_I("tapi_network_network_select_ind: serviceLevel=%d, serviceType=%d, psServiceType=%d, systemId.systemType=%d,	uint8_t sysIdFormat = %d, networkMode = 0x%X, systemId =%d, bForbidden = %d, bHome = %d, bEquivalent=%d, bRoaming=%d, name=%s, spn=%s, registrationFail.state=%d, registrationFail.cause=%d, bDisplayPplmn=%d, bDisplaySpn=%d", netInfo->serviceLevel, netInfo->serviceType, netInfo->psServiceType, netInfo->systemType, netInfo->sysIdFormat, netInfo->networkMode, netInfo->systemId, netInfo->bForbidden, netInfo->bHome, netInfo->bEquivalent, netInfo->bRoaming, netInfo->name, netInfo->spn, netInfo->registrationFail.state, netInfo->registrationFail.cause, netInfo->bDisplayPplmn, netInfo->bDisplaySpn);
+	DEBUG_I("tapi_network_network_select_ind: serviceLevel=%d, serviceType=%d, psServiceType=%d, systemId.systemType=%d, sysIdFormat = %d, networkMode = 0x%X, systemId =%d, bForbidden = %d, bHome = %d, bEquivalent=%d, bRoaming=%d, name=%s, spn=%s, registrationFail.state=%d, registrationFail.cause=%d, bDisplayPplmn=%d, bDisplaySpn=%d", netInfo->serviceLevel, netInfo->serviceType, netInfo->psServiceType, netInfo->systemType, netInfo->sysIdFormat, netInfo->networkMode, netInfo->systemId, netInfo->bForbidden, netInfo->bHome, netInfo->bEquivalent, netInfo->bRoaming, netInfo->name, netInfo->spn, netInfo->registrationFail.state, netInfo->registrationFail.cause, netInfo->bDisplayPplmn, netInfo->bDisplaySpn);
 	ipc_invoke_ril_cb(NETWORK_SELECT, (void*)netInfo);
 }
 

@@ -40,6 +40,12 @@ void ipc_cp_system_start(void* data)
 	*/
 	ril_data.state.power_state = POWER_STATE_LPM;
 	ril_data.state.radio_state = RADIO_STATE_OFF;
+
+	tapi_init();
+	proto_startup();
+	lbs_init();
+	ril_sim_init();
+
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 	ril_tokens_check();
 }
@@ -69,12 +75,8 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 	} else {	
 		ALOGD("Request power to NORMAL");
 		tapi_set_offline_mode(TAPI_NETWORK_OFFLINE_MODE_OFF);
-		tapi_init();
-		proto_startup();
-		lbs_init();
 		ril_data.state.power_state = POWER_STATE_NORMAL;
 		ril_data.state.radio_state = RADIO_STATE_ON;
-		//usleep(2000000);		
 		network_start();
 	}
 	
