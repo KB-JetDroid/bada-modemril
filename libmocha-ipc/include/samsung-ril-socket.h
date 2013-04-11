@@ -97,7 +97,7 @@ struct srs_snd_set_path_packet {
 	uint16_t soundType;
 } __attribute__((__packed__));
 
-struct srs_control_ping_packet {
+struct srs_control_ping {
 	int caffe;
 } __attribute__((__packed__));
 
