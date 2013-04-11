@@ -65,8 +65,6 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 
 	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
 
-	ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
-
     simHeader = (struct simPacketHeader *)(ipc_frame->data);
     sim_packet.simBuf = (uint8_t *)(ipc_frame->data + sizeof(struct simPacketHeader));
 
@@ -133,8 +131,8 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 			sim_send_oem_req(sim_packet.simBuf, simHeader->bufLen); //bounceback packet
 		}
 	}
-
-    DEBUG_I("Leaving ipc_parse_sim");
+	ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
+	DEBUG_I("Leaving ipc_parse_sim");
 }
 void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 {
@@ -157,6 +155,7 @@ void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 				DEBUG_I("SIM_READY");
 				sim_status(2);
 			}
+			memset(buf + 0xAF, 0, 15);
 			break;
 		case SIM_EVENT_VERIFY_PIN1_IND:
 			DEBUG_I("SIM_PIN");
