@@ -380,13 +380,14 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_QUERY_NETWORK_SELECTION_MODE:
 			ril_request_query_network_selection_mode(t);
 			break;
+#endif		
 		case RIL_REQUEST_GET_PREFERRED_NETWORK_TYPE:
 			ril_request_get_preferred_network_type(t);
 			break;
 		case RIL_REQUEST_SET_PREFERRED_NETWORK_TYPE:
-			ril_request_set_preffered_network_type(t, data, datalen);
+			ril_request_set_preferred_network_type(t, data, datalen);
 			break;
-#endif		/* SMS */
+		/* SMS */
 		case RIL_REQUEST_SEND_SMS:
 			ril_request_send_sms(t, data, datalen);
 			break;

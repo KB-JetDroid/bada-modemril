@@ -128,28 +128,7 @@ void ril_request_send_ussd(RIL_Token t, void *data, size_t datalen)
 	DEBUG_I("%s: message - %s ", __func__, (char *)data);
 
 	switch(ril_data.state.ussd_state) {
-		case USSD_NO_ACTION_REQUIRE:
-		case USSD_TERMINATED_BY_NET:
-		case USSD_OTHER_CLIENT:
-		case USSD_NOT_SUPPORT:
-		case USSD_TIME_OUT:
-
-			ussd_req = malloc(sizeof(tapiSsSendUssd));
-			memset(ussd_req, 0, sizeof(tapiSsSendUssd));	
-
-			ussd_req->bUnknown = 0;
-			ussd_req->dcs = 0xF;
-			ussd_req->strLen = strlen((char *)data);
-			memcpy(ussd_req->ussdStr, data, strlen((char *)data));
-
-			tapi_ss_send_ussd_string_request(ussd_req);
-
-			if (ussd_req != NULL)
-				free(ussd_req);
-
-			break;
 		case USSD_ACTION_REQUIRE:
-		default:
 			ss_resp = malloc(sizeof(tapiSsResponse));
 			memset(ss_resp, 0, sizeof(tapiSsResponse));
 
@@ -174,6 +153,30 @@ void ril_request_send_ussd(RIL_Token t, void *data, size_t datalen)
 			if (ss_resp != NULL)
 				free(ss_resp);
 			break;
+		case USSD_NO_ACTION_REQUIRE:
+		case USSD_TERMINATED_BY_NET:
+		case USSD_OTHER_CLIENT:
+		case USSD_NOT_SUPPORT:
+		case USSD_TIME_OUT:
+		default:
+			if (strlen((char *)data) > 0)
+			{	
+
+				ussd_req = malloc(sizeof(tapiSsSendUssd));
+				memset(ussd_req, 0, sizeof(tapiSsSendUssd));	
+
+				ussd_req->bUnknown = 0;
+				ussd_req->dcs = 0xF;
+				ussd_req->strLen = strlen((char *)data);
+				memcpy(ussd_req->ussdStr, data, strlen((char *)data));
+
+				tapi_ss_send_ussd_string_request(ussd_req);
+
+				if (ussd_req != NULL)
+					free(ussd_req);
+			}
+			break;
+
 		}
 
 	if (strlen((char *)data) > 0)

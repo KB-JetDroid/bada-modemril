@@ -175,6 +175,7 @@ struct ril_state {
 	int power_state;
 	int reg_state;
 	int ussd_state;
+	uint32_t net_mode;
 	uint32_t cell_id;
 	uint8_t rac_id;
 	uint16_t lac_id;
@@ -258,6 +259,8 @@ void ril_request_dtmf_start(RIL_Token t, void *data, int length);
 void ril_request_dtmf_stop(RIL_Token t);
 
 /* NETWORK */
+int ipc2ril_net_mode(uint32_t mode);
+uint32_t ril2ipc_net_mode(int mode);
 void ipc_network_radio_info(void* data);
 void ipc_network_select(void* data);
 void ipc_cell_info(void* data);
@@ -265,6 +268,8 @@ void ipc_network_nitz_info(void* data);
 void network_start(void);
 void ril_request_operator(RIL_Token t);
 void ril_request_voice_registration_state(RIL_Token t);
+void ril_request_get_preferred_network_type(RIL_Token t);
+void ril_request_set_preferred_network_type(RIL_Token t, void *data, size_t datalen);
 
 /* SIM */
 void ril_sim_init(void);
@@ -279,7 +284,6 @@ void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen);
 void ipc_sms_send_status(void* data);
 void ipc_incoming_sms(void* data);
 void ril_request_send_sms(RIL_Token t, void *data, size_t length);
-void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsigned char *smsc, int smsc_length);
 void nettext_cb_setup(void);
 
 /* SS */
