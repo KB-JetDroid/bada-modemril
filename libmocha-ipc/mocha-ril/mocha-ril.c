@@ -280,14 +280,11 @@ void srs_dispatch(struct srs_message *message)
 		case SRS_CONTROL_PING:
 			srs_control_ping(message);
 			break;
-		case SRS_SND_SET_CALL_CLOCK_SYNC:
-			srs_snd_set_call_clock_sync(message);
+		case SRS_SND_SET_VOLUME:
+			srs_snd_set_volume(message);
 			break;
-		case SRS_SND_SET_CALL_VOLUME:
-			srs_snd_set_call_volume(message);
-			break;
-		case SRS_SND_SET_CALL_AUDIO_PATH:
-			srs_snd_set_call_audio_path(message);
+		case SRS_SND_SET_AUDIO_PATH:
+			srs_snd_set_audio_path(message);
 			break;
 		default:
 			ALOGD("Unhandled command: (%04x)", message->command);
