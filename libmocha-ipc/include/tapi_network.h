@@ -50,7 +50,13 @@ typedef struct { //not sure if it's specific to WAVE or same for JET,
 	uint8_t psServiceType;
 	uint8_t _unknown_; //its possible that here is whole systemId structure
 	uint8_t systemType; //9 - unknown, ignored when offline mode, 7 - unknown
-	uint8_t _unknown2_[23];	//its possible that here is whole systemId structure
+	uint16_t _unknown2_;
+	uint8_t sysIdFormat;
+	uint32_t networkMode;
+	uint32_t systemId;
+	uint32_t bForbidden;
+	uint32_t bHome;
+	uint32_t bEquivalent;
 	char name[NET_MAX_NAME_LEN];
 	char spn[NET_MAX_SPN_LEN];
 	uint32_t bRoaming;
@@ -140,5 +146,6 @@ void tapi_network_nitz_info_ind(uint32_t tapiNetLength, uint8_t *tapiNetData);
 void tapi_network_init(void);
 void tapi_set_subscription_mode(uint8_t mode);
 void tapi_network_set_mode(uint32_t mode);
+void tapi_set_offline_mode(uint8_t mode);
 
 #endif

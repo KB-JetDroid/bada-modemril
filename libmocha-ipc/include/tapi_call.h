@@ -59,10 +59,69 @@ typedef struct{
 	uint8_t align1[3];
 } __attribute__((__packed__)) tapiCallRelease;
 
+typedef struct 
+{
+	uint32_t acm;
+	uint32_t acmMax;
+	uint32_t ccm;
+} __attribute__((__packed__)) AocInfoStruct;
+
+typedef struct{
+	/* TapiCallContext */
+	uint8_t contextType; //01
+	uint8_t align1[3];
+	uint32_t bUsed; //01
+	uint32_t hCall; // 01 or 03
+	uint32_t hClient; //5C 25 C8 41
+	uint32_t callNo; // FF
+	uint32_t bOriginated; //01
+	uint8_t nameMode; //02
+	char callNum1[48];
+	uint8_t field_49[35];
+	uint32_t startTime;
+	uint32_t endTime;
+	uint8_t callType1; // 00
+	uint8_t callState; //01
+	uint8_t activeState;
+	uint8_t conferenceState;
+	uint8_t currentLine;
+	uint8_t align2[3];
+	AocInfoStruct aocInfo_acm;
+	uint8_t unknown9[64]; //00
+	uint8_t unknown10; //01
+	uint8_t unknown11[759]; //00
+	uint32_t unknown12; //3A
+	uint8_t unknown13[284]; //00
+	uint8_t unknown14; //01
+	uint8_t unknown15[267]; //00
+	/*TapiSetupCallInfo */
+	uint8_t callType2;
+	char callNum2[48];
+	uint8_t field_31[38];
+	uint8_t szCalledPartySubaddress[32];
+	uint8_t gap_77[9];
+	uint8_t identityMode;
+	uint8_t align3[3];
+	uint32_t field_84;
+	uint32_t field_88;
+	uint16_t field_8C;
+	uint16_t align4;
+	uint32_t field_90;
+	uint32_t field_94;
+	uint8_t field_98[397];
+	uint8_t field_225;
+	uint8_t field_226;
+	uint8_t emergencyCategory;
+} __attribute__((__packed__)) tapiCallSetup;
+
+
 void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_incoming_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
+void tapi_call_setup_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
+void tapi_call_connected_number_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_release(uint8_t callType,uint32_t callId, uint8_t releaseCause);
 void tapi_call_answer(uint8_t callType, uint32_t callId);
+void tapi_call_setup(tapiCallSetup* callSetup);
 
 #endif

@@ -26,6 +26,7 @@
 #include "util.h"
 #include <tapi_network.h>
 #include <tapi_nettext.h>
+#include <sim.h>
 
 int ipc2ril_net_mode(uint32_t mode)
 {
@@ -165,8 +166,10 @@ void network_start(void)
 	
 	tapi_nettext_set_preferred_memory(1); /* let's hope it means phone, not sim */
 	tapi_nettext_set_net_burst(0); /* disable */
-	
-	ril_sim_init();
+
+	if (ril_data.state.sim_state == SIM_STATE_READY)
+		sim_status(2);
+
 }
 
 void ril_request_operator(RIL_Token t)

@@ -45,6 +45,10 @@ void ipc_sim_status(void *data)
 	/* Update radio state based on SIM state */
 	ril_state_update(sim_state);
 
+	if (sim_state == SIM_STATE_READY && ril_data.smsc_number[0] == 0)
+		//request SMSC number
+		sim_data_request_to_modem(4, 0x6f42);
+
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED, NULL, 0);	
 
 }
@@ -201,17 +205,15 @@ void ril_state_update(ril_sim_state sim_state)
 {
 	RIL_RadioState radio_state;
 
+	ril_data.state.sim_state = sim_state;
+
 	/* If power mode isn't at least normal, don't update RIL state */
 	if (ril_data.state.power_state != POWER_STATE_NORMAL)
 		return;
 
-	ril_data.state.sim_state = sim_state;
-
 	switch(sim_state) {
 		case SIM_STATE_READY:
 			radio_state = RADIO_STATE_SIM_READY;
-			//request SMSC number
-			sim_data_request_to_modem(4, 0x6f42);
 			tapi_set_subscription_mode(0x1);
 			nettext_cb_setup();
 			break;
