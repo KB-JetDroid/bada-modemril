@@ -132,6 +132,7 @@ struct ril_tokens {
 	RIL_Token baseband_version;
 	RIL_Token operator;
 	RIL_Token outgoing_sms;
+	RIL_Token dial;
 };
 
 void ril_tokens_check(void);
@@ -247,8 +248,9 @@ void ril_request_screen_state(RIL_Token t, void *data, size_t datalen);
 
 /* CALL */
 void ipc_call_incoming(void* data);
-void ipc_call_status(void* data);
 void ipc_call_end(void* data);
+void ipc_call_setup_ind(void* data);
+void ipc_call_connected_number_ind(void* data);
 void ril_request_dial(RIL_Token t, void *data, size_t datalen);
 void ril_request_get_current_calls(RIL_Token t);
 void ril_request_hangup(RIL_Token t);
