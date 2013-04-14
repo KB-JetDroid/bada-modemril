@@ -37,10 +37,8 @@
 
 #include <radio.h>
 #include <sim.h>
-#include <tapi_nettext.h>
-#include <tapi_network.h>
 
-#define LOG_TAG "Mocha-RIL-SIM"
+#define LOG_TAG "RIL-Mocha-SIM"
 #include <utils/Log.h>
 
 /*
@@ -58,18 +56,14 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 	struct simPacketHeader *simHeader;
 	struct simPacket sim_packet;
 	struct modem_io request;
-	tapi_nettext_cb_settings* cb_sett_buf;
 	void *frame;
  	uint8_t *payload;
  	uint32_t frame_length;
 	uint8_t buf[4];
-	int i;
 
 	struct fifoPacketHeader *fifoHeader;
 
 	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x", ipc_frame->magic, ipc_frame->cmd, ipc_frame->datasize);
-
-	ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
 
     simHeader = (struct simPacketHeader *)(ipc_frame->data);
     sim_packet.simBuf = (uint8_t *)(ipc_frame->data + sizeof(struct simPacketHeader));
@@ -94,26 +88,8 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 			ipc_hex_dump(oem_packet.oemBuf, oem_header->oemBufLen);
 */
 			break;
-		case 0x08:
-			sim_parse_event(sim_packet.simBuf, simHeader->bufLen);
-			break;
 		case 0x24:
-			DEBUG_I("SIM_READY");
-			sim_status(2);
-			sim_parse_event(sim_packet.simBuf, simHeader->bufLen);
-
-			tapi_set_subscription_mode(0x1);
-			cb_sett_buf = (tapi_nettext_cb_settings *)malloc(sizeof(tapi_nettext_cb_settings));
-			memset(cb_sett_buf, 0, sizeof(tapi_nettext_cb_settings));		
-			cb_sett_buf->ext_cb = 0x0;
-			cb_sett_buf->ext_cb_enable = 0x0;
-			cb_sett_buf->enable_all_combined_cb_channels = 0x1;
-			cb_sett_buf->combined_language_type = 0x0;
-			cb_sett_buf->number_of_combined_cbmi = 0x367FFF;
-			for (i = 0; i < 40; i++) {
-			cb_sett_buf->cb_info[i] = 0x0;}
-			tapi_nettext_set_cb_settings((uint8_t *)cb_sett_buf);
-			free(cb_sett_buf);
+			DEBUG_I("SIM_ATK_interface response");
 			break;
 		default :
 			DEBUG_I("Unknown SIM subType %d", simHeader->subType);
@@ -141,6 +117,7 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 						buf[0]=0;
 						buf[1]=0;		
 						sim_atk_send_packet(0x1, 0x31, 0x2, buf);
+
 						break;
 					default:
 						sim_parse_event(sim_packet.simBuf, simHeader->bufLen); 
@@ -154,8 +131,8 @@ void ipc_parse_sim(struct ipc_client* client, struct modem_io *ipc_frame)
 			sim_send_oem_req(sim_packet.simBuf, simHeader->bufLen); //bounceback packet
 		}
 	}
-
-    DEBUG_I("Leaving ipc_parse_sim");
+	ipc_hex_dump(client, ipc_frame->data, ipc_frame->datasize);
+	DEBUG_I("Leaving ipc_parse_sim");
 }
 void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 {
@@ -166,13 +143,19 @@ void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 	{
 		
 		case SIM_EVENT_BEGIN:
-			DEBUG_I("SIM_NOT_READY");			
-			sim_status(1);			
+//			DEBUG_I("SIM_NOT_READY");			
+//			sim_status(1);	
+			break;		
 		case SIM_EVENT_SIM_OPEN:
 			if (simEvent->eventStatus == SIM_CARD_NOT_PRESENT) {
 				DEBUG_I("SIM_ABSENT");
 				sim_status(0);
 			}
+			if (simEvent->eventStatus == SIM_OK) {
+				DEBUG_I("SIM_READY");
+				sim_status(2);
+			}
+			memset(buf + 0xAF, 0, 15);
 			break;
 		case SIM_EVENT_VERIFY_PIN1_IND:
 			DEBUG_I("SIM_PIN");

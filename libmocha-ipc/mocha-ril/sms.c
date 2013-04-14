@@ -20,7 +20,7 @@
  *
  */
 
-#define LOG_TAG "Mocha-RIL-SMS"
+#define LOG_TAG "RIL-Mocha-SMS"
 #include <utils/Log.h>
 
 #include "mocha-ril.h"
@@ -71,87 +71,40 @@ void ipc_sms_send_status(void* data)
  */
 void ril_request_send_sms(RIL_Token t, void *data, size_t length)
 {
-	char *pdu;
-	int pdu_length;
-	unsigned char *smsc;
-	int smsc_length;
-	int rc;
+	tapiNettextInfo* mess;
+	char *pdu, *a, *message;
+	unsigned char *smsc, *pdu_hex, *p, *message_tmp;
+	int smsc_length, pdu_length, pdu_hex_length, i, numberLen, send_msg_type;
 
 	if (data == NULL || length < 2 * sizeof(char *))
 		return;
 
 	pdu = ((char **) data)[1];
-	smsc = ((unsigned char **) data)[0];
 	pdu_length = 0;
-	smsc_length = 0;
 
 	if (pdu != NULL) {
 		pdu_length = strlen(pdu) + 1;
 		pdu = strdup(pdu);
 	}
 
-	if (smsc != NULL) {
-		smsc_length = strlen((char *) smsc);
-		smsc = (unsigned char *) strdup((char *) smsc);
-	}
-
-
 	/* We first need to get SMS SVC before sending the message */
 
-	if(smsc == NULL) {
-		ALOGD("We have no SMSC, let's ask one");
-		smsc_length = strlen((char *) ril_data.smsc_number);
-		smsc = (unsigned char *) strdup((char *) ril_data.smsc_number);
-		ril_request_send_sms_complete(t, pdu, pdu_length, smsc, smsc_length);
-		
-	} else {
-		ril_request_send_sms_complete(t, pdu, pdu_length, smsc, smsc_length);
-
-		if (pdu != NULL)
-			free(pdu);
-
-		if (smsc != NULL)
-			free(smsc);
-	}
-}
-
-/**
- * Complete (continue) the send_sms request (do the real sending)
- */
-void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsigned char *smsc, int smsc_length)
-{
-	tapiNettextInfo* mess;
-
-	unsigned char *pdu_hex;
-	int pdu_hex_length;
-	void *data;
-	int length, i, numberLen, send_msg_type;
-	unsigned char *p, *message_tmp;
-	char *a, *message;
+	smsc_length = strlen((char *) ril_data.smsc_number);
+	smsc = (unsigned char *) strdup((char *) ril_data.smsc_number);
 
 	if (pdu == NULL || pdu_length <= 0 || smsc == NULL || smsc_length <= 0) {
 		ALOGE("Provided PDU or SMSC is invalid! Aborting");
 		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
-		// Send the next SMS in the list
-		//ril_request_send_sms_next();
 		return;
 	}
 
 	if ((pdu_length / 2 + smsc_length) > 0xfe) {
 		ALOGE("PDU or SMSC too large, aborting");
 		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
-		// Send the next SMS in the list
-		//ril_request_send_sms_next();
 		return;
 	}
 
 	pdu_hex_length = pdu_length % 2 == 0 ? pdu_length / 2 :	(pdu_length ^ 1) / 2;
-
-	// Length of the final message
-
-	length = pdu_hex_length + smsc_length;
-
-	ALOGD("Sending SMS message (length: 0x%x)!", length);
 
 	pdu_hex = calloc(1, pdu_hex_length);
 
@@ -175,7 +128,11 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 
 	ALOGD("PDU TP-DA Len is 0x%x\n", pdu_tp_da_len);
 
-	int pdu_tp_udh_index = pdu_tp_da_index + pdu_tp_da_len;
+	int pdu_tp_udh_index = pdu_tp_da_index + pdu_tp_da_len / 2 + 5;
+
+	if (pdu_tp_da_len % 2 > 0)
+		pdu_tp_udh_index += 1;
+		
 
 	unsigned char pdu_tp_udh_len = pdu_hex[pdu_tp_udh_index];
 
@@ -236,13 +193,9 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 	mess->NPI_ToNumber= 0x01; // 01
 
 	if (pdu_hex[pdu_tp_da_index + 1] == 0x91)
-	{
-		DEBUG_I("%s : format phone number is international", __func__);
 		mess->TON_ToNumber= 0x01; // 01 - international
-	}else{
-		DEBUG_I("%s : format phone number is national", __func__);
+	else
 		mess->TON_ToNumber= 0x00; // 00 - national
-	}
 
 	mess->lengthToNumber = numberLen;
 
@@ -266,13 +219,9 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 	mess->TON_SMSC = 0x01;
 
 	if (smsc[smsc_length - 2] == 'f' || smsc[smsc_length - 2] == 'F')
-	{
 		mess->lengthSMSC = smsc_length - 5;
-	}
 	else
-	{
 		mess->lengthSMSC = smsc_length - 4;
-	}
 
 	i = 4;
 
@@ -327,9 +276,6 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 				message_tmp[i] = pdu_hex[i + k];
 
 		gsm72ascii(message_tmp, &message, pdu_hex[(numberLen / 2) + 6]);
-
-
-		DEBUG_I("%s : message = %s", __func__, message);
 		
 		if (send_msg_type == 0)
 		{
@@ -355,9 +301,18 @@ void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsig
 	tapi_nettext_send((uint8_t *)mess);
 	
 	ril_data.tokens.outgoing_sms = t;
-	
-	free(mess);
-	free(pdu_hex);
+
+	if (pdu != NULL)
+		free(pdu);
+
+	if (smsc != NULL)
+		free(smsc);
+
+	if (mess != NULL)	
+		free(mess);
+
+	if (pdu_hex != NULL)
+		free(pdu_hex);
 }
 
 
@@ -711,4 +666,20 @@ void ipc_incoming_sms(void* data)
 	if (tp_ud != NULL)	
 		free (tp_ud);
 }
+
+void nettext_cb_setup(void)
+{
+	tapi_nettext_cb_settings cb_sett_buf;
+	int i;
+
+	cb_sett_buf.ext_cb = 0x0;
+	cb_sett_buf.ext_cb_enable = 0x0;
+	cb_sett_buf.enable_all_combined_cb_channels = 0x1;
+	cb_sett_buf.combined_language_type = 0x0;
+	cb_sett_buf.number_of_combined_cbmi = 0x367FFF;
+	for (i = 0; i < 40; i++)
+		cb_sett_buf.cb_info[i] = 0x0;
+	tapi_nettext_set_cb_settings(&cb_sett_buf);
+}
+
 

@@ -25,7 +25,7 @@
 #include <radio.h>
 #include <sound.h>
 
-#define LOG_TAG "Mocha-RIL-SOUND"
+#define LOG_TAG "RIL-Mocha-SOUND"
 #include <utils/Log.h>
 
 void ipc_parse_sound(struct ipc_client* client, struct modem_io *ipc_frame)
@@ -47,3 +47,55 @@ void sound_send_packet(uint8_t *data, int32_t data_size)
 	ipc_send(&request);
 }
 
+void sound_send_set_volume(uint16_t outDevice, uint8_t inDeviceMuted, uint8_t outDeviceMuted, uint16_t soundType, uint16_t oemVolume)
+{	
+	soundPacket snd_packet;
+	soundChannelSetupPacket *set_mute;
+	set_mute = (soundChannelSetupPacket *)&snd_packet;
+
+	set_mute->packetType = SOUND_PACKET_SET_VOLUME; 
+	/* inDevice is not set for this packet */
+	set_mute->outDevice = outDevice;
+	set_mute->inDeviceMuted = inDeviceMuted;
+	set_mute->outDeviceMuted = outDeviceMuted;
+	set_mute->soundType = soundType;
+	set_mute->oemVolume = oemVolume;
+
+	sound_send_packet((uint8_t *)&snd_packet, sizeof(soundPacket));
+}
+
+void sound_send_set_mute(uint16_t inDevice, uint16_t outDevice, uint8_t inDeviceMuted,
+							uint8_t outDeviceMuted, uint16_t soundType)
+{
+	soundPacket snd_packet;
+	soundChannelSetupPacket *set_mute;
+	set_mute = (soundChannelSetupPacket *)&snd_packet;
+
+	set_mute->packetType = SOUND_PACKET_SET_MUTE; 
+	set_mute->inDevice = inDevice;
+	set_mute->outDevice = outDevice;
+	set_mute->inDeviceMuted = inDeviceMuted;
+	set_mute->outDeviceMuted = outDeviceMuted;
+	set_mute->soundType = soundType;
+	set_mute->oemVolume = 6; /* always 6 for mute packet */
+
+	sound_send_packet((uint8_t *)&snd_packet, sizeof(soundPacket));
+}
+
+void sound_send_set_path(uint16_t inDevice, uint16_t outDevice, uint8_t inDeviceMuted,
+							uint8_t outDeviceMuted, uint16_t soundType, uint16_t oemVolume)
+{
+	soundPacket snd_packet;
+	soundChannelSetupPacket *set_mute;
+	set_mute = (soundChannelSetupPacket *)&snd_packet;
+
+	set_mute->packetType = SOUND_PACKET_SET_SND_PATH; 
+	set_mute->inDevice = inDevice;
+	set_mute->outDevice = outDevice;
+	set_mute->inDeviceMuted = inDeviceMuted;
+	set_mute->outDeviceMuted = outDeviceMuted;
+	set_mute->soundType = soundType;
+	set_mute->oemVolume = oemVolume;
+
+	sound_send_packet((uint8_t *)&snd_packet, sizeof(soundPacket));
+}

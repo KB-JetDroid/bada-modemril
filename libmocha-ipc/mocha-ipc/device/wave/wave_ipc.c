@@ -35,7 +35,7 @@
 #include "ipc_private.h"
 #include "wave_ipc.h"
 
-#define LOG_TAG "Mocha-RIL_WaveIPC"
+#define LOG_TAG "RIL-Mocha_WaveIPC"
 #include <utils/Log.h>
 
 #ifdef DEBUG

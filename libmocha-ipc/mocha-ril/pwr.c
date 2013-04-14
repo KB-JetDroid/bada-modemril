@@ -20,7 +20,7 @@
  *
  */
 
-#define LOG_TAG "Mocha-RIL-PWR"
+#define LOG_TAG "RIL-Mocha-PWR"
 #include <time.h>
 #include <utils/Log.h>
 
@@ -40,6 +40,12 @@ void ipc_cp_system_start(void* data)
 	*/
 	ril_data.state.power_state = POWER_STATE_LPM;
 	ril_data.state.radio_state = RADIO_STATE_OFF;
+
+	tapi_init();
+	proto_startup();
+	lbs_init();
+	ril_sim_init();
+
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
 	ril_tokens_check();
 }
@@ -61,19 +67,16 @@ void ril_request_radio_power(RIL_Token t, void *data, size_t datalen)
 		return;
 	}
 	if(power_state <= 0) {
-		ALOGD("Request power to LPM, IMPLEMENT ME!");
+		ALOGD("Request power to OFF");
 		ril_data.state.power_state = POWER_STATE_LPM;
 		ril_data.state.radio_state = RADIO_STATE_OFF;
+		tapi_set_offline_mode(TAPI_NETWORK_OFFLINE_MODE_ON);
 		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 	} else {	
 		ALOGD("Request power to NORMAL");
-		ipc_send_lpm_mode(0);
-		tapi_init();
-		proto_startup();
-		lbs_init();
+		tapi_set_offline_mode(TAPI_NETWORK_OFFLINE_MODE_OFF);
 		ril_data.state.power_state = POWER_STATE_NORMAL;
 		ril_data.state.radio_state = RADIO_STATE_ON;
-		//usleep(2000000);		
 		network_start();
 	}
 	

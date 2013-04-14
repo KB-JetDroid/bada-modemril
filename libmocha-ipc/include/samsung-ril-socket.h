@@ -34,9 +34,8 @@
 #define SRS_CONTROL_PING		0x0101
 
 #define SRS_SND				0x02
-#define SRS_SND_SET_CALL_VOLUME		0x0201
-#define SRS_SND_SET_CALL_AUDIO_PATH	0x0202
-#define SRS_SND_SET_CALL_CLOCK_SYNC	0x0203
+#define SRS_SND_SET_VOLUME		0x0201
+#define SRS_SND_SET_AUDIO_PATH	0x0202
 
 #define SRS_CONTROL_CAFFE		0xCAFFE
 
@@ -52,39 +51,50 @@ struct srs_message {
 	void *data;
 };
 
+/**
+ * Sound types.
+ */
+typedef enum {
+	SND_TYPE_NONE = 0x0,
+	SND_TYPE_PCM = 0x5,
+	SND_TYPE_CALL_MELODY = 0x7, /* Notification of incoming call */
+	SND_TYPE_SYSTEM = 0x8, /* Test sounds, media player sounds, system sounds like clicks etc. */
+	SND_TYPE_UNKNOWN = 0xB, /* Set by AIOAudioEngine if it can't be determined */
+	SND_TYPE_DTMF = 0xD,
+	SND_TYPE_RECORDING = 0x10,
+	SND_TYPE_VOICE = 0x11,
+	SND_TYPE_VIDEOCALL = 0x12,
+	SND_TYPE_FMRADIO = 0x14,
+	SND_TYPE_LAST = 0x15 /* No idea what's it */
+} SndType;
 
-enum srs_snd_type {
-	SRS_SND_TYPE_VOICE,
-	SRS_SND_TYPE_SPEAKER,
-	SRS_SND_TYPE_HEADSET,
-	SRS_SND_TYPE_BTVOICE
-};
+typedef enum {
+	SND_OUTPUT_AP_PCM = 0x1,
+	SND_OUTPUT_2 = 0x2,
+	SND_OUTPUT_3 = 0x4,
+	SND_OUTPUT_4 = 0x10,
+	SND_OUTPUT_5 = 0x80,
+	SND_OUTPUT_6 = 0x100,
+	SND_OUTPUT_7 = 0x200,
+} SndOutput;
 
-enum srs_snd_path {
-	SRS_SND_PATH_HANDSET,
-	SRS_SND_PATH_HEADSET,
-	SRS_SND_PATH_SPEAKER,
-	SRS_SND_PATH_BLUETOOTH,
-	SRS_SND_PATH_BLUETOOTH_NO_NR,
-	SRS_SND_PATH_HEADPHONE
-};
+typedef enum {
+	SND_INPUT_MIC = 0x100,
+	SND_INPUT_UNK1 = 0x200, /* Who knows */
+	SND_INPUT_UNK2 = 0x800 /* Not mic, maybe incoming voice from CP or AP */
+} SndInput;
 
-enum srs_snd_clock {
-	SND_CLOCK_STOP,
-	SND_CLOCK_START
-};
-
-struct srs_snd_call_volume {
-	enum srs_snd_type type;
+struct srs_snd_set_volume_packet {
+	uint16_t soundType;
 	int volume;
 } __attribute__((__packed__));
 
-struct srs_snd_call_audio_path {
-	enum srs_snd_path path;
-} __attribute__((__packed__));
-
-struct srs_snd_call_clock_sync {
-	unsigned char sync;
+struct srs_snd_set_path_packet {
+	uint16_t inDevice;
+	uint16_t outDevice;
+	uint8_t inDeviceMuted;
+	uint8_t outDeviceMuted;
+	uint16_t soundType;
 } __attribute__((__packed__));
 
 struct srs_control_ping {

@@ -40,35 +40,31 @@ enum SOUND_PACKET_TYPE {
 	SOUND_PACKET_CALL_PCM_IF_EN_OFF = 0xC, /* No buffer */
 	SOUND_PACKET_CALLSET1 = 0xE, /* Generated for sndType 0x11 and outdevice != 0x10 ADDITIONALLY to SET_MUTE and SET_SNDPATH*/
 	SOUND_PACKET_CALLSET2 = 0xF, /*  Generated for sndType 0x11 and outdevice == 0x10 ADDITIONALLY to SET_MUTE and SET_SNDPATH, related to bluetooth */
-	
 };
 
 typedef struct {
 	uint8_t buffer[56]; /*First byte is packet type */
 } __attribute__((__packed__)) soundPacket;
 
-typedef struct {
-	uint8_t packetType; /* always 0 */
-	uint8_t align[3]; /* random stuff */
-	uint16_t outDevice;
-	uint8_t bOutDeviceMuted;
-	uint8_t bInDeviceMuted;
-	uint16_t soundType; /* Whole packet is transmitted only for soundType 0x11 and 0xD */
-	uint16_t oemVolume; /* volume after conversion, __SndChangeToOemSndVolume - weird function to be implemented */
-} __attribute__((__packed__)) soundSetVolumePacket;
-
-typedef struct { /* structure valid for SET_MUTE and SET_SND_PATH */
-	uint8_t packetType; /* 1/2 */
+typedef struct { /* structure valid for SET_VOLUME, SET_MUTE and SET_SND_PATH */
+	uint8_t packetType; /* 0 or 1 or 2 */
 	uint8_t align; /* random stuff */
-	uint16_t inDevice;
+	uint16_t inDevice; /* not set for volume packet */
 	uint16_t outDevice;
 	uint8_t inDeviceMuted;
 	uint8_t outDeviceMuted;
-	uint16_t soundType;
-	uint16_t unknown; /* always 6 for mute packet, possibly oemVolume */
-} __attribute__((__packed__)) soundSetMuteSndPathPacket;
+	uint16_t soundType; /* SetMute packet is transmitted only for soundType 0x11 and 0xD */
+	uint16_t oemVolume; /* always 6 for mute packet, its valid values are from 1 to 15, this should be checked!*/
+} __attribute__((__packed__)) soundChannelSetupPacket;
+
+
 
 void ipc_parse_sound(struct ipc_client* client, struct modem_io *ipc_frame);
 void sound_send_packet(uint8_t *data, int32_t data_size);
+void sound_send_set_volume(uint16_t outDevice, uint8_t inDeviceMuted, uint8_t outDeviceMuted, uint16_t soundType, uint16_t oemVolume);
+void sound_send_set_mute(uint16_t inDevice, uint16_t outDevice, uint8_t inDeviceMuted,
+							uint8_t outDeviceMuted, uint16_t soundType);
+void sound_send_set_path(uint16_t inDevice, uint16_t outDevice, uint8_t inDeviceMuted,
+							uint8_t outDeviceMuted, uint16_t soundType, uint16_t oemVolume);
 
 #endif

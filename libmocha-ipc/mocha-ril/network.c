@@ -19,13 +19,36 @@
  *
  */
  
-#define LOG_TAG "Mocha-RIL-NETWORK"
+#define LOG_TAG "RIL-Mocha-NETWORK"
 #include <utils/Log.h>
 
 #include "mocha-ril.h"
 #include "util.h"
 #include <tapi_network.h>
 #include <tapi_nettext.h>
+#include <sim.h>
+
+int ipc2ril_net_mode(uint32_t mode)
+{
+	switch (mode) {
+		case TAPI_NETWORK_MODE_GSM_900_1800_1900:
+			return 1;
+		case TAPI_NETWORK_MODE_AUTOMATIC:
+		default:
+			return 0;
+	} 
+}
+
+uint32_t ril2ipc_net_mode(int mode)
+{
+	switch (mode) {
+		case 1: // GSM 900/1800
+			return TAPI_NETWORK_MODE_GSM_900_1800_1900;
+		case 0:
+		default: // automatic
+			return TAPI_NETWORK_MODE_AUTOMATIC;
+	}
+}
  
 void ipc_network_radio_info(void* data)
 {
@@ -133,7 +156,7 @@ void network_start(void)
 	start_info.serviceDomain = 0;
 	start_info.unknown1[0] = 0xE5;
 	start_info.unknown1[1] = 0x69;
-	start_info.networkMode = TAPI_NETWORK_MODE_AUTOMATIC;
+	start_info.networkMode = ril_data.state.net_mode;
 	start_info.subscriptionMode = 0;
 	start_info.bFlightMode = 0;	
 	start_info.unknown2[0] = 0x02;
@@ -143,8 +166,10 @@ void network_start(void)
 	
 	tapi_nettext_set_preferred_memory(1); /* let's hope it means phone, not sim */
 	tapi_nettext_set_net_burst(0); /* disable */
-	
-	ril_sim_init();
+
+	if (ril_data.state.sim_state == SIM_STATE_READY)
+		sim_status(2);
+
 }
 
 void ril_request_operator(RIL_Token t)
@@ -195,3 +220,44 @@ void ril_request_voice_registration_state(RIL_Token t)
 			free(response[i]);
 	}
 }
+
+
+void ril_request_get_preferred_network_type(RIL_Token t)
+{
+	int ril_mode;
+	
+	ril_mode = ipc2ril_net_mode(ril_data.state.net_mode);
+
+	ril_request_complete(t, RIL_E_SUCCESS, &ril_mode, sizeof(ril_mode));	
+}
+
+void ril_request_set_preferred_network_type(RIL_Token t, void *data, size_t datalen)
+{
+	int ril_mode;
+
+	if (data == NULL || datalen < (int) sizeof(int))
+
+		goto error;
+
+	ril_mode = *((int *) data);
+
+	ril_data.state.net_mode = ril2ipc_net_mode(ril_mode);
+
+	if (ril_data.state.radio_state != RADIO_STATE_OFF) {
+
+		tapi_network_set_mode(ril_data.state.net_mode);
+		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+	}
+	else
+	{
+		ril_request_complete(t, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
+	}
+
+	return;
+
+error:
+
+	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+
+}
+

@@ -18,102 +18,37 @@
  *
  */
 
-#define LOG_TAG "Mocha-RIL-SND"
+#define LOG_TAG "RIL-Mocha-SND"
 #include <utils/Log.h>
 
 #include "mocha-ril.h"
 #include "util.h"
+#include <sound.h>
 
-/**
- * Format conversion utils
- */
-#if 0
-unsigned char srs2ipc_call_type(int type)
-{
-	switch(type) {
-		case SRS_SND_TYPE_VOICE:
-			return IPC_SND_VOLUME_TYPE_VOICE;
-		case SRS_SND_TYPE_SPEAKER:
-			return IPC_SND_VOLUME_TYPE_SPEAKER;
-		case SRS_SND_TYPE_HEADSET:
-			return IPC_SND_VOLUME_TYPE_HEADSET;
-		case SRS_SND_TYPE_BTVOICE:
-			return IPC_SND_VOLUME_TYPE_BTVOICE;
-		default:
-			ALOGE("Unknown call type: 0x%x", type);
-			return 0;
-	}
-}
-
-unsigned char srs2ipc_audio_path(int path)
-{
-	switch(path) {
-		case SRS_SND_PATH_HANDSET:
-			return IPC_SND_AUDIO_PATH_HANDSET;
-		case SRS_SND_PATH_HEADSET:
-			return IPC_SND_AUDIO_PATH_HEADSET;
-		case SRS_SND_PATH_SPEAKER:
-			return IPC_SND_AUDIO_PATH_SPEAKER;
-		case SRS_SND_PATH_BLUETOOTH:
-			return IPC_SND_AUDIO_PATH_BLUETOOTH;
-		case SRS_SND_PATH_BLUETOOTH_NO_NR:
-			return IPC_SND_AUDIO_PATH_BLUETOOTH_NO_NR;
-		case SRS_SND_PATH_HEADPHONE:
-			return IPC_SND_AUDIO_PATH_HEADPHONE;
-		default:
-			ALOGE("Unknown audio path: 0x%x", path);
-			return 0;
-	}
-}
-
-#endif
 
 void ril_request_set_mute(RIL_Token t, void *data, size_t datalen)
 {
-	ALOGE("%s: Implement me!", __func__);
-
 	unsigned char mute_data = ((int *)data)[0] > 0 ? 1 : 0;
-
 	ALOGD("Mute data is %d\n", mute_data);
-
-	//ipc_gen_phone_res_expect_to_complete(reqGetId(t), IPC_SND_MIC_MUTE_CTRL);
-
-	//ipc_send(IPC_SND_MIC_MUTE_CTRL, IPC_TYPE_SET, (void *) &mute_data, sizeof(mute_data), reqGetId(t));
+	sound_send_set_mute(SND_INPUT_MIC, SND_OUTPUT_2, mute_data, mute_data, SND_TYPE_VOICE);
+	
+	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 }
 
-void srs_snd_set_call_clock_sync(struct srs_message *message)
+void srs_snd_set_volume(struct srs_message *message)
 {
-	ALOGE("%s: Implement me!", __func__);
+	struct srs_snd_set_volume_packet *volume = (struct srs_snd_set_volume_packet *) message->data;
 
-	unsigned char data = *((unsigned char *) message->data);
-	ALOGD("Clock sync data is 0x%x\n", data);
-
-	//ipc_send(IPC_SND_CLOCK_CTRL, IPC_TYPE_EXEC, &data, sizeof(data), reqIdNew());
+	ALOGD("Volume for: 0x%x vol = 0x%x\n", volume->soundType, volume->volume);
+	sound_send_set_volume(SND_OUTPUT_2 /* We should lookup for it by active soundtype */, 0, 0, 
+				volume->soundType, volume->volume /* conversion might be needed */);
 }
 
-void srs_snd_set_call_volume(struct srs_message *message)
+void srs_snd_set_audio_path(struct srs_message *message)
 {
-	struct srs_snd_call_volume *call_volume = (struct srs_snd_call_volume *) message->data;
-	//struct ipc_snd_spkr_volume_ctrl volume_ctrl;
+	struct srs_snd_set_path_packet *set_path = (struct srs_snd_set_path_packet *) message->data;
 
-	ALOGE("%s: Implement me!", __func__);
-
-	ALOGD("Call volume for: 0x%x vol = 0x%x\n", call_volume->type, call_volume->volume);
-
-	//volume_ctrl.type = srs2ipc_call_type(call_volume->type);
-	//volume_ctrl.volume = call_volume->volume;
-
-	//ipc_send(IPC_SND_SPKR_VOLUME_CTRL, IPC_TYPE_SET, (void *) &volume_ctrl, sizeof(volume_ctrl), reqIdNew());
-}
-
-void srs_snd_set_call_audio_path(struct srs_message *message)
-{
-	ALOGE("%s: Implement me!", __func__);
-
-	int audio_path = ((int *) message->data)[0];
-	//unsigned char path = srs2ipc_audio_path(audio_path);
-
-	ALOGD("Audio path to: 0x%x\n",audio_path);
-
-	//ipc_send(IPC_SND_AUDIO_PATH_CTRL, IPC_TYPE_SET, (void *) &path, sizeof(path), reqIdNew());
+	ALOGD("srs_snd_set_audio_path - sndType: %d, indev: %d, outdev: %d\n", set_path->soundType, set_path->inDevice, set_path->outDevice);
+	sound_send_set_path(set_path->inDevice, set_path->outDevice, 0, 0, set_path->soundType, 6 /* dummy volume */);
+	sound_send_set_mute(set_path->inDevice, set_path->outDevice, 0, 0, set_path->soundType);
 }

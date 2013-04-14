@@ -28,7 +28,7 @@
 #include <tapi.h>
 #include <tapi_network.h>
 
-#define LOG_TAG "Mocha-RIL-TAPI-NET"
+#define LOG_TAG "RIL-Mocha-TAPI-NET"
 #include <utils/Log.h>
 
 /*
@@ -92,7 +92,7 @@ void tapi_network_startup(tapiStartupNetworkInfo* network_startup_info)
 	pkt.header.tapiService = TAPI_TYPE_NETWORK;	
 	pkt.header.tapiServiceFunction = TAPI_NETWORK_STARTUP;	
 	pkt.buf = (uint8_t*)(network_startup_info);
-	DEBUG_I("tapi_network_startup - AutoSelection:%d,bPoweronGprsAttach:%d,networkMode=%d,networkOrder:%d,serviceDomain:%d,subscriptionMode:%d,bFlightMode=%d", network_startup_info->bAutoSelection, network_startup_info->bPoweronGprsAttach, network_startup_info->networkMode, network_startup_info->networkOrder, network_startup_info->serviceDomain, network_startup_info->subscriptionMode, network_startup_info->bFlightMode);
+	DEBUG_I("tapi_network_startup - AutoSelection:%d,bPoweronGprsAttach:%d,networkMode=0x%X,networkOrder:%d,serviceDomain:%d,subscriptionMode:%d,bFlightMode=%d", network_startup_info->bAutoSelection, network_startup_info->bPoweronGprsAttach, network_startup_info->networkMode, network_startup_info->networkOrder, network_startup_info->serviceDomain, network_startup_info->subscriptionMode, network_startup_info->bFlightMode);
 	tapi_send_packet(&pkt);
 }
 
@@ -129,6 +129,16 @@ void tapi_set_subscription_mode(uint8_t mode)
 	tapi_send_packet(&pkt);
 }
 
+void tapi_network_set_mode(uint32_t mode)
+{
+	struct tapiPacket pkt;
+	pkt.header.len = 4;
+	pkt.header.tapiService = TAPI_TYPE_NETWORK;	
+	pkt.header.tapiServiceFunction = TAPI_NETWORK_SET_MODE;
+	pkt.buf = (uint8_t *)&mode;
+	
+	tapi_send_packet(&pkt);
+}
 
 void tapi_network_set_subscription_mode(uint32_t tapiNetLength, uint8_t *tapiNetData)
 {
@@ -142,7 +152,7 @@ void tapi_network_network_select_ind(uint32_t tapiNetLength, uint8_t *tapiNetDat
 {	
 	tapiNetworkInfo* netInfo = (tapiNetworkInfo*)(tapiNetData);	
 	
-	DEBUG_I("tapi_network_network_select_ind: serviceLevel=%d, serviceType=%d, psServiceType=%d, systemId.systemType=%d, bRoaming=%d,name=%s, spn=%s, registrationFail.state=%d, registrationFail.cause=%d, bDisplayPplmn=%d, bDisplaySpn=%d", netInfo->serviceLevel, netInfo->serviceType, netInfo->psServiceType, netInfo->systemType, netInfo->bRoaming, netInfo->name, netInfo->spn, netInfo->registrationFail.state, netInfo->registrationFail.cause, netInfo->bDisplayPplmn, netInfo->bDisplaySpn);
+	DEBUG_I("tapi_network_network_select_ind: serviceLevel=%d, serviceType=%d, psServiceType=%d, systemId.systemType=%d, sysIdFormat = %d, networkMode = 0x%X, systemId =%d, bForbidden = %d, bHome = %d, bEquivalent=%d, bRoaming=%d, name=%s, spn=%s, registrationFail.state=%d, registrationFail.cause=%d, bDisplayPplmn=%d, bDisplaySpn=%d", netInfo->serviceLevel, netInfo->serviceType, netInfo->psServiceType, netInfo->systemType, netInfo->sysIdFormat, netInfo->networkMode, netInfo->systemId, netInfo->bForbidden, netInfo->bHome, netInfo->bEquivalent, netInfo->bRoaming, netInfo->name, netInfo->spn, netInfo->registrationFail.state, netInfo->registrationFail.cause, netInfo->bDisplayPplmn, netInfo->bDisplaySpn);
 	ipc_invoke_ril_cb(NETWORK_SELECT, (void*)netInfo);
 }
 

@@ -27,7 +27,7 @@
 #include <tapi.h>
 #include <tapi_call.h>
 
-#define LOG_TAG "Mocha-RIL-TAPI-CALL"
+#define LOG_TAG "RIL-Mocha-TAPI-CALL"
 #include <utils/Log.h>
 
 /*
@@ -40,26 +40,32 @@ void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *t
 	struct tapiPacket tx_packet;
 
 	struct modem_io request;
-    uint8_t *frame;
-    uint8_t *payload;
-    uint32_t frame_length;
+	uint8_t *frame;
+	uint8_t *payload;
+	uint32_t frame_length;
 
-    switch(tapiCallType)
-    {
-	case TAPI_CALL_APIREQ:
-		/* Confirmation of properly executed function, just drop it */
-		break;
-	case TAPI_CALL_INCOMING_IND:
-		tapi_call_incoming_ind(tapiCallLength, tapiCallData);
-		break;
-	case TAPI_CALL_END_IND:
-		tapi_call_end_ind(tapiCallLength, tapiCallData);
-		break;
-    default:	
-		DEBUG_I("TapiCall Packet type 0x%X is not yet handled, len = 0x%x", tapiCallType, tapiCallLength);
-		hex_dump(tapiCallData, tapiCallLength);
-    	break;
-    }
+	switch(tapiCallType)
+	{
+		case TAPI_CALL_APIREQ:
+			/* Confirmation of properly executed function, just drop it */
+			break;
+		case TAPI_CALL_INCOMING_IND:
+			tapi_call_incoming_ind(tapiCallLength, tapiCallData);
+			break;
+		case TAPI_CALL_END_IND:
+			tapi_call_end_ind(tapiCallLength, tapiCallData);
+			break;
+		case TAPI_CALL_SETUP_IND:
+			tapi_call_setup_ind(tapiCallLength, tapiCallData);		
+			break;
+		case TAPI_CALL_CONNECTED_NUMBER_IND:
+			tapi_call_connected_number_ind(tapiCallLength, tapiCallData);		
+			break;
+		default:	
+			DEBUG_I("TapiCall Packet type 0x%X is not yet handled, len = 0x%x", tapiCallType, tapiCallLength);
+	    	break;
+	}
+	hex_dump(tapiCallData, tapiCallLength);
 }
 
 
@@ -75,6 +81,18 @@ void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
 {
 	DEBUG_I("tapi_call_end_ind");
 	ipc_invoke_ril_cb(CALL_END_IND, (void*)tapiCallData);
+}
+
+void tapi_call_setup_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
+{
+	DEBUG_I("tapi_call_setup_ind");
+	ipc_invoke_ril_cb(CALL_SETUP_IND, (void*)tapiCallData);
+}
+
+void tapi_call_connected_number_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
+{
+	DEBUG_I("tapi_call_connected_number_ind");
+	ipc_invoke_ril_cb(CALL_CONNECTED_NUMBER_IND, (void*)tapiCallData);
 }
 
 void tapi_call_release(uint8_t callType,uint32_t callId, uint8_t releaseCause)
@@ -101,5 +119,16 @@ void tapi_call_answer(uint8_t callType, uint32_t callId)
 	tx_packet.header.tapiService = 0;
 	tx_packet.header.tapiServiceFunction = TAPI_CALL_ANSWER;
 	tx_packet.header.len = 8;
+	tapi_send_packet(&tx_packet);
+}
+
+
+void tapi_call_setup(tapiCallSetup* callSetup)
+{
+	struct tapiPacket tx_packet;
+	tx_packet.buf = (uint8_t *)(callSetup);
+	tx_packet.header.tapiService = 0;
+	tx_packet.header.tapiServiceFunction = TAPI_CALL_SETUP;
+	tx_packet.header.len = sizeof(tapiCallSetup);
 	tapi_send_packet(&tx_packet);
 }

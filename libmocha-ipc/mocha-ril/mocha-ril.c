@@ -21,7 +21,7 @@
  *
  */
 
-#define LOG_TAG "Mocha-RIL"
+#define LOG_TAG "RIL-Mocha"
 
 #include <time.h>
 #include <pthread.h>
@@ -280,14 +280,11 @@ void srs_dispatch(struct srs_message *message)
 		case SRS_CONTROL_PING:
 			srs_control_ping(message);
 			break;
-		case SRS_SND_SET_CALL_CLOCK_SYNC:
-			srs_snd_set_call_clock_sync(message);
+		case SRS_SND_SET_VOLUME:
+			srs_snd_set_volume(message);
 			break;
-		case SRS_SND_SET_CALL_VOLUME:
-			srs_snd_set_call_volume(message);
-			break;
-		case SRS_SND_SET_CALL_AUDIO_PATH:
-			srs_snd_set_call_audio_path(message);
+		case SRS_SND_SET_AUDIO_PATH:
+			srs_snd_set_audio_path(message);
 			break;
 		default:
 			ALOGD("Unhandled command: (%04x)", message->command);
@@ -383,13 +380,14 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_QUERY_NETWORK_SELECTION_MODE:
 			ril_request_query_network_selection_mode(t);
 			break;
+#endif		
 		case RIL_REQUEST_GET_PREFERRED_NETWORK_TYPE:
 			ril_request_get_preferred_network_type(t);
 			break;
 		case RIL_REQUEST_SET_PREFERRED_NETWORK_TYPE:
-			ril_request_set_preffered_network_type(t, data, datalen);
+			ril_request_set_preferred_network_type(t, data, datalen);
 			break;
-#endif		/* SMS */
+		/* SMS */
 		case RIL_REQUEST_SEND_SMS:
 			ril_request_send_sms(t, data, datalen);
 			break;
@@ -439,6 +437,13 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 #endif		/* SND */
 		case RIL_REQUEST_SET_MUTE:
 			ril_request_set_mute(t, data, datalen);
+		/* SS */
+		case RIL_REQUEST_SEND_USSD:
+			ril_request_send_ussd(t, data, datalen);
+			break;
+		case RIL_REQUEST_CANCEL_USSD:
+			ril_request_cancel_ussd(t, data, datalen);
+			break;
 		/* OTHER */
 		case RIL_REQUEST_SCREEN_STATE:
 			ril_request_screen_state(t, data, datalen);			
@@ -486,11 +491,15 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(NETWORK_NITZ_INFO_IND, ipc_network_nitz_info);
 	ipc_register_ril_cb(CALL_INCOMING_IND, ipc_call_incoming);
 	ipc_register_ril_cb(CALL_END_IND, ipc_call_end);
+	ipc_register_ril_cb(CALL_SETUP_IND, ipc_call_setup_ind);
+	ipc_register_ril_cb(CALL_CONNECTED_NUMBER_IND, ipc_call_connected_number_ind);
 	ipc_register_ril_cb(SIM_STATUS, ipc_sim_status);
 	ipc_register_ril_cb(PIN_STATUS, ipc_pin_status);
 	ipc_register_ril_cb(NETTEXT_INCOMING, ipc_incoming_sms);
 	ipc_register_ril_cb(NETTEXT_SEND_CALLBACK, ipc_sms_send_status);
 	ipc_register_ril_cb(SIM_IO_RESPONSE, ipc_sim_io_response);
+	ipc_register_ril_cb(SS_USSD_CALLBACK, ipc_ss_ussd_response);
+	ipc_register_ril_cb(SS_ERROR, ipc_ss_error_response);
 }
  
 void ril_data_init(void)
@@ -498,6 +507,7 @@ void ril_data_init(void)
 	memset(&ril_data, 0, sizeof(ril_data));
 
 	pthread_mutex_init(&ril_data.mutex, NULL);
+	ril_data.state.sim_state = SIM_STATE_NOT_READY;
 }
 
 /**

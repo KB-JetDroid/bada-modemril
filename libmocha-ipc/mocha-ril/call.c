@@ -21,7 +21,7 @@
  *
  */
 
-#define LOG_TAG "Mocha-RIL-CALL"
+#define LOG_TAG "RIL-Mocha-CALL"
 #include <utils/Log.h>
 
 #include "mocha-ril.h"
@@ -34,8 +34,7 @@ unsigned int call_state;
 
 void ipc_call_incoming(void* data)
 {
-	
-ALOGE("%s: test me!", __func__);
+	ALOGE("%s: test me!", __func__);
 	
 	tapiCallInfo* callInfo = (tapiCallInfo*)(data);
 	num_entries = 1;
@@ -44,14 +43,6 @@ ALOGE("%s: test me!", __func__);
 	callType = callInfo->callType;
 	call_state = RIL_CALL_INCOMING;
 	ril_request_unsolicited(RIL_UNSOL_CALL_RING, NULL, 0);
-	/* FIXME: Do we really need to send this? */
-	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
-
-}
-
-void ipc_call_status(void* data)
-{
-	ALOGE("%s: Implement me!", __func__);
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
@@ -64,28 +55,78 @@ void ipc_call_end(void* data)
 
 }
 
+void ipc_call_setup_ind(void* data)
+{
+	ALOGE("%s: test me!", __func__);
+
+	callId = *(uint32_t *)((uint8_t *)(data));
+	DEBUG_I("%s : callId = %d", __func__, callId);
+	num_entries = 1;
+	call_state = RIL_CALL_DIALING;
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+	ril_request_complete(ril_data.tokens.dial, RIL_E_SUCCESS, NULL, 0);
+
+}
+void ipc_call_connected_number_ind(void* data)
+{
+	ALOGE("%s: test me!", __func__);
+
+	call_state = RIL_CALL_ACTIVE;
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);	
+}
 
 void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 {	
-	ALOGE("%s: Implement me!", __func__);
+	ALOGE("%s: Test me!", __func__);
 
-
-	const RIL_Dial *dial = (const RIL_Dial*)data;
+	tapiCallSetup *callSetup;
+	RIL_Dial *dial;
 	int clir;
 
-	strcpy(number, dial->address);
-	num_entries = 1;
-	call_state = RIL_CALL_DIALING;
+	if (data == NULL || datalen < sizeof(RIL_Dial))
+		goto error;
 
-	/* FIXME: This should actually be sent based on the response from baseband */
-	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+	dial = (RIL_Dial *) data;
+
+	strcpy(number, dial->address);
+
+	callSetup = (tapiCallSetup *)malloc(sizeof(tapiCallSetup));
+	memset(callSetup, 0, sizeof(tapiCallSetup));
+
+	callSetup->contextType = TAPI_CALL_CONTEXT_TYPE_VOICE;
+	callSetup->bUsed = 1;
+	callSetup->hCall = 3;
+	callSetup->hClient = 0x41C8255C;//5C 25 C8 41
+	callSetup->callNo = 0xFF;
+	callSetup->bOriginated = 1;
+	callSetup->nameMode = 2;
+	strcpy(callSetup->callNum1, dial->address);
+	callSetup->startTime = time(NULL);
+	callSetup->endTime = time(NULL);
+	callSetup->callType1 = TAPI_CALL_CALLTYPE_VOICE1;
+	callSetup->callState = TAPI_CALL_STATE_ORIG;
+	callSetup->unknown10 = 1;
+	callSetup->unknown12 = 0x3A;
+	callSetup->unknown14 = 1;
+	callSetup->callType2 = TAPI_CALL_CALLTYPE_VOICE1;
+	strcpy(callSetup->callNum2, dial->address);
+
+	tapi_call_setup(callSetup);
+
+	ril_data.tokens.dial = t;
+
+	free(callSetup);
+	return;
+
+error:
+	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
 void ril_request_get_current_calls(RIL_Token t)
 {
-	int i;
-	
 	ALOGE("%s: test me!", __func__);
+
+	int i;
 
        if (num_entries == 0) {
 		DEBUG_I("num_entries == 0");	
@@ -98,7 +139,7 @@ void ril_request_get_current_calls(RIL_Token t)
 	for (i = 0; i < num_entries; i++) {
 		RIL_Call *call = (RIL_Call *) malloc(sizeof(RIL_Call));
 		call->state = call_state;
-		call->index = 1;
+		call->index = callId + 1;
 		call->toa = (strlen(number) > 0 && number[0] == '+') ? 145 : 129;
 		call->isMpty = 0;
 		call->isMT = 1;
@@ -125,16 +166,13 @@ void ril_request_get_current_calls(RIL_Token t)
 	
 void ril_request_hangup(RIL_Token t)
 {
-	ALOGE("%s: Test me!", __func__);
+	ALOGE("%s: Test me!, callId = %d", __func__, callId);
 	
-	tapi_call_release(callType,callId, 0x0);
+	tapi_call_release(callType, callId, 0x0);
 	num_entries = 0;
 
 	/* FIXME: This should actually be sent based on the response from baseband */
 	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
-
-	/* FIXME: Do we really need to send this? */
-	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 void ril_request_answer(RIL_Token t)

@@ -130,10 +130,9 @@ struct ril_tokens {
 	RIL_Token get_imei;
 	RIL_Token get_imeisv;
 	RIL_Token baseband_version;
-
 	RIL_Token operator;
-	
 	RIL_Token outgoing_sms;
+	RIL_Token dial;
 };
 
 void ril_tokens_check(void);
@@ -162,11 +161,22 @@ typedef enum {
 	SIM_STATE_SERVICE_PROVIDER_PERSO	= 9,
 } ril_sim_state;
 
+typedef enum {
+	USSD_NO_ACTION_REQUIRE 			= 0,
+	USSD_ACTION_REQUIRE			= 1,
+	USSD_TERMINATED_BY_NET			= 2,
+	USSD_OTHER_CLIENT			= 3,
+	USSD_NOT_SUPPORT 			= 4,
+	USSD_TIME_OUT				= 5,
+} ril_ussd_state;
+
 struct ril_state {
 	RIL_RadioState radio_state;
 	ril_sim_state sim_state;
 	int power_state;
 	int reg_state;
+	int ussd_state;
+	uint32_t net_mode;
 	uint32_t cell_id;
 	uint8_t rac_id;
 	uint16_t lac_id;
@@ -238,8 +248,9 @@ void ril_request_screen_state(RIL_Token t, void *data, size_t datalen);
 
 /* CALL */
 void ipc_call_incoming(void* data);
-void ipc_call_status(void* data);
 void ipc_call_end(void* data);
+void ipc_call_setup_ind(void* data);
+void ipc_call_connected_number_ind(void* data);
 void ril_request_dial(RIL_Token t, void *data, size_t datalen);
 void ril_request_get_current_calls(RIL_Token t);
 void ril_request_hangup(RIL_Token t);
@@ -250,6 +261,8 @@ void ril_request_dtmf_start(RIL_Token t, void *data, int length);
 void ril_request_dtmf_stop(RIL_Token t);
 
 /* NETWORK */
+int ipc2ril_net_mode(uint32_t mode);
+uint32_t ril2ipc_net_mode(int mode);
 void ipc_network_radio_info(void* data);
 void ipc_network_select(void* data);
 void ipc_cell_info(void* data);
@@ -257,6 +270,8 @@ void ipc_network_nitz_info(void* data);
 void network_start(void);
 void ril_request_operator(RIL_Token t);
 void ril_request_voice_registration_state(RIL_Token t);
+void ril_request_get_preferred_network_type(RIL_Token t);
+void ril_request_set_preferred_network_type(RIL_Token t, void *data, size_t datalen);
 
 /* SIM */
 void ril_sim_init(void);
@@ -271,7 +286,13 @@ void ril_request_enter_sim_pin(RIL_Token t, void *data, size_t datalen);
 void ipc_sms_send_status(void* data);
 void ipc_incoming_sms(void* data);
 void ril_request_send_sms(RIL_Token t, void *data, size_t length);
-void ril_request_send_sms_complete(RIL_Token t, char *pdu, int pdu_length, unsigned char *smsc, int smsc_length);
+void nettext_cb_setup(void);
+
+/* SS */
+void ril_request_send_ussd(RIL_Token t, void *data, size_t datalen);
+void ril_request_cancel_ussd(RIL_Token t, void *data, size_t datalen);
+void ipc_ss_ussd_response(void* data);
+void ipc_ss_error_response(void* data);
 
 /* SND */
 void ril_request_set_mute(RIL_Token t, void *data, size_t datalen);
