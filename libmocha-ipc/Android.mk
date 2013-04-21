@@ -29,6 +29,7 @@ mocha-ipc_files := \
 	mocha-ipc/tapi_at.c \
 	mocha-ipc/tapi_dmh.c \
 	mocha-ipc/tapi_config.c \
+	mocha-ipc/bt.c \
 	mocha-ipc/device/$(TARGET_DEVICE)/$(TARGET_DEVICE)_ipc.c
 
 

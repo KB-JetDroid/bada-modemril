@@ -29,6 +29,8 @@
 #include <radio.h>
 #include <misc.h>
 #include <proto.h>
+#include <sound.h>
+#include <bt.h>
 
 #define LOG_TAG "RIL-Mocha-IPC-PARSER"
 #include <utils/Log.h>
@@ -73,7 +75,10 @@ void ipc_dispatch(struct ipc_client *client, struct modem_io *ipc_frame)
         break;
         case FIFO_PKT_DEBUG:
         	ipc_parse_dbg(client, ipc_frame);
-        break;
+	        break;
+        case FIFO_PKT_BLUETOOTH:
+        	ipc_parse_bt(client, ipc_frame);
+ 	       break;
         default :
         	DEBUG_I("Packet type 0x%x not yet handled\n", ipc_frame->cmd);
         	DEBUG_I("Frame header = 0x%x\n Frame type = 0x%x\n Frame length = 0x%x\n", 
