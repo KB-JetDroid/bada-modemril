@@ -69,7 +69,7 @@ uint32_t dirIndex = 0;
 #if defined(DEVICE_JET)
 char *mochaRoot = "/KFAT0";
 #elif defined(DEVICE_WAVE)
-char *mochaRoot = "/mnt/bada_user/modem";
+char *mochaRoot = "/data/radio";
 #endif
 
 int32_t (*fileOps[MAX_FILE_OPS])(struct fmRequest *, struct fmResponse *) =
