@@ -40,7 +40,7 @@
 
 #ifdef DEBUG
 int32_t log_fd;
-#define LOG_PATH "/mnt/bada_user/modem/ipc_log.txt"
+#define LOG_PATH "/data/radio/ipc_log.txt"
 
 void hexdump_byte(uint8_t byte, int fd)
 {
