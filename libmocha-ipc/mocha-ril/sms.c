@@ -216,7 +216,11 @@ void ril_request_send_sms(RIL_Token t, void *data, size_t length)
 	mess->scTime = time(NULL);
 
 	mess->NPI_SMSC = 0x01;
-	mess->TON_SMSC = 0x01;
+
+	if (smsc[2] == 0x39 && smsc [3] == 0x31)
+		mess->TON_SMSC = 0x01; // 01 - international
+	else
+		mess->TON_SMSC= 0x00; // 00 - national
 
 	if (smsc[smsc_length - 2] == 'f' || smsc[smsc_length - 2] == 'F')
 		mess->lengthSMSC = smsc_length - 5;
