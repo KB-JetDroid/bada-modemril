@@ -24,6 +24,7 @@
 
 #include <radio.h>
 #include <sound.h>
+#include <samsung-ril-socket.h>
 
 #define LOG_TAG "RIL-Mocha-SOUND"
 #include <utils/Log.h>
@@ -71,6 +72,15 @@ void sound_send_set_mute(uint16_t inDevice, uint16_t outDevice, uint8_t inDevice
 	soundChannelSetupPacket *set_mute;
 	set_mute = (soundChannelSetupPacket *)&snd_packet;
 
+	if(soundType == SND_TYPE_VOICE)
+	{
+		if(outDevice == SND_OUTPUT_4) //Bluetooth headset perhaps
+			snd_packet.buffer[0] = SOUND_PACKET_NS_EC_OFF;
+		else
+			snd_packet.buffer[0] = SOUND_PACKET_NS_EC_ON;
+		sound_send_packet((uint8_t *)&snd_packet, sizeof(soundPacket));
+	}
+
 	set_mute->packetType = SOUND_PACKET_SET_MUTE; 
 	set_mute->inDevice = inDevice;
 	set_mute->outDevice = outDevice;
@@ -89,6 +99,15 @@ void sound_send_set_path(uint16_t inDevice, uint16_t outDevice, uint8_t inDevice
 	soundChannelSetupPacket *set_mute;
 	set_mute = (soundChannelSetupPacket *)&snd_packet;
 
+	if(soundType == SND_TYPE_VOICE)
+	{
+		if(outDevice == SND_OUTPUT_4) //Bluetooth headset perhaps
+			snd_packet.buffer[0] = SOUND_PACKET_NS_EC_OFF;
+		else
+			snd_packet.buffer[0] = SOUND_PACKET_NS_EC_ON;
+		sound_send_packet((uint8_t *)&snd_packet, sizeof(soundPacket));
+	}
+
 	set_mute->packetType = SOUND_PACKET_SET_SND_PATH; 
 	set_mute->inDevice = inDevice;
 	set_mute->outDevice = outDevice;
@@ -96,6 +115,28 @@ void sound_send_set_path(uint16_t inDevice, uint16_t outDevice, uint8_t inDevice
 	set_mute->outDeviceMuted = outDeviceMuted;
 	set_mute->soundType = soundType;
 	set_mute->oemVolume = oemVolume;
+
+	sound_send_packet((uint8_t *)&snd_packet, sizeof(soundPacket));
+}
+
+void sound_send_1mic_ns_ctrl(uint8_t enabled)
+{
+	soundPacket snd_packet;
+	if(enabled)
+		snd_packet.buffer[0] = SOUND_PACKET_1MIC_NS_ON;
+	else
+		snd_packet.buffer[0] = SOUND_PACKET_1MIC_NS_OFF;
+
+	sound_send_packet((uint8_t *)&snd_packet, sizeof(soundPacket));
+}
+
+void sound_send_pcm_if_ctrl(uint8_t enabled)
+{
+	soundPacket snd_packet;
+	if(enabled)
+		snd_packet.buffer[0] = SOUND_PACKET_CALL_PCM_IF_EN_ON;
+	else
+		snd_packet.buffer[0] = SOUND_PACKET_CALL_PCM_IF_EN_OFF;
 
 	sound_send_packet((uint8_t *)&snd_packet, sizeof(soundPacket));
 }

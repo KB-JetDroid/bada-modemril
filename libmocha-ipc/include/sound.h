@@ -38,8 +38,8 @@ enum SOUND_PACKET_TYPE {
 	SOUND_PACKET_1MIC_NS_OFF = 9, /* No buffer */
 	SOUND_PACKET_CALL_PCM_IF_EN_ON = 0xB, /* No buffer */
 	SOUND_PACKET_CALL_PCM_IF_EN_OFF = 0xC, /* No buffer */
-	SOUND_PACKET_CALLSET1 = 0xE, /* Generated for sndType 0x11 and outdevice != 0x10 ADDITIONALLY to SET_MUTE and SET_SNDPATH*/
-	SOUND_PACKET_CALLSET2 = 0xF, /*  Generated for sndType 0x11 and outdevice == 0x10 ADDITIONALLY to SET_MUTE and SET_SNDPATH, related to bluetooth */
+	SOUND_PACKET_NS_EC_ON = 0xE, /* Generated for sndType 0x11 and outdevice != 0x10 ADDITIONALLY to SET_MUTE and SET_SNDPATH*/
+	SOUND_PACKET_NS_EC_OFF = 0xF, /*  Generated for sndType 0x11 and outdevice == 0x10 ADDITIONALLY to SET_MUTE and SET_SNDPATH, related to bluetooth */
 };
 
 typedef struct {
@@ -66,5 +66,7 @@ void sound_send_set_mute(uint16_t inDevice, uint16_t outDevice, uint8_t inDevice
 							uint8_t outDeviceMuted, uint16_t soundType);
 void sound_send_set_path(uint16_t inDevice, uint16_t outDevice, uint8_t inDeviceMuted,
 							uint8_t outDeviceMuted, uint16_t soundType, uint16_t oemVolume);
+void sound_send_1mic_ns_ctrl(uint8_t enabled);
+void sound_send_pcm_if_ctrl(uint8_t enabled);
 
 #endif

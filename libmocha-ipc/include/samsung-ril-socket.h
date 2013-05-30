@@ -36,6 +36,8 @@
 #define SRS_SND				0x02
 #define SRS_SND_SET_VOLUME		0x0201
 #define SRS_SND_SET_AUDIO_PATH	0x0202
+#define SRS_SND_1MIC_NS_CTRL	0x0203
+#define SRS_SND_PCM_IF_CTRL		0x0204
 
 #define SRS_CONTROL_CAFFE		0xCAFFE
 
@@ -97,8 +99,13 @@ struct srs_snd_set_path_packet {
 	uint16_t soundType;
 } __attribute__((__packed__));
 
+struct srs_snd_enable_disable_packet {
+	uint8_t enabled;
+} __attribute__((__packed__));
+
 struct srs_control_ping {
 	int caffe;
 } __attribute__((__packed__));
+
 
 #endif

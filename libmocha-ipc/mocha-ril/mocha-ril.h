@@ -296,8 +296,10 @@ void ipc_ss_error_response(void* data);
 
 /* SND */
 void ril_request_set_mute(RIL_Token t, void *data, size_t datalen);
-void srs_snd_set_call_clock_sync(struct srs_message *message);
-void srs_snd_set_call_volume(struct srs_message *message);
-void srs_snd_set_call_audio_path(struct srs_message *message);
+void srs_control_ping(struct srs_message *message);
+void srs_snd_set_volume(struct srs_message *message);
+void srs_snd_set_audio_path(struct srs_message *message);
+void srs_snd_1mic_ns_ctrl(struct srs_message *message);
+void srs_snd_pcm_if_ctrl(struct srs_message *message);
 
 #endif
