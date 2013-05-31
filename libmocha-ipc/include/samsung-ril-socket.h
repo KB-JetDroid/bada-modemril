@@ -87,7 +87,7 @@ typedef enum {
 } SndInput;
 
 struct srs_snd_set_volume_packet {
-	uint16_t soundType;
+	uint16_t outPath;
 	int volume;
 } __attribute__((__packed__));
 

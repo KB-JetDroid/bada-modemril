@@ -39,9 +39,8 @@ void srs_snd_set_volume(struct srs_message *message)
 {
 	struct srs_snd_set_volume_packet *volume = (struct srs_snd_set_volume_packet *) message->data;
 
-	ALOGD("%s for: 0x%x vol = 0x%x\n", __func__, volume->soundType, volume->volume);
-	sound_send_set_volume(SND_OUTPUT_2 /* We should lookup for it by active soundtype */, 0, 0, 
-				volume->soundType, volume->volume /* conversion might be needed */);
+	ALOGD("%s for: 0x%x vol = 0x%x\n", __func__, volume->outPath, volume->volume);
+	sound_send_set_volume(volume->outPath, 0, 0, SND_TYPE_VOICE, volume->volume);
 }
 
 void srs_snd_set_audio_path(struct srs_message *message)
