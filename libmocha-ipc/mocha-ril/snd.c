@@ -30,7 +30,8 @@ void ril_request_set_mute(RIL_Token t, void *data, size_t datalen)
 {
 	unsigned char mute_data = ((int *)data)[0] > 0 ? 1 : 0;
 	ALOGD("%s - mute data is %d\n", __func__, mute_data);
-	sound_send_set_mute(SND_INPUT_MIC, SND_OUTPUT_2, mute_data, mute_data, SND_TYPE_VOICE);
+	//TODO: add correct outDevice
+	sound_send_set_mute(SND_INPUT_MIC, SND_OUTPUT_2, mute_data, 0, SND_TYPE_VOICE);
 	
 	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 }
@@ -39,9 +40,8 @@ void srs_snd_set_volume(struct srs_message *message)
 {
 	struct srs_snd_set_volume_packet *volume = (struct srs_snd_set_volume_packet *) message->data;
 
-	ALOGD("%s for: 0x%x vol = 0x%x\n", __func__, volume->soundType, volume->volume);
-	sound_send_set_volume(SND_OUTPUT_2 /* We should lookup for it by active soundtype */, 0, 0, 
-				volume->soundType, volume->volume /* conversion might be needed */);
+	ALOGD("%s for: 0x%x type = 0x%x vol = 0x%x\n", __func__, volume->outDevice, volume->soundType, volume->volume);
+	sound_send_set_volume(volume->outDevice, 0, 0, volume->soundType, volume->volume);
 }
 
 void srs_snd_set_audio_path(struct srs_message *message)
