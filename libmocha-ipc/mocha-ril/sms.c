@@ -339,7 +339,7 @@ void ipc_incoming_sms(void* data)
 	char c[3];
 	char *number, *number2, *len_char;
 	char *message_tmp, *number_tmp, *message_bin;
-	uint8_t *mess;
+	uint8_t *mess, dcs;
 	unsigned int i , len_sca, len_oa, message_length, len_mess;
 	char buf[50];
 	time_t l_time;
@@ -594,7 +594,7 @@ void ipc_incoming_sms(void* data)
 	if (nettextInfo->alphabetType == 3) 
 	{
 		/*TP-DCS: TP-Data-Coding-Scheme */
-		tp_dcs = "08"; //Unicode
+		dcs = 0x08; //Unicode
 		DEBUG_I("%s : TP-DCS = Unicode", __func__);
 
 		tp_ud = malloc(strlen(message) + 2);
@@ -603,7 +603,7 @@ void ipc_incoming_sms(void* data)
 		strcat(tp_ud,message);
 	} else {
 		/*TP-DCS: TP-Data-Coding-Scheme */
-		tp_dcs = "00"; //gsm7
+		dcs = 0x00; //gsm7
 		DEBUG_I("%s : TP-DCS = GSM7", __func__);
 
 		if (nettextInfo->nUDH == 1)
@@ -645,6 +645,10 @@ void ipc_incoming_sms(void* data)
 	}
 
 	DEBUG_I("%s : tp_ud = %s", __func__, tp_ud);
+
+	if (nettextInfo->bFlash == 1) 
+		dcs += 0x10;
+	asprintf(&tp_dcs, "%02X", dcs);
 
 	//TP-UDL:TP-User-Data-Length
 
