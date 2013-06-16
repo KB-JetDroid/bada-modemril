@@ -83,7 +83,7 @@ typedef struct {
 	uint8_t unknown4[2]; /* Padding probably */
 	uint32_t validityValue; /* TP-Validy-Period TP-VP) */
 	uint32_t bMsgClassSet;
-	uint32_t unknown5;
+	uint32_t bFlash;
 	uint32_t bMsgIndActive;
 	uint8_t codingGroupType;
 	uint8_t waitingType;
