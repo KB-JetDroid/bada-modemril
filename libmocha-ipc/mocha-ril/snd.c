@@ -31,7 +31,7 @@ void ril_request_set_mute(RIL_Token t, void *data, size_t datalen)
 	unsigned char mute_data = ((int *)data)[0] > 0 ? 1 : 0;
 	ALOGD("%s - mute data is %d\n", __func__, mute_data);
 	//TODO: add correct outDevice
-	sound_send_set_mute(SND_INPUT_MIC, SND_OUTPUT_2, mute_data, 0, SND_TYPE_VOICE);
+	sound_send_set_mute(SND_INPUT_MAIN_MIC, SND_OUTPUT_EARPIECE, mute_data, 0, SND_TYPE_VOICE);
 	
 	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 }
