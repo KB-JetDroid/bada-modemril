@@ -77,6 +77,47 @@ void ipc_call_connected_number_ind(void* data)
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);	
 }
 
+void ipc_call_dtmf_start(void* data)
+{
+	ALOGE("%s: test me!", __func__);
+
+	tapiDtmfCnf* dtmfCnf = (tapiDtmfCnf*)(data);
+
+	if (dtmfCnf->reason != 0) {
+		ALOGD("%s: Apparently, something went wrong with DTMF (code=0x%x)",__func__, dtmfCnf->reason);
+		goto error;
+	}
+
+	ril_request_complete(ril_data.tokens.dtmf_start, RIL_E_SUCCESS, NULL, 0);
+
+	return;
+
+error:
+
+	ril_request_complete(ril_data.tokens.dtmf_start, RIL_E_GENERIC_FAILURE, NULL, 0);
+
+}
+
+void ipc_call_dtmf_stop(void* data)
+{
+	ALOGE("%s: test me!", __func__);
+	tapiDtmfCnf* dtmfCnf = (tapiDtmfCnf*)(data);
+
+	if (dtmfCnf->reason != 0) {
+		ALOGD("%s: Apparently, something went wrong with DTMF (code=0x%x)", __func__, dtmfCnf->reason);
+		goto error;
+	}
+
+	ril_request_complete(ril_data.tokens.dtmf_stop, RIL_E_SUCCESS, NULL, 0);
+
+	return;
+
+error:
+
+	ril_request_complete(ril_data.tokens.dtmf_stop, RIL_E_GENERIC_FAILURE, NULL, 0);
+
+}
+
 void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 {	
 	ALOGE("%s: Test me!", __func__);
@@ -213,14 +254,41 @@ void ril_request_dtmf(RIL_Token t, void *data, int length)
 
 void ril_request_dtmf_start(RIL_Token t, void *data, int length)
 {
-	ALOGE("%s: Implement me!", __func__);
+	ALOGE("%s: test me!", __func__);
+	unsigned char tone;
 
-	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+	if (data == NULL || length < (int) sizeof(unsigned char))
+		goto error;
+
+	tone = *((unsigned char *) data);
+
+	if (ril_data.state.dtmf_tone != 0) {
+
+		ALOGD("%s: Another tone wasn't stopped, stopping it before anything", __func__);
+		tapi_stop_dtmf(callId);
+		usleep(300);
+	}
+
+	ril_data.state.dtmf_tone = tone;
+
+	tapi_start_dtmf(callId, tone);
+
+	ril_data.tokens.dtmf_start = t;
+
+	return;
+
+error:
+	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+
 }
 
 void ril_request_dtmf_stop(RIL_Token t)
 {
-	ALOGE("%s: Implement me!", __func__);
+	ALOGE("%s: test me!", __func__);
 
-	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+	ril_data.state.dtmf_tone = 0;
+
+	tapi_stop_dtmf(callId);
+
+	ril_data.tokens.dtmf_stop = t;
 }

@@ -499,6 +499,8 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(CALL_END_IND, ipc_call_end);
 	ipc_register_ril_cb(CALL_SETUP_IND, ipc_call_setup_ind);
 	ipc_register_ril_cb(CALL_CONNECTED_NUMBER_IND, ipc_call_connected_number_ind);
+	ipc_register_ril_cb(CALL_DTMF_START, ipc_call_dtmf_start);
+	ipc_register_ril_cb(CALL_DTMF_STOP, ipc_call_dtmf_stop);
 	ipc_register_ril_cb(SIM_STATUS, ipc_sim_status);
 	ipc_register_ril_cb(PIN_STATUS, ipc_pin_status);
 	ipc_register_ril_cb(NETTEXT_INCOMING, ipc_incoming_sms);

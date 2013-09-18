@@ -61,6 +61,12 @@ void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *t
 		case TAPI_CALL_CONNECTED_NUMBER_IND:
 			tapi_call_connected_number_ind(tapiCallLength, tapiCallData);		
 			break;
+		case TAPI_CALL_START_DTMF_CNF:
+			tapi_call_start_dtmf_cnf(tapiCallLength, tapiCallData);
+	 		break;
+		case TAPI_CALL_STOP_DTMF_CNF:
+			tapi_call_stop_dtmf_cnf(tapiCallLength, tapiCallData);
+			break;
 		default:	
 			DEBUG_I("TapiCall Packet type 0x%X is not yet handled, len = 0x%x", tapiCallType, tapiCallLength);
 	    	break;
@@ -93,6 +99,18 @@ void tapi_call_connected_number_ind(uint32_t tapiCallLength, uint8_t *tapiCallDa
 {
 	DEBUG_I("tapi_call_connected_number_ind");
 	ipc_invoke_ril_cb(CALL_CONNECTED_NUMBER_IND, (void*)tapiCallData);
+}
+
+void tapi_call_start_dtmf_cnf(uint32_t tapiCallLength, uint8_t *tapiCallData)
+{
+	DEBUG_I("tapi_call_start_dtmf_cnf");
+	ipc_invoke_ril_cb(CALL_DTMF_START, (void*)tapiCallData);
+}
+
+void tapi_call_stop_dtmf_cnf(uint32_t tapiCallLength, uint8_t *tapiCallData)
+{
+	DEBUG_I("tapi_call_stop_dtmf_cnf");
+	ipc_invoke_ril_cb(CALL_DTMF_STOP, (void*)tapiCallData);
 }
 
 void tapi_call_release(uint8_t callType,uint32_t callId, uint8_t releaseCause)
@@ -130,5 +148,36 @@ void tapi_call_setup(tapiCallSetup* callSetup)
 	tx_packet.header.tapiService = 0;
 	tx_packet.header.tapiServiceFunction = TAPI_CALL_SETUP;
 	tx_packet.header.len = sizeof(tapiCallSetup);
+	tapi_send_packet(&tx_packet);
+}
+
+void tapi_start_dtmf(uint8_t callId, char tone)
+{
+	struct tapiPacket tx_packet;
+	tapiDtmf dtmf;
+
+	memset(&dtmf, 0x00, sizeof(tapiDtmf));
+
+	dtmf.callId = callId;
+	dtmf.tone[0] = tone; 
+
+	tx_packet.buf = (uint8_t *)&dtmf;
+	tx_packet.header.tapiService = 0;
+	tx_packet.header.tapiServiceFunction = TAPI_CALL_START_DTMF;
+	tx_packet.header.len = 0x5C;
+	tapi_send_packet(&tx_packet);
+}
+
+void tapi_stop_dtmf(uint8_t callId)
+{
+	struct tapiPacket tx_packet;
+	tapiDtmf dtmf;
+
+	dtmf.callId = callId;
+
+	tx_packet.buf = (uint8_t *)&dtmf;
+	tx_packet.header.tapiService = 0;
+	tx_packet.header.tapiServiceFunction = TAPI_CALL_STOP_DTMF;
+	tx_packet.header.len = 0x5C;
 	tapi_send_packet(&tx_packet);
 }
