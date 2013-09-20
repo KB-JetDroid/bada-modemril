@@ -101,7 +101,7 @@ void ipc_sim_io_response(void* data)
 	if (resp->simDataType == 0x6f42 && ril_data.smsc_number[0] == 0)
 	{
 
-		for (i = dataLen - 15; i < dataLen - (int)buf[dataLen - 15]; i++)
+		for (i = dataLen - 15; i < dataLen + (int)buf[dataLen - 15] - 14; i++)
 		{
 			asprintf(&a, "%02x", buf[i]);
 			strcat(ril_data.smsc_number,a);
