@@ -259,7 +259,7 @@ void ril_request_last_call_fail_cause(RIL_Token t);
 void ril_request_dtmf(RIL_Token t, void *data, int length);
 void ril_request_dtmf_start(RIL_Token t, void *data, int length);
 void ril_request_dtmf_stop(RIL_Token t);
-
+void ril_request_switch_holding_and_active(RIL_Token t);
 /* NETWORK */
 int ipc2ril_net_mode(uint32_t mode);
 uint32_t ril2ipc_net_mode(int mode);

@@ -432,7 +432,10 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_DTMF_STOP:
 			ril_request_dtmf_stop(t);
                        break;
-#if 0
+                case RIL_REQUEST_SWITCH_HOLDING_AND_ACTIVE:
+                        ril_request_switch_holding_and_active(t);
+                       break;
+#if 0           
 		/* GPRS */
 		case RIL_REQUEST_SETUP_DATA_CALL:
 			ril_request_setup_data_call(t, data, datalen);

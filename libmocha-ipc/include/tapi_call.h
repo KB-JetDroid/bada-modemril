@@ -123,5 +123,6 @@ void tapi_call_connected_number_ind(uint32_t tapiCallLength, uint8_t *tapiCallDa
 void tapi_call_release(uint8_t callType,uint32_t callId, uint8_t releaseCause);
 void tapi_call_answer(uint8_t callType, uint32_t callId);
 void tapi_call_setup(tapiCallSetup* callSetup);
-
+void tapi_call_hold(uint32_t callId);
+void tapi_call_activate(uint32_t callId);
 #endif
