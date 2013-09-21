@@ -59,6 +59,16 @@ typedef struct{
 	uint8_t align1[3];
 } __attribute__((__packed__)) tapiCallRelease;
 
+typedef struct {
+	uint32_t callId;
+	char tone[88];
+} __attribute__((__packed__)) tapiDtmf;
+
+typedef struct {
+	uint32_t callId;
+	uint32_t reason;
+} __attribute__((__packed__)) tapiDtmfCnf;
+
 typedef struct 
 {
 	uint32_t acm;
@@ -120,8 +130,12 @@ void tapi_call_incoming_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_setup_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_connected_number_ind(uint32_t tapiCallLength, uint8_t *tapiCallData);
+void tapi_call_start_dtmf_cnf(uint32_t tapiCallLength, uint8_t *tapiCallData);
+void tapi_call_stop_dtmf_cnf(uint32_t tapiCallLength, uint8_t *tapiCallData);
 void tapi_call_release(uint8_t callType,uint32_t callId, uint8_t releaseCause);
 void tapi_call_answer(uint8_t callType, uint32_t callId);
 void tapi_call_setup(tapiCallSetup* callSetup);
+void tapi_start_dtmf(uint8_t callId, char tone);
+void tapi_stop_dtmf(uint8_t callId);
 
 #endif

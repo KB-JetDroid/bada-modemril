@@ -25,6 +25,7 @@
 #include "mocha-ril.h"
 #include "util.h"
 #include <misc.h>
+#include <drv.h>
 
 void ril_request_get_imei(RIL_Token t)
 {
@@ -48,10 +49,14 @@ void ril_request_baseband_version(RIL_Token t)
 
 void ril_request_screen_state(RIL_Token t, void *data, size_t datalen)
 {
+	uint32_t status = 0;
+
 	if (((int *)data)[0] == 0 )
 		ipc_power_mode(0);
 	else
+		drv_send_packet(BATT_GAUGE_STATUS_REQ, (uint8_t*)&status, 4);
 		ipc_power_mode(6);
+
 
 	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 
