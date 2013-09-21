@@ -33,6 +33,7 @@
 #include "srs.h"
 
 #include <tapi_network.h>
+#include <tapi_call.h>
 
 /**
  * Defines
@@ -207,6 +208,13 @@ void ril_state_lpm(void);
  * RIL data
  */
 
+typedef struct {
+	uint32_t callId, callType;
+	char number[64];
+	uint32_t call_state;
+	RIL_Token token;
+} callContext;
+
 struct ril_data {
 	struct RIL_Env *env;
 
@@ -219,6 +227,8 @@ struct ril_data {
 	struct list_head *requests;
 	int request_id;
 	char smsc_number[30];
+	int active_calls;
+	callContext *calls[MAX_CALLS];
 	struct ril_client *ipc_packet_client;
 	struct ril_client *srs_client;
 
@@ -253,13 +263,16 @@ void ipc_call_setup_ind(void* data);
 void ipc_call_connected_number_ind(void* data);
 void ril_request_dial(RIL_Token t, void *data, size_t datalen);
 void ril_request_get_current_calls(RIL_Token t);
-void ril_request_hangup(RIL_Token t);
+void ril_request_hangup(RIL_Token t, void *data, size_t datalen);
+void ril_request_hangup_waiting_or_background(RIL_Token t);
+void ril_request_hangup_foreground_resume_background(RIL_Token t);
 void ril_request_answer(RIL_Token t);
 void ril_request_last_call_fail_cause(RIL_Token t);
 void ril_request_dtmf(RIL_Token t, void *data, int length);
 void ril_request_dtmf_start(RIL_Token t, void *data, int length);
 void ril_request_dtmf_stop(RIL_Token t);
 void ril_request_switch_holding_and_active(RIL_Token t);
+
 /* NETWORK */
 int ipc2ril_net_mode(uint32_t mode);
 uint32_t ril2ipc_net_mode(int mode);

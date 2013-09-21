@@ -27,68 +27,131 @@
 #include "mocha-ril.h"
 #include <tapi_call.h>
 
-int num_entries, callId, callType;
-char number[64];
-tapiCallInfo* callInfo;
-unsigned int call_state;
+callContext* newCallContext()
+{
+	int i;
+	for(i = 0; i < MAX_CALLS; i++)
+	{
+		if(!ril_data.calls[i])
+		{
+			ril_data.calls[i] = calloc(1, sizeof(callContext));
+			return ril_data.calls[i];
+		}
+	}
+	ALOGE("No free call contexts!");
+	return NULL;
+}
+
+callContext* findCallContext(uint32_t callId)
+{
+	int i;
+	for(i = 0; i < MAX_CALLS; i++)
+	{
+		if(ril_data.calls[i]->callId == callId)
+		{
+			return ril_data.calls[i];
+		}
+	}
+	ALOGE("Call context with Id %d not found!", callId);
+	return NULL;
+}
+
+void releaseCallContext(callContext* ptr)
+{
+	int i;
+	for(i = 0; i < MAX_CALLS; i++)
+	{
+		if(ril_data.calls[i] == ptr)
+		{
+			free(ril_data.calls[i]);
+			return;
+		}
+	}
+	ALOGE("Tried to release non registered call context!");
+}
 
 void ipc_call_incoming(void* data)
 {
-	ALOGE("%s: test me!", __func__);
-	
+	ALOGE("%s: Test me!", __func__);
+	callContext* callCtxt = newCallContext();
 	tapiCallInfo* callInfo = (tapiCallInfo*)(data);
-	num_entries = 1;
-	strcpy(number, callInfo->phoneNumber);
-	callId = callInfo->callId;
-	callType = callInfo->callType;
-	call_state = RIL_CALL_INCOMING;
+	if(!callCtxt)
+		return;
+	strcpy(callCtxt->number, callInfo->phoneNumber);
+	callCtxt->callId = callInfo->callId;
+	callCtxt->callType = callInfo->callType;
+	callCtxt->call_state = RIL_CALL_INCOMING;
+	ril_data.active_calls++;
 	ril_request_unsolicited(RIL_UNSOL_CALL_RING, NULL, 0);
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 void ipc_call_end(void* data)
 {
-	ALOGE("%s: test me!", __func__);
-
-	num_entries = 0;
+	ALOGE("%s: Test me!", __func__);
+	callContext* callCtxt;
+	tapiCallEnd* callEndInfo = (tapiCallEnd*)(data);
+	DEBUG_I("%s : callId = %d, cause = %d", __func__, callEndInfo->callId, callEndInfo->cause);
+	callCtxt = findCallContext(callEndInfo->callId);
+	if(!callCtxt)
+		return;
+	ril_data.active_calls--;
+	if(callCtxt->token != 0)
+		ril_request_complete(callCtxt->token, RIL_E_SUCCESS, NULL, 0);
+	releaseCallContext(callCtxt);
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
-
 }
 
 void ipc_call_setup_ind(void* data)
 {
-	ALOGE("%s: test me!", __func__);
-
-	callId = *(uint32_t *)((uint8_t *)(data));
+	callContext* callCtxt;
+	ALOGE("%s: Test me!", __func__);
+	uint32_t callId = *(uint32_t *)(data);
 	DEBUG_I("%s : callId = %d", __func__, callId);
-	num_entries = 1;
-	call_state = RIL_CALL_DIALING;
+	callCtxt = findCallContext(0xFFFFFFFF);
+	if(!callCtxt)
+		goto error;
+	ril_data.active_calls++;
+	callCtxt->callId = callId;
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 	ril_request_complete(ril_data.tokens.dial, RIL_E_SUCCESS, NULL, 0);
+	return;
+error:
+	ril_request_complete(ril_data.tokens.dial, RIL_E_GENERIC_FAILURE, NULL, 0);
 
 }
 void ipc_call_connected_number_ind(void* data)
 {
-	ALOGE("%s: test me!", __func__);
-
-	call_state = RIL_CALL_ACTIVE;
+	ALOGE("%s: Test me!", __func__);
+	callContext* callCtxt;
+	uint32_t callId = *(uint32_t *)(data);
+	DEBUG_I("%s : callId = %d", __func__, callId);
+	callCtxt = findCallContext(callId);
+	if(!callCtxt)
+		return;
+	callCtxt->call_state = RIL_CALL_ACTIVE;
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);	
 }
 
 void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 {	
 	ALOGE("%s: Test me!", __func__);
-
+	callContext* callCtxt;
 	tapiCallSetup *callSetup;
 	RIL_Dial *dial;
 	int clir;
 
-	if (data == NULL || datalen < sizeof(RIL_Dial))
+	if (findCallContext(0xFFFFFFFF) != NULL || data == NULL || datalen < sizeof(RIL_Dial))
 		goto error;
 
 	dial = (RIL_Dial *) data;
-
-	strcpy(number, dial->address);
+	callCtxt = newCallContext();
+	if(!callCtxt)
+		goto error;
+	
+	callCtxt->callId = 0xFFFFFFFF;
+	callCtxt->call_state = RIL_CALL_DIALING;
+	strcpy(callCtxt->number, dial->address);
 
 	callSetup = (tapiCallSetup *)malloc(sizeof(tapiCallSetup));
 	memset(callSetup, 0, sizeof(tapiCallSetup));
@@ -96,7 +159,7 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 	callSetup->contextType = TAPI_CALL_CONTEXT_TYPE_VOICE;
 	callSetup->bUsed = 1;
 	callSetup->hCall = 3;
-	callSetup->hClient = 0x41C8255C;//5C 25 C8 41
+	callSetup->hClient = 0x0; //0x41C8255C;
 	callSetup->callNo = 0xFF;
 	callSetup->bOriginated = 1;
 	callSetup->nameMode = 2;
@@ -126,65 +189,130 @@ void ril_request_get_current_calls(RIL_Token t)
 {
 	ALOGE("%s: test me!", __func__);
 
-	int i;
+	int i, j;
 
-       if (num_entries == 0) {
-		DEBUG_I("num_entries == 0");	
+    if (ril_data.active_calls == 0) {
+		DEBUG_I("ril_data.active_calls == 0");	
 		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 		return;
 	}
 
-	RIL_Call **calls = (RIL_Call **) malloc(num_entries * sizeof(RIL_Call *));
+	RIL_Call **calls = (RIL_Call **) malloc(ril_data.active_calls * sizeof(RIL_Call *));
 
-	for (i = 0; i < num_entries; i++) {
+	for (j = 0, i = 0; i < MAX_CALLS; i++) {
+		if(ril_data.calls[i] == NULL || ril_data.calls[i]->callId == 0xFFFFFFFF)
+			continue;
 		RIL_Call *call = (RIL_Call *) malloc(sizeof(RIL_Call));
-		call->state = call_state;
-		call->index = callId + 1;
-		call->toa = (strlen(number) > 0 && number[0] == '+') ? 145 : 129;
+		call->state = ril_data.calls[i]->call_state;
+		call->index = ril_data.calls[i]->callId + 1;
+		call->toa = (strlen(ril_data.calls[i]->number) > 0 && ril_data.calls[i]->number[0] == '+') ? 145 : 129;
 		call->isMpty = 0;
 		call->isMT = 1;
 		call->als = 0;
 		call->isVoice  = 1;
 		call->isVoicePrivacy = 0;
-		call->number = number;
-		call->numberPresentation = (strlen(number) > 0) ? 0 : 2;
+		call->number = ril_data.calls[i]->number;
+		call->numberPresentation = (strlen(ril_data.calls[i]->number) > 0) ? 0 : 2;
 		call->name = NULL;
 		call->namePresentation = 2;
 		call->uusInfo = NULL;
-		calls[i] = call;
-
+		calls[j++] = call;
 	}
 
-	ril_request_complete(t, RIL_E_SUCCESS, calls, (num_entries * sizeof(RIL_Call *)));
+	ril_request_complete(t, RIL_E_SUCCESS, calls, (ril_data.active_calls * sizeof(RIL_Call *)));
 
-	for (i = 0; i < num_entries; i++) {
+	for (i = 0; i < ril_data.active_calls; i++) {
 		free(calls[i]);
 	}
 	free(calls);
 }
 
-	
-void ril_request_hangup(RIL_Token t)
+void ril_request_hangup(RIL_Token t, void *data, size_t datalen)
 {
+	uint32_t callId;
+	callContext* callCtxt;
+	if(datalen < 4)
+		goto error;
+	callId = *(uint32_t*)(data) - 1; /* We pass callIds incremented by 1 to Android */
 	ALOGE("%s: Test me!, callId = %d", __func__, callId);
 	
-	tapi_call_release(callType, callId, 0x0);
-	num_entries = 0;
+	callCtxt = findCallContext(callId);
+	if(!callCtxt)
+		goto error;
+	
+	callCtxt->token = t;
+	tapi_call_release(callCtxt->callType, callCtxt->callId, 0x0);
+	
+	return;
+error:
+	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+}
 
-	/* FIXME: This should actually be sent based on the response from baseband */
-	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+void ril_request_hangup_waiting_or_background(RIL_Token t)
+{
+	int i;
+	ALOGE("%s: Test me!", __func__);
+	
+	for(i = 0; i < MAX_CALLS; i++)
+	{
+		if(ril_data.calls[i] && ril_data.calls[i]->callId != 0xFFFFFFFF && 
+			(ril_data.calls[i]->call_state == RIL_CALL_WAITING || ril_data.calls[i]->call_state == RIL_CALL_HOLDING))
+		{
+			ALOGE("%s: hanging up callId = %d", __func__, ril_data.calls[i]->callId);
+			ril_data.calls[i]->token = t;
+			tapi_call_release(ril_data.calls[i]->callType, ril_data.calls[i]->callId, 0x0);
+			break;
+		}
+	}
+}	
+
+void ril_request_hangup_foreground_resume_background(RIL_Token t)
+{
+	int i;
+	ALOGE("%s: Test me!", __func__);
+
+	for(i = 0; i < MAX_CALLS; i++)
+	{
+		if(ril_data.calls[i] && ril_data.calls[i]->callId != 0xFFFFFFFF)
+		{
+			if(ril_data.calls[i]->call_state == RIL_CALL_ACTIVE)
+			{
+				ALOGE("%s: hanging up callId = %d", __func__, ril_data.calls[i]->callId);
+				ril_data.calls[i]->token = t;
+				tapi_call_release(ril_data.calls[i]->callType, ril_data.calls[i]->callId, 0x0);
+			}
+			if(ril_data.calls[i]->call_state == RIL_CALL_HOLDING)
+			{
+				ALOGE("%s: activating callId = %d", __func__, ril_data.calls[i]->callId);
+				tapi_call_activate(ril_data.calls[i]->callId);
+				ril_data.calls[i]->call_state = RIL_CALL_ACTIVE;
+			}
+		}
+	}
 }
 
 void ril_request_answer(RIL_Token t)
 {
+	int i;
 	ALOGE("%s: Test me!", __func__);
-	tapi_call_answer(callType, callId);
-	call_state = RIL_CALL_ACTIVE;
-	/* FIXME: This should actually be sent based on the response from baseband */
-	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+	
+	for(i = 0; i < MAX_CALLS; i++)
+	{
+		if(ril_data.calls[i] && ril_data.calls[i]->callId != 0xFFFFFFFF && ril_data.calls[i]->call_state == RIL_CALL_INCOMING)
+		{
+			ALOGE("%s: answering callId = %d", __func__, ril_data.calls[i]->callId);
+			tapi_call_answer(ril_data.calls[i]->callType, ril_data.calls[i]->callId);
+			ril_data.calls[i]->call_state = RIL_CALL_ACTIVE;
+			/* FIXME: This should actually be sent based on the response from baseband */
+			ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 
-	/* FIXME: Do we really need to send this? */
-	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+			/* FIXME: Do we really need to send this? */
+			ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+			return;
+		}
+	}
+
+	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
 /**
@@ -223,24 +351,34 @@ void ril_request_dtmf_stop(RIL_Token t)
 	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 }
 
-
 void ril_request_switch_holding_and_active(RIL_Token t)
 {
-     if(call_state == RIL_CALL_ACTIVE) 
-     {
-         tapi_call_hold(callId);
-         call_state = RIL_CALL_HOLDING;
-     } 
-     else if(call_state == RIL_CALL_HOLDING) 
-     { 
-        tapi_call_activate(callId); 
-        call_state = RIL_CALL_ACTIVE;
-     }
+	int i;
+	for(i = 0; i < MAX_CALLS; i++)
+	{
+		if(ril_data.calls[i] && ril_data.calls[i]->callId != 0xFFFFFFFF)
+		{
+			if(ril_data.calls[i]->call_state == RIL_CALL_ACTIVE)
+			{
+				ALOGE("%s: holding callId = %d", __func__, ril_data.calls[i]->callId);
+				ril_data.calls[i]->token = t;
+				tapi_call_hold(ril_data.calls[i]->callId);
+				ril_data.calls[i]->call_state = RIL_CALL_HOLDING;
+				
+			}
+			if(ril_data.calls[i]->call_state == RIL_CALL_HOLDING)
+			{
+				ALOGE("%s: activating callId = %d", __func__, ril_data.calls[i]->callId);
+				tapi_call_activate(ril_data.calls[i]->callId);
+				ril_data.calls[i]->call_state = RIL_CALL_ACTIVE;
+			}
+		}
+	}
 
-     /* FIXME: This should actually be sent based on the response from baseband */
-     ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
+	/* FIXME: This should actually be sent based on the response from baseband */
+	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 
-     /* FIXME: Do we really need to send this? */
-     ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+	/* FIXME: Do we really need to send this? */
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 
 }

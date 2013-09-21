@@ -33,16 +33,19 @@
  * All the TAPI call context structures generic to all Mocha devices will be defined here
  */
 
-struct tapiCall {
-	uint8_t type; //1 or 2 or 3
-	uint32_t handle;
-};
+#define MAX_CALLS 6
+
 typedef struct {
 	uint32_t callId;
 	uint8_t callType; 
 	uint8_t nameMode;
 	char phoneNumber[1];
 } __attribute__((__packed__)) tapiCallInfo;
+
+typedef struct {
+	uint32_t callId;
+	uint32_t cause;
+} __attribute__((__packed__)) tapiCallEnd;
 
 typedef struct {
 	uint8_t callType;

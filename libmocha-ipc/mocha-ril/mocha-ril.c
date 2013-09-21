@@ -413,9 +413,13 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 			ril_request_get_current_calls(t);
 			break;
 		case RIL_REQUEST_HANGUP:
+			ril_request_hangup(t, data, datalen);
+			break;
 		case RIL_REQUEST_HANGUP_WAITING_OR_BACKGROUND:
+			ril_request_hangup_waiting_or_background(t);
+			break;
 		case RIL_REQUEST_HANGUP_FOREGROUND_RESUME_BACKGROUND:
-			ril_request_hangup(t);
+			ril_request_hangup_foreground_resume_background(t);
 			break;
 		case RIL_REQUEST_ANSWER:
 			ril_request_answer(t);
