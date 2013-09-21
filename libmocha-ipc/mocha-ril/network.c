@@ -154,13 +154,12 @@ void network_start(void)
 	start_info.bPoweronGprsAttach = 1;
 	start_info.networkOrder = 1;
 	start_info.serviceDomain = 0;
-	start_info.unknown1[0] = 0xE5;
-	start_info.unknown1[1] = 0x69;
+	start_info.align1 = 0;
 	start_info.networkMode = ril_data.state.net_mode;
 	start_info.subscriptionMode = 0;
 	start_info.bFlightMode = 0;	
-	start_info.unknown2[0] = 0x02;
-	start_info.unknown2[1] = 0x41;
+	start_info.unknown = 0x02;
+	start_info.align2 = 0;
 	/* TODO: Check if it can be executed from tapi_init, or do we need to wait for network select or some other packet. */
 	tapi_network_startup(&start_info);
 	

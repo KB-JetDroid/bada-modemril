@@ -134,24 +134,20 @@ void tapi_call_setup(tapiCallSetup* callSetup)
 
 void tapi_call_hold(uint32_t callId)
 {
-
 	struct tapiPacket tx_packet;
 	tx_packet.buf = (uint8_t *)&callId;
 	tx_packet.header.tapiService = 0;
 	tx_packet.header.tapiServiceFunction = TAPI_CALL_HOLD;
 	tx_packet.header.len = 4;
 	tapi_send_packet(&tx_packet);
-
 }
 
 void tapi_call_activate(uint32_t callId)
 {
-
 	struct tapiPacket tx_packet;
 	tx_packet.buf = (uint8_t *)&callId;
 	tx_packet.header.tapiService = 0;
 	tx_packet.header.tapiServiceFunction = TAPI_CALL_ACTIVATE;
 	tx_packet.header.len = 4;
 	tapi_send_packet(&tx_packet);
-
 }

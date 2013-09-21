@@ -70,15 +70,16 @@ typedef struct { //not sure if it's specific to WAVE or same for JET,
 typedef struct {
 	/* sizeof should be 0x14 for WAVE */
 	/* Hex values next to variables are corresponding Bada NV Integer ids */
-	uint32_t bAutoSelection; /* 0x55C */
+	uint32_t bAutoSelection; /* 0x55C, PLMN search mode */
 	uint32_t bPoweronGprsAttach; /* 0x1AC */
-	uint8_t networkOrder; /* 0x55D */
-	uint8_t serviceDomain; /* 0x1AD */
-	uint8_t unknown1[2]; /* uninitialized? */
+	uint8_t networkOrder; /* 0x55D, val: 0/1/2, Bada uses only 0-1 - GSM first/WCDMA first <or way around> */
+	uint8_t serviceDomain; /* 0x1AD, val: 0/1/2/<maybe3> Bada uses 0-2 - Combined/PS/CS*/
+	uint16_t align1; /* uninitialized */
 	uint32_t networkMode; /* 0x55E */
 	uint8_t subscriptionMode; /* hardcoded to 0 in PhoneShell */
 	uint8_t bFlightMode; /* 0x16C, this is also called offlineMode */
-	uint8_t unknown2[2]; /* first byte is hardcoded 2, second uninitialized? */
+	uint8_t unknown; /* hardcoded 2, seems unused by AMSS */
+	uint8_t align2; /* uninitialized */
 } __attribute__((__packed__)) tapiStartupNetworkInfo;
 
 typedef struct {
@@ -105,8 +106,8 @@ enum TAPI_NETWORK_DLS_ADJ {
 	TAPI_NETWORK_DLS_ADJ_NO_ADJUSTMENT = 0,
 	TAPI_NETWORK_DLS_ADJ_PLUS_ONE_HOUR = 1,
 	TAPI_NETWORK_DLS_ADJ_PLUS_TWO_HOURS = 2,
-	
 };
+
 typedef struct {
 	uint32_t bNetworkInfoAvail; /* Le wild guess */
 	uint32_t bNetworkTimeAvail;
