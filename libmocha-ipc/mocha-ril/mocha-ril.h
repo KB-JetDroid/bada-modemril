@@ -134,6 +134,8 @@ struct ril_tokens {
 	RIL_Token operator;
 	RIL_Token outgoing_sms;
 	RIL_Token dial;
+	RIL_Token dtmf_start;
+	RIL_Token dtmf_stop;
 };
 
 void ril_tokens_check(void);
@@ -183,6 +185,7 @@ struct ril_state {
 	uint16_t lac_id;
 	char proper_plmn[9];
 	char SPN[NET_MAX_SPN_LEN];
+	unsigned char dtmf_tone;
 #if 0
 	struct ipc_sec_sim_status_response sim_pin_status;
 	struct ipc_sec_sim_icc_type sim_type;
@@ -195,7 +198,6 @@ struct ril_state {
 
 	int gprs_last_failed_cid;
 
-	unsigned char dtmf_tone;
 	unsigned char ussd_state;
 
 	unsigned char sms_incoming_msg_tpid;
@@ -210,6 +212,7 @@ void ril_state_lpm(void);
 
 typedef struct {
 	uint32_t callId, callType;
+	uint8_t bMT;
 	char number[64];
 	uint32_t call_state;
 	RIL_Token token;
@@ -261,6 +264,8 @@ void ipc_call_incoming(void* data);
 void ipc_call_end(void* data);
 void ipc_call_setup_ind(void* data);
 void ipc_call_connected_number_ind(void* data);
+void ipc_call_dtmf_start(void* data);
+void ipc_call_dtmf_stop(void* data);
 void ril_request_dial(RIL_Token t, void *data, size_t datalen);
 void ril_request_get_current_calls(RIL_Token t);
 void ril_request_hangup(RIL_Token t, void *data, size_t datalen);

@@ -71,19 +71,19 @@ typedef enum {
 } SndType;
 
 typedef enum {
-	SND_OUTPUT_AP_PCM = 0x1,
-	SND_OUTPUT_2 = 0x2,
-	SND_OUTPUT_3 = 0x4,
-	SND_OUTPUT_4 = 0x10,
-	SND_OUTPUT_5 = 0x80,
-	SND_OUTPUT_6 = 0x100,
-	SND_OUTPUT_7 = 0x200,
+	SND_OUTPUT_SPEAKER = 	0x1,
+	SND_OUTPUT_EARPIECE = 	0x2,
+	SND_OUTPUT_HEADSET = 	0x4,
+	SND_OUTPUT_4 = 		0x10,
+	SND_OUTPUT_5 = 		0x80,
+	SND_OUTPUT_6 = 		0x100,
+	SND_OUTPUT_7 = 		0x200,
 } SndOutput;
 
 typedef enum {
-	SND_INPUT_MIC = 0x100,
-	SND_INPUT_UNK1 = 0x200, /* Who knows */
-	SND_INPUT_UNK2 = 0x800 /* Not mic, maybe incoming voice from CP or AP */
+	SND_INPUT_MAIN_MIC = 	0x100,
+	SND_INPUT_EAR_MIC = 	0x200, 
+	SND_INPUT_BT_MIC = 	0x800 /* TODO: confirm */
 } SndInput;
 
 struct srs_snd_set_volume_packet {
