@@ -33,6 +33,7 @@ enum SOUND_PACKET_TYPE {
 	SOUND_PACKET_SET_VOLUME = 0,
 	SOUND_PACKET_SET_MUTE = 1, /* Generated for soundType 0xD, 0x10, 0x11, 0x12, 0x13*/
 	SOUND_PACKET_SET_SND_PATH = 2, /* Generated for soundType 0xD, 0x10, 0x11, 0x12, 0x13*/
+	SOUND_PACKET_TESTMODE = 6,
 	SOUND_PACKET_DTMF = 7, /* Got some buffer, unknown for now */
 	SOUND_PACKET_1MIC_NS_ON = 8, /* No buffer */
 	SOUND_PACKET_1MIC_NS_OFF = 9, /* No buffer */
