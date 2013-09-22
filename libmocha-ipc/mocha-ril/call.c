@@ -97,7 +97,6 @@ void ipc_call_incoming(void* data)
 	callCtxt->callType = callInfo->callType;
 	callCtxt->call_state = RIL_CALL_INCOMING;
 	callCtxt->bMT = 1;
-	ril_data.active_calls++;
 	
 	ril_request_unsolicited(RIL_UNSOL_CALL_RING, NULL, 0);
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
@@ -112,7 +111,6 @@ void ipc_call_end(void* data)
 	callCtxt = findCallContext(callEndInfo->callId);
 	if(!callCtxt)
 		return;
-	ril_data.active_calls--;
 	if(callCtxt->token != 0)
 		ril_request_complete(callCtxt->token, RIL_E_SUCCESS, NULL, 0);
 	releaseCallContext(callCtxt);
@@ -128,7 +126,6 @@ void ipc_call_setup_ind(void* data)
 	callCtxt = findCallContext(0xFFFFFFFF);
 	if(!callCtxt)
 		goto error;
-	ril_data.active_calls++;
 	callCtxt->callId = callId;
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 	ril_request_complete(ril_data.tokens.dial, RIL_E_SUCCESS, NULL, 0);
@@ -250,15 +247,9 @@ void ril_request_get_current_calls(RIL_Token t)
 
 	int i, j;
 
-    if (ril_data.active_calls == 0) {
-		DEBUG_I("ril_data.active_calls == 0");	
-		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
-		return;
-	}
-
-	RIL_Call **calls = (RIL_Call **) malloc(ril_data.active_calls * sizeof(RIL_Call *));
-
-	for (j = 0, i = 0; i < MAX_CALLS; i++) {
+	RIL_Call **calls = NULL;
+	j = 0;
+	for (i = 0; i < MAX_CALLS; i++) {
 		if(ril_data.calls[i] == NULL || ril_data.calls[i]->callId == 0xFFFFFFFF)
 			continue;
 		RIL_Call *call = (RIL_Call *) malloc(sizeof(RIL_Call));
@@ -275,12 +266,13 @@ void ril_request_get_current_calls(RIL_Token t)
 		call->name = NULL;
 		call->namePresentation = 2;
 		call->uusInfo = NULL;
+		calls = (RIL_Call **) realloc(calls, (j + 1) * sizeof(RIL_Call *));
 		calls[j++] = call;
 	}
 
-	ril_request_complete(t, RIL_E_SUCCESS, calls, (ril_data.active_calls * sizeof(RIL_Call *)));
+	ril_request_complete(t, RIL_E_SUCCESS, calls, (j * sizeof(RIL_Call *)));
 
-	for (i = 0; i < ril_data.active_calls; i++) {
+	for (i = 0; i < j; i++) {
 		free(calls[i]);
 	}
 	free(calls);

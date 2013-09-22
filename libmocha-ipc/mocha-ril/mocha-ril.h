@@ -230,7 +230,6 @@ struct ril_data {
 	struct list_head *requests;
 	int request_id;
 	char smsc_number[30];
-	int active_calls;
 	callContext *calls[MAX_CALLS];
 	struct ril_client *ipc_packet_client;
 	struct ril_client *srs_client;
