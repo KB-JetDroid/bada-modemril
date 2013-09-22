@@ -162,6 +162,24 @@ void ipc_call_alert(void* data)
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
+void ipc_call_connected(void* data)
+{
+	ALOGE("%s: Test me!", __func__);
+	callContext* callCtxt;
+	uint32_t callId = *(uint32_t *)(data);
+	DEBUG_I("%s : callId = %d", __func__, callId);
+	callCtxt = findCallContext(callId);
+	if(!callCtxt)
+		return;
+	callCtxt->call_state = RIL_CALL_ACTIVE;
+	if(callCtxt->token != 0)
+	{
+		ril_request_complete(callCtxt->token, RIL_E_SUCCESS, NULL, 0);
+		callCtxt->token = 0;
+	}
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);	
+}
+
 void ipc_call_connected_number_ind(void* data)
 {
 	ALOGE("%s: Test me!", __func__);
@@ -453,17 +471,11 @@ void ril_request_answer(RIL_Token t)
 		if(ril_data.calls[i] && ril_data.calls[i]->callId != 0xFFFFFFFF && ril_data.calls[i]->call_state == RIL_CALL_INCOMING)
 		{
 			ALOGE("%s: answering callId = %d", __func__, ril_data.calls[i]->callId);
+			ril_data.calls[i]->token = t;
 			tapi_call_answer(ril_data.calls[i]->callType, ril_data.calls[i]->callId);
-			ril_data.calls[i]->call_state = RIL_CALL_ACTIVE;
-			/* FIXME: This should actually be sent based on the response from baseband */
-			ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
-
-			/* FIXME: Do we really need to send this? */
-			ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 			return;
 		}
 	}
-
 	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 

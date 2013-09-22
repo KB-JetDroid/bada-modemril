@@ -62,6 +62,9 @@ void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *t
 		case TAPI_CALL_ALERT_IND:
 			ipc_invoke_ril_cb(CALL_ALERT, (void*)tapiCallData);
 			break;
+		case TAPI_CALL_CONNECTED_IND:
+			ipc_invoke_ril_cb(CALL_CONNECTED, (void*)tapiCallData);	
+			break;
 		case TAPI_CALL_CONNECTED_NUMBER_IND:
 			ipc_invoke_ril_cb(CALL_CONNECTED_NUMBER_IND, (void*)tapiCallData);	
 			break;

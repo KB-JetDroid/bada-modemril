@@ -263,6 +263,7 @@ void ipc_call_incoming(void* data);
 void ipc_call_end(void* data);
 void ipc_call_setup_ind(void* data);
 void ipc_call_alert(void* data);
+void ipc_call_connected(void* data);
 void ipc_call_connected_number_ind(void* data);
 void ipc_call_dtmf_start(void* data);
 void ipc_call_dtmf_stop(void* data);

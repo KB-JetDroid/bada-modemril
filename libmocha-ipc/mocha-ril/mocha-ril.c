@@ -507,6 +507,7 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(CALL_END_IND, ipc_call_end);
 	ipc_register_ril_cb(CALL_SETUP_IND, ipc_call_setup_ind);
 	ipc_register_ril_cb(CALL_ALERT, ipc_call_alert);
+	ipc_register_ril_cb(CALL_CONNECTED, ipc_call_connected);
 	ipc_register_ril_cb(CALL_CONNECTED_NUMBER_IND, ipc_call_connected_number_ind);
 	ipc_register_ril_cb(CALL_DTMF_START, ipc_call_dtmf_start);
 	ipc_register_ril_cb(CALL_DTMF_STOP, ipc_call_dtmf_stop);
