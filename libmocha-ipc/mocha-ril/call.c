@@ -61,7 +61,7 @@ callContext* findCallContext(uint32_t callId)
 	int i;
 	for(i = 0; i < MAX_CALLS; i++)
 	{
-		if(ril_data.calls[i]->callId == callId)
+		if(ril_data.calls[i] && ril_data.calls[i]->callId == callId)
 		{
 			return ril_data.calls[i];
 		}
@@ -130,14 +130,14 @@ void ipc_call_setup_ind(void* data)
 		goto error;
 	ril_data.active_calls++;
 	callCtxt->callId = callId;
-	callCtxt->bMT = 0;
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 	ril_request_complete(ril_data.tokens.dial, RIL_E_SUCCESS, NULL, 0);
 	return;
 error:
+	ALOGE("%s: Error!", __func__);
 	ril_request_complete(ril_data.tokens.dial, RIL_E_GENERIC_FAILURE, NULL, 0);
-
 }
+
 void ipc_call_connected_number_ind(void* data)
 {
 	ALOGE("%s: Test me!", __func__);
@@ -167,9 +167,8 @@ void ipc_call_dtmf_start(void* data)
 	return;
 
 error:
-
+	ALOGE("%s: Error!", __func__);
 	ril_request_complete(ril_data.tokens.dtmf_start, RIL_E_GENERIC_FAILURE, NULL, 0);
-
 }
 
 void ipc_call_dtmf_stop(void* data)
@@ -187,9 +186,8 @@ void ipc_call_dtmf_stop(void* data)
 	return;
 
 error:
-
+	ALOGE("%s: Error!", __func__);
 	ril_request_complete(ril_data.tokens.dtmf_stop, RIL_E_GENERIC_FAILURE, NULL, 0);
-
 }
 
 void ril_request_dial(RIL_Token t, void *data, size_t datalen)
@@ -210,6 +208,7 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 	
 	callCtxt->callId = 0xFFFFFFFF;
 	callCtxt->call_state = RIL_CALL_DIALING;
+	callCtxt->bMT = 0;
 	strcpy(callCtxt->number, dial->address);
 
 	callSetup = (tapiCallSetup *)malloc(sizeof(tapiCallSetup));
@@ -241,6 +240,7 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 	return;
 
 error:
+	ALOGE("%s: Error!", __func__);
 	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
@@ -304,6 +304,7 @@ void ril_request_hangup(RIL_Token t, void *data, size_t datalen)
 	
 	return;
 error:
+	ALOGE("%s: Error!", __func__);
 	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
@@ -422,6 +423,7 @@ void ril_request_dtmf_start(RIL_Token t, void *data, int length)
 	return;
 
 error:
+	ALOGE("%s: Error!", __func__);
 	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
@@ -440,6 +442,7 @@ void ril_request_dtmf_stop(RIL_Token t)
 
 	ril_data.tokens.dtmf_stop = t;
 error:
+	ALOGE("%s: Error!", __func__);3
 	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
