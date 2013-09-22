@@ -71,8 +71,14 @@ void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *t
 		case TAPI_CALL_STOP_DTMF_CNF:
 			ipc_invoke_ril_cb(CALL_DTMF_STOP, (void*)tapiCallData);
 			break;
+		case TAPI_CALL_HOLD_CNF:
+			ipc_invoke_ril_cb(CALL_HOLD, (void*)tapiCallData);
+			break;
 		case TAPI_CALL_SWAP_CNF:
 			ipc_invoke_ril_cb(CALL_SWAP, (void*)tapiCallData);
+			break;
+		case TAPI_CALL_ACTIVATE_CNF:
+			ipc_invoke_ril_cb(CALL_ACTIVATE, (void*)tapiCallData);
 			break;
 		default:	
 			DEBUG_I("TapiCall Packet type 0x%X is not yet handled, len = 0x%x", tapiCallType, tapiCallLength);

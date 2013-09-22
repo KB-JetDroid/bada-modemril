@@ -119,7 +119,10 @@ void ipc_call_end(void* data)
 	if(!callCtxt)
 		return;
 	if(callCtxt->token != 0)
+	{
 		ril_request_complete(callCtxt->token, RIL_E_SUCCESS, NULL, 0);
+		callCtxt->token = 0;
+	}
 	releaseCallContext(callCtxt);
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
@@ -208,6 +211,28 @@ error:
 	ril_request_complete(ril_data.tokens.dtmf_stop, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
+void ipc_call_hold(void* data)
+{
+	callContext* heldCtxt;
+	tapiCallEnd* holdCnf = (tapiCallEnd*)(data);
+	ALOGE("%s: test me!(callId:%d, cause:%d)", __func__, 
+	holdCnf->callId, holdCnf->cause);
+	
+	heldCtxt = findCallContext(holdCnf->callId);
+	if(!heldCtxt)
+		return;
+
+	heldCtxt->call_state = RIL_CALL_HOLDING;
+	
+	if(heldCtxt->token != 0)
+	{
+		ril_request_complete(heldCtxt->token, RIL_E_SUCCESS, NULL, 0);
+		heldCtxt->token = 0;
+	}
+	
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+}
+
 void ipc_call_swap(void* data)
 {
 	callContext* activatedCtxt, *heldCtxt;
@@ -224,10 +249,41 @@ void ipc_call_swap(void* data)
 	heldCtxt->call_state = RIL_CALL_HOLDING;
 	
 	if(heldCtxt->token != 0)
+	{
 		ril_request_complete(heldCtxt->token, RIL_E_SUCCESS, NULL, 0);
-
+	}
+	else if(activatedCtxt->token != 0)
+	{
+		ril_request_complete(activatedCtxt->token, RIL_E_SUCCESS, NULL, 0);
+	}
+	heldCtxt->token = 0;
+	activatedCtxt->token = 0;
+	
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
+
+void ipc_call_activate(void* data)
+{
+	callContext* activatedCtxt;
+	tapiCallEnd* activateCnf = (tapiCallEnd*)(data);
+	ALOGE("%s: test me!(callNo:%d, cause:%d)", __func__, 
+	activateCnf->callId, activateCnf->cause);
+	
+	activatedCtxt = findCallContext(activateCnf->callId);
+	if(!activatedCtxt)
+		return;
+
+	activatedCtxt->call_state = RIL_CALL_ACTIVE;
+	
+	if(activatedCtxt->token != 0)
+	{
+		ril_request_complete(activatedCtxt->token, RIL_E_SUCCESS, NULL, 0);
+		activatedCtxt->token = 0;
+	}
+	
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+}
+
 
 void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 {	
@@ -497,16 +553,24 @@ void ril_request_switch_holding_and_active(RIL_Token t)
 			if(ril_data.calls[i]->call_state == RIL_CALL_HOLDING)
 			{
 				holdId = ril_data.calls[i]->callId;
+				ril_data.calls[i]->token = t;
 			}
 		}
 	}
-	if(activeId == 0xFFFFFFFF || holdId == 0xFFFFFFFF)
-		goto error;
-	ALOGE("%s: holding callId = %d", __func__, activeId);
-	ALOGE("%s: activating callId = %d", __func__, holdId);
-	tapi_calls_swap(activeId, holdId);
-	return;
-error:
-	ALOGE("%s: Error, couldn't find calls!", __func__);
-	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+	if(activeId != 0xFFFFFFFF || holdId != 0xFFFFFFFF)
+	{
+		ALOGE("%s: holding callId = %d", __func__, activeId);
+		ALOGE("%s: activating callId = %d", __func__, holdId);
+		tapi_calls_swap(activeId, holdId);
+	}
+	else if(activeId != 0xFFFFFFFF)
+	{
+		ALOGE("%s: holding callId = %d", __func__, activeId);
+		tapi_calls_hold(activeId);
+	}
+	else if(holdId != 0xFFFFFFFF)
+	{
+		ALOGE("%s: activating callId = %d", __func__, holdId);
+		tapi_calls_activate(holdId);
+	}
 }
