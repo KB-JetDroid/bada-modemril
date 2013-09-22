@@ -87,7 +87,13 @@ void releaseCallContext(callContext* ptr)
 
 void ipc_call_incoming(void* data)
 {
+	uint8_t newCallState;
 	ALOGE("%s: Test me!", __func__);
+
+	if(findActiveCall() == NULL)
+		newCallState = RIL_CALL_INCOMING;
+	else
+		newCallState = RIL_CALL_WAITING;
 	callContext* callCtxt = newCallContext();
 	tapiCallInfo* callInfo = (tapiCallInfo*)(data);
 	
@@ -99,10 +105,7 @@ void ipc_call_incoming(void* data)
 	strcpy(callCtxt->number, callInfo->phoneNumber);
 	callCtxt->callId = callInfo->callId;
 	callCtxt->callType = callInfo->callType;
-	if(findActiveCall() == NULL)
-		callCtxt->call_state = RIL_CALL_INCOMING;
-	else
-		callCtxt->call_state = RIL_CALL_WAITING;
+	callCtxt->call_state = newCallState;
 	callCtxt->bMT = 1;
 	
 	ril_request_unsolicited(RIL_UNSOL_CALL_RING, NULL, 0);
