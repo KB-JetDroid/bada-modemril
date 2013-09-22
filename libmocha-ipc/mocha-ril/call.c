@@ -208,6 +208,27 @@ error:
 	ril_request_complete(ril_data.tokens.dtmf_stop, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
+void ipc_call_swap(void* data)
+{
+	callContext* activatedCtxt, *heldCtxt;
+	tapiSwapCnf* swapCnf = (tapiSwapCnf*)(data);
+	ALOGE("%s: test me!(ActivatedCallNo:%d,HeldCallNo:%d, cause:%d)", __func__, 
+	swapCnf->activatedCallId, swapCnf->heldCallId, swapCnf->cause);
+	
+	activatedCtxt = findCallContext(swapCnf->activatedCallId);
+	heldCtxt = findCallContext(swapCnf->heldCallId);
+	if(!activatedCtxt || !heldCtxt)
+		return;
+
+	activatedCtxt->call_state = RIL_CALL_ACTIVE;
+	heldCtxt->call_state = RIL_CALL_HOLDING;
+	
+	if(heldCtxt->token != 0)
+		ril_request_complete(heldCtxt->token, RIL_E_SUCCESS, NULL, 0);
+
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
+}
+
 void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 {	
 	ALOGE("%s: Test me!", __func__);
@@ -462,31 +483,30 @@ error:
 void ril_request_switch_holding_and_active(RIL_Token t)
 {
 	int i;
+	uint32_t activeId = 0xFFFFFFFF;
+	uint32_t holdId = 0xFFFFFFFF;
 	for(i = 0; i < MAX_CALLS; i++)
 	{
 		if(ril_data.calls[i] && ril_data.calls[i]->callId != 0xFFFFFFFF)
 		{
 			if(ril_data.calls[i]->call_state == RIL_CALL_ACTIVE)
 			{
-				ALOGE("%s: holding callId = %d", __func__, ril_data.calls[i]->callId);
+				activeId = ril_data.calls[i]->callId;
 				ril_data.calls[i]->token = t;
-				tapi_call_hold(ril_data.calls[i]->callId);
-				ril_data.calls[i]->call_state = RIL_CALL_HOLDING;
-				
 			}
 			if(ril_data.calls[i]->call_state == RIL_CALL_HOLDING)
 			{
-				ALOGE("%s: activating callId = %d", __func__, ril_data.calls[i]->callId);
-				tapi_call_activate(ril_data.calls[i]->callId);
-				ril_data.calls[i]->call_state = RIL_CALL_ACTIVE;
+				holdId = ril_data.calls[i]->callId;
 			}
 		}
 	}
-
-	/* FIXME: This should actually be sent based on the response from baseband */
-	ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
-
-	/* FIXME: Do we really need to send this? */
-	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
-
+	if(activeId == 0xFFFFFFFF || holdId == 0xFFFFFFFF)
+		goto error;
+	ALOGE("%s: holding callId = %d", __func__, activeId);
+	ALOGE("%s: activating callId = %d", __func__, holdId);
+	tapi_calls_swap(activeId, holdId);
+	return;
+error:
+	ALOGE("%s: Error, couldn't find calls!", __func__);
+	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }

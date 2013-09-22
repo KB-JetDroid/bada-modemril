@@ -71,6 +71,9 @@ void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *t
 		case TAPI_CALL_STOP_DTMF_CNF:
 			ipc_invoke_ril_cb(CALL_DTMF_STOP, (void*)tapiCallData);
 			break;
+		case TAPI_CALL_SWAP_CNF:
+			ipc_invoke_ril_cb(CALL_SWAP, (void*)tapiCallData);
+			break;
 		default:	
 			DEBUG_I("TapiCall Packet type 0x%X is not yet handled, len = 0x%x", tapiCallType, tapiCallLength);
 	    	break;
@@ -135,7 +138,7 @@ void tapi_call_activate(uint32_t callId)
 	tapi_send_packet(&tx_packet);
 }
 
-void tapi_start_dtmf(uint8_t callId, char tone)
+void tapi_start_dtmf(uint32_t callId, char tone)
 {
 	struct tapiPacket tx_packet;
 	tapiDtmf dtmf;
@@ -152,7 +155,7 @@ void tapi_start_dtmf(uint8_t callId, char tone)
 	tapi_send_packet(&tx_packet);
 }
 
-void tapi_stop_dtmf(uint8_t callId)
+void tapi_stop_dtmf(uint32_t callId)
 {
 	struct tapiPacket tx_packet;
 	tapiDtmf dtmf;
@@ -163,5 +166,20 @@ void tapi_stop_dtmf(uint8_t callId)
 	tx_packet.header.tapiService = 0;
 	tx_packet.header.tapiServiceFunction = TAPI_CALL_STOP_DTMF;
 	tx_packet.header.len = 0x5C;
+	tapi_send_packet(&tx_packet);
+}
+
+void tapi_calls_swap(uint32_t activeCallId, uint32_t holdingCallId)
+{
+	struct tapiPacket tx_packet;
+	tapiSwap swap;
+
+	swap.activeCallId = activeCallId;
+	swap.holdingCallId = holdingCallId;
+
+	tx_packet.buf = (uint8_t *)&swap;
+	tx_packet.header.tapiService = 0;
+	tx_packet.header.tapiServiceFunction = TAPI_CALL_SWAP;
+	tx_packet.header.len = sizeof(tapiSwap);
 	tapi_send_packet(&tx_packet);
 }
