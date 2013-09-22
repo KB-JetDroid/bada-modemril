@@ -442,7 +442,7 @@ void ril_request_dtmf_stop(RIL_Token t)
 
 	ril_data.tokens.dtmf_stop = t;
 error:
-	ALOGE("%s: Error!", __func__);3
+	ALOGE("%s: Error!", __func__);
 	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 

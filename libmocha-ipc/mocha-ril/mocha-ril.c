@@ -450,6 +450,7 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 #endif		/* SND */
 		case RIL_REQUEST_SET_MUTE:
 			ril_request_set_mute(t, data, datalen);
+			break;
 		/* SS */
 		case RIL_REQUEST_SEND_USSD:
 			ril_request_send_ussd(t, data, datalen);
