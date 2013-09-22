@@ -122,9 +122,11 @@ int ipc_read_loop(struct ril_client *client)
 				return -1;
 			}
 			RIL_CLIENT_UNLOCK(client);
-
-			ipc_dispatch(ipc_client, &resp);
-
+			
+			RIL_LOCK();
+			ipc_dispatch(ipc_client, &resp);			
+			RIL_UNLOCK();
+			
 			if(resp.data != NULL)
 				free(resp.data);
 		}
