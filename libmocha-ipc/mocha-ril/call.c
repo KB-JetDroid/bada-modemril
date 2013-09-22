@@ -78,6 +78,7 @@ void releaseCallContext(callContext* ptr)
 		if(ril_data.calls[i] == ptr)
 		{
 			free(ril_data.calls[i]);
+			ril_data.calls[i] = NULL;
 			return;
 		}
 	}
