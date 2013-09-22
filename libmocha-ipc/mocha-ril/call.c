@@ -435,7 +435,6 @@ void ril_request_hangup_foreground_resume_background(RIL_Token t)
 			{
 				ALOGE("%s: activating callId = %d", __func__, ril_data.calls[i]->callId);
 				tapi_call_activate(ril_data.calls[i]->callId);
-				ril_data.calls[i]->call_state = RIL_CALL_ACTIVE;
 			}
 		}
 	}
