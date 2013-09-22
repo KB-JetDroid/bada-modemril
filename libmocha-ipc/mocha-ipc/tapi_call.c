@@ -44,73 +44,38 @@ void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *t
 	uint8_t *payload;
 	uint32_t frame_length;
 
+	DEBUG_I("tapi_call_parser - tapiCallType: %d", tapiCallType);
 	switch(tapiCallType)
 	{
 		case TAPI_CALL_APIREQ:
 			/* Confirmation of properly executed function, just drop it */
 			break;
 		case TAPI_CALL_INCOMING_IND:
-			tapi_call_incoming_ind(tapiCallLength, tapiCallData);
+			ipc_invoke_ril_cb(CALL_INCOMING_IND, (void*)tapiCallData);
 			break;
 		case TAPI_CALL_END_IND:
-			tapi_call_end_ind(tapiCallLength, tapiCallData);
+			ipc_invoke_ril_cb(CALL_END_IND, (void*)tapiCallData);
 			break;
 		case TAPI_CALL_SETUP_IND:
-			tapi_call_setup_ind(tapiCallLength, tapiCallData);		
+			ipc_invoke_ril_cb(CALL_SETUP_IND, (void*)tapiCallData);	
+			break;
+		case TAPI_CALL_ALERT_IND:
+			ipc_invoke_ril_cb(CALL_ALERT, (void*)tapiCallData);
 			break;
 		case TAPI_CALL_CONNECTED_NUMBER_IND:
-			tapi_call_connected_number_ind(tapiCallLength, tapiCallData);		
+			ipc_invoke_ril_cb(CALL_CONNECTED_NUMBER_IND, (void*)tapiCallData);	
 			break;
 		case TAPI_CALL_START_DTMF_CNF:
-			tapi_call_start_dtmf_cnf(tapiCallLength, tapiCallData);
+			ipc_invoke_ril_cb(CALL_DTMF_START, (void*)tapiCallData);
 	 		break;
 		case TAPI_CALL_STOP_DTMF_CNF:
-			tapi_call_stop_dtmf_cnf(tapiCallLength, tapiCallData);
+			ipc_invoke_ril_cb(CALL_DTMF_STOP, (void*)tapiCallData);
 			break;
 		default:	
 			DEBUG_I("TapiCall Packet type 0x%X is not yet handled, len = 0x%x", tapiCallType, tapiCallLength);
 	    	break;
 	}
 	hex_dump(tapiCallData, tapiCallLength);
-}
-
-
-void tapi_call_incoming_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
-{
-	tapiCallInfo* callInfo = (tapiCallInfo*)(tapiCallData);
-	DEBUG_I("tapi_call_incoming_ind: Incoming call received from %s", callInfo->phoneNumber);
-	DEBUG_I("tapi_call_incoming_ind: callId = %d", callInfo->callId );
-	ipc_invoke_ril_cb(CALL_INCOMING_IND, (void*)callInfo);
-}
-		
-void tapi_call_end_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
-{
-	DEBUG_I("tapi_call_end_ind");
-	ipc_invoke_ril_cb(CALL_END_IND, (void*)tapiCallData);
-}
-
-void tapi_call_setup_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
-{
-	DEBUG_I("tapi_call_setup_ind");
-	ipc_invoke_ril_cb(CALL_SETUP_IND, (void*)tapiCallData);
-}
-
-void tapi_call_connected_number_ind(uint32_t tapiCallLength, uint8_t *tapiCallData)
-{
-	DEBUG_I("tapi_call_connected_number_ind");
-	ipc_invoke_ril_cb(CALL_CONNECTED_NUMBER_IND, (void*)tapiCallData);
-}
-
-void tapi_call_start_dtmf_cnf(uint32_t tapiCallLength, uint8_t *tapiCallData)
-{
-	DEBUG_I("tapi_call_start_dtmf_cnf");
-	ipc_invoke_ril_cb(CALL_DTMF_START, (void*)tapiCallData);
-}
-
-void tapi_call_stop_dtmf_cnf(uint32_t tapiCallLength, uint8_t *tapiCallData)
-{
-	DEBUG_I("tapi_call_stop_dtmf_cnf");
-	ipc_invoke_ril_cb(CALL_DTMF_STOP, (void*)tapiCallData);
 }
 
 void tapi_call_release(uint8_t callType,uint32_t callId, uint8_t releaseCause)

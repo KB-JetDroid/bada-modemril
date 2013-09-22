@@ -262,6 +262,7 @@ void ril_request_screen_state(RIL_Token t, void *data, size_t datalen);
 void ipc_call_incoming(void* data);
 void ipc_call_end(void* data);
 void ipc_call_setup_ind(void* data);
+void ipc_call_alert(void* data);
 void ipc_call_connected_number_ind(void* data);
 void ipc_call_dtmf_start(void* data);
 void ipc_call_dtmf_stop(void* data);

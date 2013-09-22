@@ -89,7 +89,10 @@ void ipc_call_incoming(void* data)
 	ALOGE("%s: Test me!", __func__);
 	callContext* callCtxt = newCallContext();
 	tapiCallInfo* callInfo = (tapiCallInfo*)(data);
-
+	
+	DEBUG_I("ipc_call_incoming: Incoming call received from %s", callInfo->phoneNumber);
+	DEBUG_I("ipc_call_incoming: callId = %d", callInfo->callId );
+	
 	if(!callCtxt)
 		return;
 	strcpy(callCtxt->number, callInfo->phoneNumber);
@@ -133,6 +136,20 @@ void ipc_call_setup_ind(void* data)
 error:
 	ALOGE("%s: Error!", __func__);
 	ril_request_complete(ril_data.tokens.dial, RIL_E_GENERIC_FAILURE, NULL, 0);
+}
+
+void ipc_call_alert(void* data)
+{
+	ALOGE("%s: Test me!", __func__);
+	callContext* callCtxt;
+	uint32_t callId = *(uint32_t *)(data);
+	uint32_t bAudioOn = *(uint32_t *)((uint8_t*)(data) + 4);
+	DEBUG_I("%s : callId = %d, bAudioOn = %d", __func__, callId, bAudioOn);
+	callCtxt = findCallContext(callId);
+	if(!callCtxt)
+		return;
+	callCtxt->call_state = RIL_CALL_ALERTING;
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 void ipc_call_connected_number_ind(void* data)
