@@ -568,11 +568,11 @@ void ril_request_switch_holding_and_active(RIL_Token t)
 	else if(activeId != 0xFFFFFFFF)
 	{
 		ALOGE("%s: holding callId = %d", __func__, activeId);
-		tapi_calls_hold(activeId);
+		tapi_call_hold(activeId);
 	}
 	else if(holdId != 0xFFFFFFFF)
 	{
 		ALOGE("%s: activating callId = %d", __func__, holdId);
-		tapi_calls_activate(holdId);
+		tapi_call_activate(holdId);
 	}
 }
