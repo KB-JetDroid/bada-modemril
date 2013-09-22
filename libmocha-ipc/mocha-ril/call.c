@@ -325,7 +325,7 @@ void ril_request_hangup_waiting_or_background(RIL_Token t)
 	for(i = 0; i < MAX_CALLS; i++)
 	{
 		if(ril_data.calls[i] && ril_data.calls[i]->callId != 0xFFFFFFFF && 
-			(ril_data.calls[i]->call_state == RIL_CALL_WAITING || ril_data.calls[i]->call_state == RIL_CALL_HOLDING))
+			(ril_data.calls[i]->call_state == RIL_CALL_INCOMING || ril_data.calls[i]->call_state == RIL_CALL_WAITING || ril_data.calls[i]->call_state == RIL_CALL_HOLDING))
 		{
 			ALOGE("%s: hanging up callId = %d", __func__, ril_data.calls[i]->callId);
 			ril_data.calls[i]->token = t;
