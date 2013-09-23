@@ -565,37 +565,41 @@ void ril_request_switch_waiting_or_holding_and_active(RIL_Token t)
 			{
 				activeId = ril_data.calls[i]->callId;
 				ril_data.calls[i]->token = t;
+				ALOGE("%s: active callId = %d", __func__, activeId);			
 			}
 			if(ril_data.calls[i]->call_state == RIL_CALL_HOLDING)
 			{
 				holdId = ril_data.calls[i]->callId;
 				ril_data.calls[i]->token = t;
+				ALOGE("%s: hold callId = %d", __func__, holdId);
 			}
 			if(ril_data.calls[i]->call_state == RIL_CALL_WAITING)
 			{
-				holdId = ril_data.calls[i]->callId;
+				waitId = ril_data.calls[i]->callId;
 				callType = ril_data.calls[i]->callType;
 				ril_data.calls[i]->token = t;
+				ALOGE("%s: wait callId = %d", __func__, waitId);
 			}
 		}
 	}
-	if(activeId != 0xFFFFFFFF || holdId != 0xFFFFFFFF)
+
+	if(activeId != 0xFFFFFFFF && holdId != 0xFFFFFFFF)
 	{
-		ALOGE("%s: holding callId = %d", __func__, activeId);
-		ALOGE("%s: activating callId = %d", __func__, holdId);
+		ALOGE("%s: active/holding callId = %d", __func__, activeId);
+		ALOGE("%s: hold/activating callId = %d", __func__, holdId);
 		tapi_calls_swap(activeId, holdId);
 	}
-	else if(activeId != 0xFFFFFFFF || waitId != 0xFFFFFFFF)
+	else if(activeId != 0xFFFFFFFF && waitId != 0xFFFFFFFF)
 	{
-		ALOGE("%s: holding callId = %d", __func__, activeId);
-		ALOGE("%s: activating callId = %d", __func__, waitId);
+		ALOGE("%s: active/holding callId = %d", __func__, activeId);
+		ALOGE("%s: waiting/activating callId = %d", __func__, waitId);
 		tapi_call_hold(activeId);
 		tapi_call_answer(callType, waitId);
 	}
-	else if(holdId != 0xFFFFFFFF || waitId != 0xFFFFFFFF)
+	else if(holdId != 0xFFFFFFFF && waitId != 0xFFFFFFFF)
 	{
-		ALOGE("%s: holding callId = %d", __func__, holdId);
-		ALOGE("%s: activating callId = %d", __func__, waitId);
+		ALOGE("%s: hold/holding callId = %d", __func__, holdId);
+		ALOGE("%s: wait/activating callId = %d", __func__, waitId);
 		tapi_call_answer(callType, waitId);
 	}
 	else if(activeId != 0xFFFFFFFF)
