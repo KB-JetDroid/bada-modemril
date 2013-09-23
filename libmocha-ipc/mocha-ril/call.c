@@ -306,6 +306,22 @@ void ipc_call_activate(void* data)
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
+void ipc_call_error(void* data)
+{
+	callContext* errorCtxt;
+	tapiCallError* errorInd = (tapiCallError*)(data);
+	ALOGE("%s: test me!(callNo:%d, error:%d)", __func__, errorInd->callId, errorInd->error);
+
+	errorCtxt = findCallContext(errorInd->callId);
+	if(!errorCtxt)
+		return;
+
+	if(errorCtxt->token != 0)
+	{
+		ril_request_complete(errorCtxt->token, RIL_E_GENERIC_FAILURE, NULL, 0);
+		errorCtxt->token = 0;
+	}
+}
 
 void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 {	

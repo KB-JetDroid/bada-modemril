@@ -83,6 +83,11 @@ typedef struct {
 	uint32_t cause;
 } __attribute__((__packed__)) tapiSwapCnf;
 
+typedef struct {
+	uint32_t callId;
+	uint32_t error;
+} __attribute__((__packed__)) tapiCallError;
+
 typedef struct 
 {
 	uint32_t acm;

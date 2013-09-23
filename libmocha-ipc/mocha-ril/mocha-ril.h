@@ -269,6 +269,7 @@ void ipc_call_dtmf_stop(void* data);
 void ipc_call_hold(void* data);
 void ipc_call_swap(void* data);
 void ipc_call_activate(void* data);
+void ipc_call_error(void* data);
 void ril_request_dial(RIL_Token t, void *data, size_t datalen);
 void ril_request_get_current_calls(RIL_Token t);
 void ril_request_hangup(RIL_Token t, void *data, size_t datalen);
