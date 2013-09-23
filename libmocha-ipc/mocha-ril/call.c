@@ -22,6 +22,7 @@
  */
 
 #define LOG_TAG "RIL-Mocha-CALL"
+#include <time.h>
 #include <utils/Log.h>
 
 #include "mocha-ril.h"
@@ -138,14 +139,15 @@ void ipc_call_setup_ind(void* data)
 	DEBUG_I("%s : callId = %d", __func__, callId);
 	callCtxt = findCallContext(0xFFFFFFFF);
 	if(!callCtxt)
-		goto error;
+		return;
 	callCtxt->callId = callId;
+	callCtxt = findCallContext(callId);
+	if(callCtxt->token != 0)
+	{
+		ril_request_complete(callCtxt->token, RIL_E_SUCCESS, NULL, 0);
+		callCtxt->token = 0;
+	}
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
-	ril_request_complete(ril_data.tokens.dial, RIL_E_SUCCESS, NULL, 0);
-	return;
-error:
-	ALOGE("%s: Error!", __func__);
-	ril_request_complete(ril_data.tokens.dial, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
 void ipc_call_alert(void* data)
@@ -305,6 +307,22 @@ void ipc_call_activate(void* data)
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
+void ipc_call_error(void* data)
+{
+	callContext* errorCtxt;
+	tapiCallError* errorInd = (tapiCallError*)(data);
+	ALOGE("%s: test me!(callNo:%d, error:%d)", __func__, errorInd->callId, errorInd->error);
+
+	errorCtxt = findCallContext(errorInd->callId);
+	if(!errorCtxt)
+		return;
+
+	if(errorCtxt->token != 0)
+	{
+		ril_request_complete(errorCtxt->token, RIL_E_GENERIC_FAILURE, NULL, 0);
+		errorCtxt->token = 0;
+	}
+}
 
 void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 {	
@@ -350,7 +368,7 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 
 	tapi_call_setup(callSetup);
 
-	ril_data.tokens.dial = t;
+	callCtxt->token = t;
 
 	free(callSetup);
 	return;
@@ -550,11 +568,13 @@ error:
 	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
-void ril_request_switch_holding_and_active(RIL_Token t)
+void ril_request_switch_waiting_or_holding_and_active(RIL_Token t)
 {
 	int i;
 	uint32_t activeId = 0xFFFFFFFF;
 	uint32_t holdId = 0xFFFFFFFF;
+	uint32_t waitId = 0xFFFFFFFF;
+	uint32_t callType = 0xFFFFFFFF;
 	for(i = 0; i < MAX_CALLS; i++)
 	{
 		if(ril_data.calls[i] && ril_data.calls[i]->callId != 0xFFFFFFFF)
@@ -563,19 +583,43 @@ void ril_request_switch_holding_and_active(RIL_Token t)
 			{
 				activeId = ril_data.calls[i]->callId;
 				ril_data.calls[i]->token = t;
+				ALOGE("%s: active callId = %d", __func__, activeId);			
 			}
 			if(ril_data.calls[i]->call_state == RIL_CALL_HOLDING)
 			{
 				holdId = ril_data.calls[i]->callId;
 				ril_data.calls[i]->token = t;
+				ALOGE("%s: hold callId = %d", __func__, holdId);
+			}
+			if(ril_data.calls[i]->call_state == RIL_CALL_WAITING)
+			{
+				waitId = ril_data.calls[i]->callId;
+				callType = ril_data.calls[i]->callType;
+				ril_data.calls[i]->token = t;
+				ALOGE("%s: wait callId = %d", __func__, waitId);
 			}
 		}
 	}
-	if(activeId != 0xFFFFFFFF || holdId != 0xFFFFFFFF)
+
+	if(activeId != 0xFFFFFFFF && holdId != 0xFFFFFFFF)
 	{
-		ALOGE("%s: holding callId = %d", __func__, activeId);
-		ALOGE("%s: activating callId = %d", __func__, holdId);
+		ALOGE("%s: active/holding callId = %d", __func__, activeId);
+		ALOGE("%s: hold/activating callId = %d", __func__, holdId);
 		tapi_calls_swap(activeId, holdId);
+	}
+	else if(activeId != 0xFFFFFFFF && waitId != 0xFFFFFFFF)
+	{
+		ALOGE("%s: active/holding callId = %d", __func__, activeId);
+		ALOGE("%s: waiting/activating callId = %d", __func__, waitId);
+		tapi_call_hold(waitId);
+		usleep(500000);
+		tapi_calls_swap(activeId, waitId);
+	}
+	else if(holdId != 0xFFFFFFFF && waitId != 0xFFFFFFFF)
+	{
+		ALOGE("%s: hold/holding callId = %d", __func__, holdId);
+		ALOGE("%s: wait/activating callId = %d", __func__, waitId);
+		tapi_call_answer(callType, waitId);
 	}
 	else if(activeId != 0xFFFFFFFF)
 	{
