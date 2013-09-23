@@ -22,6 +22,7 @@
  */
 
 #define LOG_TAG "RIL-Mocha-CALL"
+#include <time.h>
 #include <utils/Log.h>
 
 #include "mocha-ril.h"
@@ -610,8 +611,9 @@ void ril_request_switch_waiting_or_holding_and_active(RIL_Token t)
 	{
 		ALOGE("%s: active/holding callId = %d", __func__, activeId);
 		ALOGE("%s: waiting/activating callId = %d", __func__, waitId);
-		tapi_call_hold(activeId);
-		tapi_call_answer(callType, waitId);
+		tapi_call_hold(waitId);
+		usleep(500000);
+		tapi_calls_swap(activeId, waitId);
 	}
 	else if(holdId != 0xFFFFFFFF && waitId != 0xFFFFFFFF)
 	{
