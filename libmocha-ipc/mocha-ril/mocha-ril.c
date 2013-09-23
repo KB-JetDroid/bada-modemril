@@ -436,8 +436,8 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_DTMF_STOP:
 			ril_request_dtmf_stop(t);
                        break;
-                case RIL_REQUEST_SWITCH_HOLDING_AND_ACTIVE:
-                        ril_request_switch_holding_and_active(t);
+                case RIL_REQUEST_SWITCH_WAITING_OR_HOLDING_AND_ACTIVE:
+                        ril_request_switch_waiting_or_holding_and_active(t);
                        break;
 #if 0           
 		/* GPRS */
@@ -514,6 +514,7 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(CALL_HOLD, ipc_call_hold);
 	ipc_register_ril_cb(CALL_SWAP, ipc_call_swap);
 	ipc_register_ril_cb(CALL_ACTIVATE, ipc_call_activate);
+	ipc_register_ril_cb(CALL_ERROR, ipc_call_error);
 	ipc_register_ril_cb(SIM_STATUS, ipc_sim_status);
 	ipc_register_ril_cb(PIN_STATUS, ipc_pin_status);
 	ipc_register_ril_cb(NETTEXT_INCOMING, ipc_incoming_sms);

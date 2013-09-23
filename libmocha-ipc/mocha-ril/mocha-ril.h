@@ -133,7 +133,6 @@ struct ril_tokens {
 	RIL_Token baseband_version;
 	RIL_Token operator;
 	RIL_Token outgoing_sms;
-	RIL_Token dial;
 	RIL_Token dtmf_start;
 	RIL_Token dtmf_stop;
 };
@@ -270,6 +269,7 @@ void ipc_call_dtmf_stop(void* data);
 void ipc_call_hold(void* data);
 void ipc_call_swap(void* data);
 void ipc_call_activate(void* data);
+void ipc_call_error(void* data);
 void ril_request_dial(RIL_Token t, void *data, size_t datalen);
 void ril_request_get_current_calls(RIL_Token t);
 void ril_request_hangup(RIL_Token t, void *data, size_t datalen);
@@ -280,7 +280,7 @@ void ril_request_last_call_fail_cause(RIL_Token t);
 void ril_request_dtmf(RIL_Token t, void *data, int length);
 void ril_request_dtmf_start(RIL_Token t, void *data, int length);
 void ril_request_dtmf_stop(RIL_Token t);
-void ril_request_switch_holding_and_active(RIL_Token t);
+void ril_request_switch_waiting_or_holding_and_active(RIL_Token t);
 
 /* NETWORK */
 int ipc2ril_net_mode(uint32_t mode);
