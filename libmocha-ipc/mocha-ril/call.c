@@ -368,6 +368,10 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 
 	tapi_call_setup(callSetup);
 
+	if (callCtxt->token != 0)
+		/* pass error to the current request, another one is pending */
+		goto error;
+
 	callCtxt->token = t;
 
 	free(callSetup);
@@ -428,7 +432,12 @@ void ril_request_hangup(RIL_Token t, void *data, size_t datalen)
 	if(!callCtxt)
 		goto error;
 	
+	if (callCtxt->token != 0)
+		/* pass error to the current request, another one is pending */
+		goto error;
+
 	callCtxt->token = t;
+
 	tapi_call_release(callCtxt->callType, callCtxt->callId, 0x0);
 	
 	return;
@@ -448,11 +457,18 @@ void ril_request_hangup_waiting_or_background(RIL_Token t)
 			(ril_data.calls[i]->call_state == RIL_CALL_INCOMING || ril_data.calls[i]->call_state == RIL_CALL_WAITING || ril_data.calls[i]->call_state == RIL_CALL_HOLDING))
 		{
 			ALOGE("%s: hanging up callId = %d", __func__, ril_data.calls[i]->callId);
+			if (ril_data.calls[i]->token != 0)
+				/* pass error to the current request, another one is pending */
+				goto error;
 			ril_data.calls[i]->token = t;
 			tapi_call_release(ril_data.calls[i]->callType, ril_data.calls[i]->callId, 0x0);
 			break;
 		}
 	}
+	return;
+error:
+	ALOGE("%s: Error!", __func__);
+	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }	
 
 void ril_request_hangup_foreground_resume_background(RIL_Token t)
@@ -467,6 +483,9 @@ void ril_request_hangup_foreground_resume_background(RIL_Token t)
 			if(ril_data.calls[i]->call_state == RIL_CALL_ACTIVE)
 			{
 				ALOGE("%s: hanging up callId = %d", __func__, ril_data.calls[i]->callId);
+				if (ril_data.calls[i]->token != 0)
+					/* pass error to the current request, another one is pending */
+					goto error;
 				ril_data.calls[i]->token = t;
 				tapi_call_release(ril_data.calls[i]->callType, ril_data.calls[i]->callId, 0x0);
 			}
@@ -477,6 +496,10 @@ void ril_request_hangup_foreground_resume_background(RIL_Token t)
 			}
 		}
 	}
+	return;
+error:
+	ALOGE("%s: Error!", __func__);
+	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
 void ril_request_answer(RIL_Token t)
@@ -489,11 +512,16 @@ void ril_request_answer(RIL_Token t)
 		if(ril_data.calls[i] && ril_data.calls[i]->callId != 0xFFFFFFFF && ril_data.calls[i]->call_state == RIL_CALL_INCOMING)
 		{
 			ALOGE("%s: answering callId = %d", __func__, ril_data.calls[i]->callId);
+			if (ril_data.calls[i]->token != 0)
+				/* pass error to the current request, another one is pending */
+				goto error;
 			ril_data.calls[i]->token = t;
 			tapi_call_answer(ril_data.calls[i]->callType, ril_data.calls[i]->callId);
-			return;
 		}
 	}
+	return;
+error:
+	ALOGE("%s: Error!", __func__);
 	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
@@ -582,12 +610,18 @@ void ril_request_switch_waiting_or_holding_and_active(RIL_Token t)
 			if(ril_data.calls[i]->call_state == RIL_CALL_ACTIVE)
 			{
 				activeId = ril_data.calls[i]->callId;
+				if (ril_data.calls[i]->token != 0)
+					/* pass error to the current request, another one is pending */
+					goto error;
 				ril_data.calls[i]->token = t;
 				ALOGE("%s: active callId = %d", __func__, activeId);			
 			}
 			if(ril_data.calls[i]->call_state == RIL_CALL_HOLDING)
 			{
 				holdId = ril_data.calls[i]->callId;
+				if (ril_data.calls[i]->token != 0)
+					/* pass error to the current request, another one is pending */
+					goto error;
 				ril_data.calls[i]->token = t;
 				ALOGE("%s: hold callId = %d", __func__, holdId);
 			}
@@ -595,6 +629,9 @@ void ril_request_switch_waiting_or_holding_and_active(RIL_Token t)
 			{
 				waitId = ril_data.calls[i]->callId;
 				callType = ril_data.calls[i]->callType;
+				if (ril_data.calls[i]->token != 0)
+					/* pass error to the current request, another one is pending */
+					goto error;
 				ril_data.calls[i]->token = t;
 				ALOGE("%s: wait callId = %d", __func__, waitId);
 			}
@@ -631,4 +668,9 @@ void ril_request_switch_waiting_or_holding_and_active(RIL_Token t)
 		ALOGE("%s: activating callId = %d", __func__, holdId);
 		tapi_call_activate(holdId);
 	}
+	return;
+
+error:
+	ALOGE("%s: Error!", __func__);
+	ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
