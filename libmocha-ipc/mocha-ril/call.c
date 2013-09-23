@@ -138,14 +138,15 @@ void ipc_call_setup_ind(void* data)
 	DEBUG_I("%s : callId = %d", __func__, callId);
 	callCtxt = findCallContext(0xFFFFFFFF);
 	if(!callCtxt)
-		goto error;
+		return;
 	callCtxt->callId = callId;
+	callCtxt = findCallContext(callId);
+	if(callCtxt->token != 0)
+	{
+		ril_request_complete(callCtxt->token, RIL_E_SUCCESS, NULL, 0);
+		callCtxt->token = 0;
+	}
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
-	ril_request_complete(ril_data.tokens.dial, RIL_E_SUCCESS, NULL, 0);
-	return;
-error:
-	ALOGE("%s: Error!", __func__);
-	ril_request_complete(ril_data.tokens.dial, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
 void ipc_call_alert(void* data)
@@ -350,7 +351,7 @@ void ril_request_dial(RIL_Token t, void *data, size_t datalen)
 
 	tapi_call_setup(callSetup);
 
-	ril_data.tokens.dial = t;
+	callCtxt->token = t;
 
 	free(callSetup);
 	return;

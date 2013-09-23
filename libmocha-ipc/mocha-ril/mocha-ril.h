@@ -133,7 +133,6 @@ struct ril_tokens {
 	RIL_Token baseband_version;
 	RIL_Token operator;
 	RIL_Token outgoing_sms;
-	RIL_Token dial;
 	RIL_Token dtmf_start;
 	RIL_Token dtmf_stop;
 };
