@@ -322,6 +322,9 @@ void ipc_call_error(void* data)
 		ril_request_complete(errorCtxt->token, RIL_E_GENERIC_FAILURE, NULL, 0);
 		errorCtxt->token = 0;
 	}
+
+	releaseCallContext(errorCtxt);
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 void ril_request_dial(RIL_Token t, void *data, size_t datalen)
