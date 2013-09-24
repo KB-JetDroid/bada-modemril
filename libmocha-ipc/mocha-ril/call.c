@@ -110,7 +110,6 @@ void ipc_call_incoming(void* data)
 	callCtxt->bMT = 1;
 	
 	ril_request_unsolicited(RIL_UNSOL_CALL_RING, NULL, 0);
-	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 void ipc_call_end(void* data)
@@ -147,7 +146,6 @@ void ipc_call_setup_ind(void* data)
 		ril_request_complete(callCtxt->token, RIL_E_SUCCESS, NULL, 0);
 		callCtxt->token = 0;
 	}
-	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 void ipc_call_alert(void* data)
@@ -179,7 +177,6 @@ void ipc_call_connected(void* data)
 		ril_request_complete(callCtxt->token, RIL_E_SUCCESS, NULL, 0);
 		callCtxt->token = 0;
 	}
-	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);	
 }
 
 void ipc_call_connected_number_ind(void* data)
@@ -252,8 +249,6 @@ void ipc_call_hold(void* data)
 		ril_request_complete(heldCtxt->token, RIL_E_SUCCESS, NULL, 0);
 		heldCtxt->token = 0;
 	}
-	
-	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 void ipc_call_swap(void* data)
@@ -281,8 +276,6 @@ void ipc_call_swap(void* data)
 	}
 	heldCtxt->token = 0;
 	activatedCtxt->token = 0;
-	
-	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 void ipc_call_activate(void* data)
@@ -303,8 +296,6 @@ void ipc_call_activate(void* data)
 		ril_request_complete(activatedCtxt->token, RIL_E_SUCCESS, NULL, 0);
 		activatedCtxt->token = 0;
 	}
-	
-	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 void ipc_call_error(void* data)
