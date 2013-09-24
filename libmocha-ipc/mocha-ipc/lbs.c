@@ -79,7 +79,7 @@ void lbs_send_packet(uint32_t type, uint32_t size, uint32_t subType, void* buf)
 	if(size > pkt.datasize - sizeof(struct lbsPacketHeader))
 	{
 		DEBUG_E("Too big LBS packet, type %d, len %d", type, size);
-		return;
+		goto ret;
 	}
 	
 	hdr->type = type;
@@ -92,6 +92,7 @@ void lbs_send_packet(uint32_t type, uint32_t size, uint32_t subType, void* buf)
 	pkt.data = sendBuf;
 	
 	ipc_send(&pkt);
+ret:
 	if(type == 15)
 		free(sendBuf);
 }

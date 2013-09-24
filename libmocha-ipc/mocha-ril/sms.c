@@ -75,6 +75,8 @@ void ril_request_send_sms(RIL_Token t, void *data, size_t length)
 	char *pdu, *a, *message;
 	unsigned char *smsc, *pdu_hex, *p, *message_tmp;
 	int smsc_length, pdu_length, pdu_hex_length, i, numberLen, send_msg_type;
+	a = pdu = message = NULL;
+	smsc = pdu_hex = p = message_tmp = NULL;
 
 	if (data == NULL || length < 2 * sizeof(char *))
 		return;
@@ -317,6 +319,9 @@ void ril_request_send_sms(RIL_Token t, void *data, size_t length)
 
 	if (pdu_hex != NULL)
 		free(pdu_hex);
+
+	if (message != NULL)
+		free(message);
 }
 
 
@@ -348,9 +353,10 @@ void ipc_incoming_sms(void* data)
 	char buf[50];
 	time_t l_time;
 
-	number_tmp = NULL;
-	message_tmp = NULL;
-	
+	number_smsc = da_len = sca = a = b = number = number_oa = tp_oa =
+	pdu_type = tp_pid = tp_dcs = tp_udl = tp_ud = message =
+	number2 = len_char = message_tmp = number_tmp = message_bin = NULL;
+
 	memset(tp_scts, 0, sizeof(tp_scts));
 	memset(pdu, 0, sizeof(pdu));
 	memset(c, 0, sizeof(c));
@@ -673,6 +679,9 @@ void ipc_incoming_sms(void* data)
 
 	if (tp_ud != NULL)	
 		free (tp_ud);
+
+	if (message_tmp != NULL)
+		free (message_tmp);
 }
 
 void nettext_cb_setup(void)

@@ -252,9 +252,8 @@ int32_t wave_ipc_send(struct ipc_client *client, struct modem_io *ipc_frame)
 		multiHeader->packetType = ipc_frame->cmd;
 
 		multi_packet.data = (uint8_t *)multiHeader;
-		free(multiHeader);
-
 		send_packet(client, &multi_packet);
+		free(multiHeader);
 
 		left_data = ipc_frame->datasize;
 
