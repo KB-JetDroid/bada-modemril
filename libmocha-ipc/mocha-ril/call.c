@@ -110,6 +110,7 @@ void ipc_call_incoming(void* data)
 	callCtxt->bMT = 1;
 	
 	ril_request_unsolicited(RIL_UNSOL_CALL_RING, NULL, 0);
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 void ipc_call_end(void* data)
