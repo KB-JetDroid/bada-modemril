@@ -263,4 +263,5 @@ void drv_send_packet(uint8_t type, uint8_t *data, int32_t data_size)
 	request.cmd = FIFO_PKT_DRV;
 	request.datasize = data_size + 1;
 	ipc_send(&request);
+	free(request.data);
 }
