@@ -50,6 +50,7 @@ callContext* newCallContext()
 		if(!ril_data.calls[i])
 		{
 			ril_data.calls[i] = calloc(1, sizeof(callContext));
+			ril_data.calls[i]->id = i + 1;
 			return ril_data.calls[i];
 		}
 	}
@@ -390,7 +391,7 @@ void ril_request_get_current_calls(RIL_Token t)
 			continue;
 		RIL_Call *call = (RIL_Call *) malloc(sizeof(RIL_Call));
 		call->state = ril_data.calls[i]->call_state;
-		call->index = ril_data.calls[i]->callId + 1;
+		call->index = ril_data.calls[i]->id;
 		call->toa = (strlen(ril_data.calls[i]->number) > 0 && ril_data.calls[i]->number[0] == '+') ? 145 : 129;
 		call->isMpty = 0;
 		call->isMT = ril_data.calls[i]->bMT;
