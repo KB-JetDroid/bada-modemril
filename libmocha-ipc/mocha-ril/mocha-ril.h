@@ -210,7 +210,7 @@ void ril_state_lpm(void);
  */
 
 typedef struct {
-	uint32_t id, callId, callType;
+	uint32_t callId, callType;
 	uint8_t bMT;
 	char number[64];
 	uint32_t call_state;
