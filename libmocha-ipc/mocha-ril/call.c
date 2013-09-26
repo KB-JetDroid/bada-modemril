@@ -416,18 +416,15 @@ void ril_request_get_current_calls(RIL_Token t)
 
 void ril_request_hangup(RIL_Token t, void *data, size_t datalen)
 {
-	uint32_t callId;
+	ALOGE("%s: Test me!", __func__);
 	callContext* callCtxt;
 	if(datalen < 4)
 		goto error;
-	callId = *(uint32_t*)(data) - 1; /* We pass callIds incremented by 1 to Android */
-	ALOGE("%s: Test me!, callId = %d", __func__, callId);
-	
-	callCtxt = findCallContext(callId);
+	callCtxt = ril_data.calls[*(int *)(data) - 1];
 	if(!callCtxt)
 		goto error;
 	
-	if (callCtxt->token != 0)
+	if(callCtxt->token != 0)
 		/* pass error to the current request, another one is pending */
 		goto error;
 
