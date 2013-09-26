@@ -38,6 +38,7 @@
 #include <proto.h>
 #include <sim.h>
 #include <lbs.h>
+#include <samsung-ril-socket.h>
 
 /**
  * Samsung-RIL TODO:
@@ -530,6 +531,8 @@ void ril_data_init(void)
 
 	pthread_mutex_init(&ril_data.mutex, NULL);
 	ril_data.state.sim_state = SIM_STATE_NOT_READY;
+	ril_data.inDevice = SND_INPUT_MAIN_MIC;
+	ril_data.outDevice = SND_OUTPUT_EARPIECE;
 }
 
 /**
