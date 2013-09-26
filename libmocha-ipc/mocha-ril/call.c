@@ -494,7 +494,7 @@ void ril_request_hangup_waiting_or_background(RIL_Token t)
 		ALOGE("%s: waiting/hangup callId = %d", __func__, waitId);
 		tapi_call_release(callType, waitId, 0x0);
 	}
-	if(waitId != 0xFFFFFFFF && activeId != 0xFFFFFFFF)
+	else if(waitId != 0xFFFFFFFF && activeId != 0xFFFFFFFF)
 	{
 		/* we have to remove token for active call */
 		callContext* callCtxt = findCallContext(activeId);
