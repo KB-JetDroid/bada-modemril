@@ -738,13 +738,13 @@ void ril_request_switch_waiting_or_holding_and_active(RIL_Token t)
 	}
 	else if(activeId != 0xFFFFFFFF)
 	{
-		ALOGE("%s: holding callId = %d", __func__, activeId);
+		ALOGE("%s: active/holding callId = %d", __func__, activeId);
 		tapi_call_hold(activeId);
 	}
 	else if(holdId != 0xFFFFFFFF)
 	{
-		ALOGE("%s: active/hangup callId = %d", __func__, activeId);
-		tapi_call_release(callType, activeId, 0x0);
+		ALOGE("%s: hold/activating callId = %d", __func__, holdId);
+		tapi_call_activate(holdId);
 	}
 	return;
 
