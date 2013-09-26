@@ -463,6 +463,9 @@ error:
 void ril_request_hangup_foreground_resume_background(RIL_Token t)
 {
 	int i;
+	uint32_t activeId = 0xFFFFFFFF;
+	uint32_t holdId = 0xFFFFFFFF;
+	uint32_t callType = 0xFFFFFFFF;
 	ALOGE("%s: Test me!", __func__);
 
 	for(i = 0; i < MAX_CALLS; i++)
@@ -471,19 +474,48 @@ void ril_request_hangup_foreground_resume_background(RIL_Token t)
 		{
 			if(ril_data.calls[i]->call_state == RIL_CALL_ACTIVE)
 			{
-				ALOGE("%s: hanging up callId = %d", __func__, ril_data.calls[i]->callId);
+				activeId = ril_data.calls[i]->callId;
+				callType = ril_data.calls[i]->callType;
 				if (ril_data.calls[i]->token != 0)
 					/* pass error to the current request, another one is pending */
 					goto error;
 				ril_data.calls[i]->token = t;
-				tapi_call_release(ril_data.calls[i]->callType, ril_data.calls[i]->callId, 0x0);
+				ALOGE("%s: active callId = %d", __func__, activeId);
 			}
 			if(ril_data.calls[i]->call_state == RIL_CALL_HOLDING)
 			{
-				ALOGE("%s: activating callId = %d", __func__, ril_data.calls[i]->callId);
-				tapi_call_activate(ril_data.calls[i]->callId);
+				holdId = ril_data.calls[i]->callId;
+				if (ril_data.calls[i]->token != 0)
+					/* pass error to the current request, another one is pending */
+					goto error;
+				ril_data.calls[i]->token = t;
+				ALOGE("%s: holding callId = %d", __func__, activeId);
 			}
 		}
+	}
+	if(activeId != 0xFFFFFFFF && holdId != 0xFFFFFFFF)
+	{
+		ALOGE("%s: active/hangup callId = %d", __func__, activeId);
+		ALOGE("%s: hold/active callId = %d", __func__, holdId);
+		/* we have to remove token for active call,
+			to receive correct end of function after completion tapi_call_activate */
+		callContext* callCtxt = findCallContext(activeId);
+		if(!callCtxt)
+			goto error;
+		callCtxt->token = 0;
+		tapi_call_release(callType, activeId, 0x0);
+		usleep(300000);
+		tapi_call_activate(holdId);
+	}
+	else if(activeId != 0xFFFFFFFF)
+	{
+		ALOGE("%s: active/hangup callId = %d", __func__, activeId);
+		tapi_call_release(callType, activeId, 0x0);
+	}
+	else if(holdId != 0xFFFFFFFF)
+	{
+		ALOGE("%s: active/hangup callId = %d", __func__, activeId);
+		tapi_call_release(callType, activeId, 0x0);
 	}
 	return;
 error:
