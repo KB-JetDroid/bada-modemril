@@ -88,13 +88,21 @@ void releaseCallContext(callContext* ptr)
 
 void ipc_call_incoming(void* data)
 {
-	uint8_t newCallState;
+
 	ALOGE("%s: Test me!", __func__);
 
-	if(findActiveCall() == NULL)
-		newCallState = RIL_CALL_INCOMING;
-	else
-		newCallState = RIL_CALL_WAITING;
+	uint8_t newCallState = RIL_CALL_INCOMING;
+	int i;
+	for(i = 0; i < MAX_CALLS; i++)
+	{
+		if(ril_data.calls[i] && ril_data.calls[i]->callId != 0xFFFFFFFF && 	(ril_data.calls[i]->call_state == RIL_CALL_ACTIVE || ril_data.calls[i]->call_state == RIL_CALL_HOLDING))
+		{
+			newCallState = RIL_CALL_WAITING;
+			break;
+		}
+	}
+
+
 	callContext* callCtxt = newCallContext();
 	tapiCallInfo* callInfo = (tapiCallInfo*)(data);
 	
@@ -514,8 +522,8 @@ void ril_request_hangup_foreground_resume_background(RIL_Token t)
 	}
 	else if(holdId != 0xFFFFFFFF)
 	{
-		ALOGE("%s: active/hangup callId = %d", __func__, activeId);
-		tapi_call_release(callType, activeId, 0x0);
+		ALOGE("%s: hold/hangup callId = %d", __func__, holdId);
+		tapi_call_release(callType, holdId, 0x0);
 	}
 	return;
 error:
@@ -693,8 +701,8 @@ void ril_request_switch_waiting_or_holding_and_active(RIL_Token t)
 	}
 	else if(holdId != 0xFFFFFFFF)
 	{
-		ALOGE("%s: activating callId = %d", __func__, holdId);
-		tapi_call_activate(holdId);
+		ALOGE("%s: active/hangup callId = %d", __func__, activeId);
+		tapi_call_release(callType, activeId, 0x0);
 	}
 	return;
 
