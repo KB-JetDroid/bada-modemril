@@ -125,7 +125,8 @@ void ipc_call_end(void* data)
 	if(callCtxt->token != 0)
 	{
 		ril_request_complete(callCtxt->token, RIL_E_SUCCESS, NULL, 0);
-		callCtxt->token = 0;
+		releaseCallContext(callCtxt);
+		return;
 	}
 	releaseCallContext(callCtxt);
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
@@ -310,11 +311,7 @@ void ipc_call_error(void* data)
 		return;
 
 	if(errorCtxt->token != 0)
-	{
 		ril_request_complete(errorCtxt->token, RIL_E_GENERIC_FAILURE, NULL, 0);
-		errorCtxt->token = 0;
-	}
-
 	releaseCallContext(errorCtxt);
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
