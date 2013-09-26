@@ -637,7 +637,14 @@ void ril_request_switch_waiting_or_holding_and_active(RIL_Token t)
 	{
 		ALOGE("%s: active/holding callId = %d", __func__, activeId);
 		ALOGE("%s: waiting/activating callId = %d", __func__, waitId);
+		/* we have to remove token for waiting call,
+			to receive correct end of function after completion tapi_call_swap */
+		callContext* callCtxt = findCallContext(waitId);
+		if(!callCtxt)
+			goto error;
+		callCtxt->token = 0;
 		tapi_call_hold(waitId);
+
 		usleep(500000);
 		tapi_calls_swap(activeId, waitId);
 	}
