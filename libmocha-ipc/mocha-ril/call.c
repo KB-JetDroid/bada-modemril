@@ -182,20 +182,9 @@ void ipc_call_connected(void* data)
 	{
 		ril_request_complete(callCtxt->token, RIL_E_SUCCESS, NULL, 0);
 		callCtxt->token = 0;
-	}
-}
-
-void ipc_call_connected_number_ind(void* data)
-{
-	ALOGE("%s: Test me!", __func__);
-	callContext* callCtxt;
-	uint32_t callId = *(uint32_t *)(data);
-	DEBUG_I("%s : callId = %d", __func__, callId);
-	callCtxt = findCallContext(callId);
-	if(!callCtxt)
 		return;
-	callCtxt->call_state = RIL_CALL_ACTIVE;
-	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);	
+	}
+	ril_request_unsolicited(RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED, NULL, 0);
 }
 
 void ipc_call_dtmf_start(void* data)
