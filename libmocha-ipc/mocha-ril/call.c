@@ -519,6 +519,9 @@ void ril_request_hangup_waiting_or_background(RIL_Token t)
 		ALOGE("%s: wait/hangup callId = %d", __func__, waitId);
 		tapi_call_release(callType, waitId, 0x0);
 	}
+	else if(waitId == 0xFFFFFFFF && activeId == 0xFFFFFFFF && holdId == 0xFFFFFFFF)
+		/* if call was rejected from another side, but RIL still don't know about it */
+		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 	return;
 error:
 	ALOGE("%s: Error!", __func__);
@@ -582,6 +585,9 @@ void ril_request_hangup_foreground_resume_background(RIL_Token t)
 		ALOGE("%s: hold/hangup callId = %d", __func__, holdId);
 		tapi_call_release(callType, holdId, 0x0);
 	}
+	else if(activeId == 0xFFFFFFFF && holdId == 0xFFFFFFFF)
+		/* if call was rejected from another side, but RIL still don't know about it */
+		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 	return;
 error:
 	ALOGE("%s: Error!", __func__);
