@@ -97,6 +97,27 @@ void ipc_network_select(void* data)
 			break;
 	}
 
+	switch(netInfo->psServiceType) {
+		case 0:
+			ril_data.state.act = RADIO_TECH_UNKNOWN;
+			break;
+		case 1: /* GPRS */
+			ril_data.state.act = RADIO_TECH_GPRS;
+			break;
+		case 2: /* EDGE */
+			ril_data.state.act = RADIO_TECH_EDGE;
+			break;
+		case 3: /* 3G */
+			ril_data.state.act = RADIO_TECH_UMTS;
+			break;
+		case 4: /* 3G+ */
+			ril_data.state.act = RADIO_TECH_HSDPA;
+			break;
+		default:
+			ril_data.state.reg_state = RADIO_TECH_UNKNOWN;
+			break;
+	}
+
 	strcpy(ril_data.state.SPN, netInfo->spn);
 
 	ril_request_unsolicited(RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED, NULL, 0);
@@ -207,13 +228,33 @@ void ril_request_voice_registration_state(RIL_Token t)
 	asprintf(&response[0], "%d", ril_data.state.reg_state);
 	asprintf(&response[1], "%x", ril_data.state.lac_id);
 	asprintf(&response[2], "%x", ril_data.state.cell_id);
-	asprintf(&response[3], "%d", 0);
+	asprintf(&response[3], "%d", ril_data.state.act);
 	
 	if(ril_data.state.reg_state == 3) /* If registration failed */
 		asprintf(&response[13], "%d", 0); /* Set "General" reason of failure - can we get real reason? Do we need to? */
 
 	ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
 	
+	for (i = 0; i < sizeof(response) / sizeof(char *); i++) {
+		if (response[i] != NULL)
+			free(response[i]);
+	}
+}
+
+void ril_request_gprs_registration_state(RIL_Token t)
+{
+	char *response[4];
+	unsigned int i;
+
+	memset(response, 0, sizeof(response));
+
+	asprintf(&response[0], "%d", ril_data.state.reg_state);
+	asprintf(&response[1], "%x", ril_data.state.lac_id);
+	asprintf(&response[2], "%x", ril_data.state.cell_id);
+	asprintf(&response[3], "%d", ril_data.state.act);
+
+	ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
+
 	for (i = 0; i < sizeof(response) / sizeof(char *); i++) {
 		if (response[i] != NULL)
 			free(response[i]);

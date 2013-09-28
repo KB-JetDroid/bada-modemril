@@ -377,10 +377,10 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_VOICE_REGISTRATION_STATE:
 			ril_request_voice_registration_state(t);
 			break;
-#if 0
-			case RIL_REQUEST_GPRS_REGISTRATION_STATE:
+		case RIL_REQUEST_DATA_REGISTRATION_STATE:
 			ril_request_gprs_registration_state(t);
 			break;
+#if 0
 		case RIL_REQUEST_QUERY_AVAILABLE_NETWORKS:
 			ril_request_query_available_networks(t);
 			break;

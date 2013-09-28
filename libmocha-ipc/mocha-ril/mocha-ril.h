@@ -177,6 +177,7 @@ struct ril_state {
 	ril_sim_state sim_state;
 	int power_state;
 	int reg_state;
+	int act;
 	int ussd_state;
 	uint32_t net_mode;
 	uint32_t cell_id;
@@ -293,6 +294,7 @@ void ipc_network_nitz_info(void* data);
 void network_start(void);
 void ril_request_operator(RIL_Token t);
 void ril_request_voice_registration_state(RIL_Token t);
+void ril_request_gprs_registration_state(RIL_Token t);
 void ril_request_get_preferred_network_type(RIL_Token t);
 void ril_request_set_preferred_network_type(RIL_Token t, void *data, size_t datalen);
 
