@@ -35,18 +35,47 @@
 
 void imei_bcd2ascii(char* out, const char* in)
 {
-	int i;
-	int outi;
-	outi = 0;
+	char tmp[20];
+	bcd2ascii(tmp, in + 1, 8);
 	/* first byte of in is 0x08, second byte is 0xNA where N is the first digit of imei */
-	out[outi++] = (in[1] >> 4)+0x30;
-	for(i = 2; i < 9; i++)
+	strcpy(out, tmp + 1);
+}
+
+char bcddigit2ascii(char in)
+{
+	if(in < 0xA)
+		return in + 0x30;
+	switch(in)
 	{
-		out[outi++] = (in[i] & 0xF) + 0x30;
-		out[outi++] = ((in[i] >> 4) & 0xF) + 0x30;
+	case 0xA:
+		return '*';
+		break;
+	case 0xB:
+		return '#';
+		break;
+	case 0xC:
+		return 'P';
+		break;
+	case 0xD:
+		return '?';
+		break;
+	default: /* 0xE, 0xF and invalid input */
+		return 0x00;
+		break;
 	}
 }
 
+void bcd2ascii(char* out, const char* in, int size)
+{
+	int i;
+	int outi = 0;
+	for(i = 0; i < size; i++)
+	{
+		out[outi++] = bcddigit2ascii(in[i] & 0xF);
+		out[outi++] = bcddigit2ascii((in[i] >> 4) & 0xF);
+	}
+	out[outi] = 0x00; //terminate string with null
+}
 void ipc_hex_dump(struct ipc_client *client, void *data, int size)
 {
     /* dumps size bytes of *data to stdout. Looks like:
