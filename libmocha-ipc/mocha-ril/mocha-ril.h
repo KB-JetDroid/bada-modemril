@@ -294,7 +294,7 @@ void ipc_network_nitz_info(void* data);
 void network_start(void);
 void ril_request_operator(RIL_Token t);
 void ril_request_voice_registration_state(RIL_Token t);
-void ril_request_gprs_registration_state(RIL_Token t);
+void ril_request_data_registration_state(RIL_Token t);
 void ril_request_get_preferred_network_type(RIL_Token t);
 void ril_request_set_preferred_network_type(RIL_Token t, void *data, size_t datalen);
 

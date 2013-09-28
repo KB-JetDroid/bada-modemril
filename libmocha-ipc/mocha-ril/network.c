@@ -241,9 +241,9 @@ void ril_request_voice_registration_state(RIL_Token t)
 	}
 }
 
-void ril_request_gprs_registration_state(RIL_Token t)
+void ril_request_data_registration_state(RIL_Token t)
 {
-	char *response[4];
+	char *response[6];
 	unsigned int i;
 
 	memset(response, 0, sizeof(response));
@@ -252,6 +252,9 @@ void ril_request_gprs_registration_state(RIL_Token t)
 	asprintf(&response[1], "%x", ril_data.state.lac_id);
 	asprintf(&response[2], "%x", ril_data.state.cell_id);
 	asprintf(&response[3], "%d", ril_data.state.act);
+	if(ril_data.state.reg_state == 3) /* If registration failed */
+		asprintf(&response[4], "%d", 7); /* Set "GPRS services not allowed" reason of failure - can we get real reason? Do we need to? */
+	asprintf(&response[5], "%d", 2);
 
 	ril_request_complete(t, RIL_E_SUCCESS, response, sizeof(response));
 
