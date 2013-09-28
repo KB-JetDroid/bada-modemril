@@ -177,6 +177,7 @@ struct ril_state {
 	ril_sim_state sim_state;
 	int power_state;
 	int reg_state;
+	int act;
 	int ussd_state;
 	uint32_t net_mode;
 	uint32_t cell_id;
@@ -229,6 +230,8 @@ struct ril_data {
 	struct list_head *requests;
 	int request_id;
 	char smsc_number[30];
+	int inDevice;
+	int outDevice;
 	callContext *calls[MAX_CALLS];
 	struct ril_client *ipc_packet_client;
 	struct ril_client *srs_client;
@@ -263,7 +266,6 @@ void ipc_call_end(void* data);
 void ipc_call_setup_ind(void* data);
 void ipc_call_alert(void* data);
 void ipc_call_connected(void* data);
-void ipc_call_connected_number_ind(void* data);
 void ipc_call_dtmf_start(void* data);
 void ipc_call_dtmf_stop(void* data);
 void ipc_call_hold(void* data);
@@ -292,6 +294,7 @@ void ipc_network_nitz_info(void* data);
 void network_start(void);
 void ril_request_operator(RIL_Token t);
 void ril_request_voice_registration_state(RIL_Token t);
+void ril_request_data_registration_state(RIL_Token t);
 void ril_request_get_preferred_network_type(RIL_Token t);
 void ril_request_set_preferred_network_type(RIL_Token t, void *data, size_t datalen);
 

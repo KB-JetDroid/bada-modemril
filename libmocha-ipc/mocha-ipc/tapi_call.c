@@ -65,9 +65,6 @@ void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *t
 		case TAPI_CALL_CONNECTED_IND:
 			ipc_invoke_ril_cb(CALL_CONNECTED, (void*)tapiCallData);	
 			break;
-		case TAPI_CALL_CONNECTED_NUMBER_IND:
-			ipc_invoke_ril_cb(CALL_CONNECTED_NUMBER_IND, (void*)tapiCallData);	
-			break;
 		case TAPI_CALL_START_DTMF_CNF:
 			ipc_invoke_ril_cb(CALL_DTMF_START, (void*)tapiCallData);
 	 		break;
@@ -85,6 +82,15 @@ void tapi_call_parser(uint16_t tapiCallType, uint32_t tapiCallLength, uint8_t *t
 			break;
 		case TAPI_CALL_ERROR_IND:
 			ipc_invoke_ril_cb(CALL_ERROR, (void*)tapiCallData);
+			break;
+		case TAPI_CALL_CONNECTED_NUMBER_IND:
+			ALOGE("TAPI_CALL_CONNECTED_NUMBER_IND: unused packet");
+			break;
+		case TAPI_CALL_SS_NOTIFY_IND:
+			ALOGE("TAPI_CALL_SS_NOTIFY_IND: unused packet");
+			break;
+		case TAPI_CALL_CONNECTING_IND:
+			ALOGE("TAPI_CALL_CONNECTING_IND: unused packet");
 			break;
 		default:	
 			DEBUG_I("TapiCall Packet type 0x%X is not yet handled, len = 0x%x", tapiCallType, tapiCallLength);

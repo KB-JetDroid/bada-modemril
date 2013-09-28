@@ -38,6 +38,7 @@
 #include <proto.h>
 #include <sim.h>
 #include <lbs.h>
+#include <samsung-ril-socket.h>
 
 /**
  * Samsung-RIL TODO:
@@ -376,10 +377,10 @@ void ril_on_request(int request, void *data, size_t datalen, RIL_Token t)
 		case RIL_REQUEST_VOICE_REGISTRATION_STATE:
 			ril_request_voice_registration_state(t);
 			break;
-#if 0
-			case RIL_REQUEST_GPRS_REGISTRATION_STATE:
-			ril_request_gprs_registration_state(t);
+		case RIL_REQUEST_DATA_REGISTRATION_STATE:
+			ril_request_data_registration_state(t);
 			break;
+#if 0
 		case RIL_REQUEST_QUERY_AVAILABLE_NETWORKS:
 			ril_request_query_available_networks(t);
 			break;
@@ -508,7 +509,6 @@ void ril_install_ipc_callbacks(void)
 	ipc_register_ril_cb(CALL_SETUP_IND, ipc_call_setup_ind);
 	ipc_register_ril_cb(CALL_ALERT, ipc_call_alert);
 	ipc_register_ril_cb(CALL_CONNECTED, ipc_call_connected);
-	ipc_register_ril_cb(CALL_CONNECTED_NUMBER_IND, ipc_call_connected_number_ind);
 	ipc_register_ril_cb(CALL_DTMF_START, ipc_call_dtmf_start);
 	ipc_register_ril_cb(CALL_DTMF_STOP, ipc_call_dtmf_stop);
 	ipc_register_ril_cb(CALL_HOLD, ipc_call_hold);
@@ -530,6 +530,8 @@ void ril_data_init(void)
 
 	pthread_mutex_init(&ril_data.mutex, NULL);
 	ril_data.state.sim_state = SIM_STATE_NOT_READY;
+	ril_data.inDevice = SND_INPUT_MAIN_MIC;
+	ril_data.outDevice = SND_OUTPUT_EARPIECE;
 }
 
 /**
