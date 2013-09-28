@@ -430,6 +430,7 @@ void ril_request_hangup_waiting_or_background(RIL_Token t)
 	callContext* activeCtxt = NULL;
 	callContext* holdCtxt = NULL;
 	callContext* waitCtxt = NULL;
+	callContext* incomingCtxt = NULL;
 	for(i = 0; i < MAX_CALLS; i++)
 	{
 		if(ril_data.calls[i] && ril_data.calls[i]->callId != 0xFFFFFFFF)
@@ -457,6 +458,14 @@ void ril_request_hangup_waiting_or_background(RIL_Token t)
 					/* pass error to the current request, another one is pending */
 					goto error;
 				ALOGE("%s: wait callId = %d", __func__, waitCtxt->callId);
+			}
+			if(ril_data.calls[i]->call_state == RIL_CALL_INCOMING)
+			{
+				incomingCtxt = ril_data.calls[i];
+				if (incomingCtxt->token != 0)
+					/* pass error to the current request, another one is pending */
+					goto error;
+				ALOGE("%s: incoming callId = %d", __func__, incomingCtxt->callId);
 			}
 		}
 	}
@@ -493,7 +502,13 @@ void ril_request_hangup_waiting_or_background(RIL_Token t)
 		waitCtxt->token = t;
 		tapi_call_release(waitCtxt->callType, waitCtxt->callId, 0x0);
 	}
-	else if(!activeCtxt && !holdCtxt && !waitCtxt)
+	else if(incomingCtxt)
+	{
+		ALOGE("%s: incoming/hangup callId = %d", __func__, incomingCtxt->callId);
+		incomingCtxt->token = t;
+		tapi_call_release(incomingCtxt->callType, incomingCtxt->callId, 0x0);
+	}
+	else if(!activeCtxt && !holdCtxt && !waitCtxt && !incomingCtxt)
 		/* if calls was rejected from another side, but RIL still don't know about it */
 		ril_request_complete(t, RIL_E_SUCCESS, NULL, 0);
 	return;
