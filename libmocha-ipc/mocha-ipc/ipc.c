@@ -51,6 +51,8 @@ ipc_ril_cb ipc_ril_cb_map[IPC_RIL_CB_LAST];
 
 uint8_t cached_bcd_imei[9];
 char cached_imei[33];
+uint8_t cached_bcd_imsi[9];
+char cached_imsi[33];
 char cached_sw_version[33];
 
 extern void jet_ipc_register();

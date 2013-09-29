@@ -41,6 +41,14 @@ void imei_bcd2ascii(char* out, const char* in)
 	strcpy(out, tmp + 1);
 }
 
+void imsi_bcd2ascii(char* out, const char* in, int len)
+{
+	char tmp[20];
+	bcd2ascii(tmp, in + 1, len - 1);
+	/* first byte of in is 0x08, second byte is 0xN9 where N is the first digit of imsi */
+	strcpy(out, tmp + 1);
+}
+
 char bcddigit2ascii(char in)
 {
 	if(in < 0xA)
