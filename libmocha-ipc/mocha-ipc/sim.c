@@ -155,6 +155,14 @@ void sim_parse_event(uint8_t* buf, uint32_t bufLen)
 				DEBUG_I("SIM_READY");
 				sim_status(2);
 			}
+			/* copying IMSI in BCD format from sim packet */
+			int imsi_len = buf[0xAE];
+			int i = 0;
+			for (i = 0; i < imsi_len; i++)
+				cached_bcd_imsi[i] = buf[i+0xB2];
+			/*Converting IMSI out of dat stuff to ASCII*/
+			imsi_bcd2ascii(cached_imsi, cached_bcd_imsi, imsi_len);
+			/* Clean print of IMSI*/
 			memset(buf + 0xAF, 0, 15);
 			break;
 		case SIM_EVENT_VERIFY_PIN1_IND:

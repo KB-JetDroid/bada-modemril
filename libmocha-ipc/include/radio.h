@@ -81,6 +81,8 @@ enum ipc_ril_cb_type {
 
 extern uint8_t cached_bcd_imei[9];
 extern char cached_imei[33];
+extern uint8_t cached_bcd_imsi[9];
+extern char cached_imsi[33];
 extern char cached_sw_version[33];
 extern char* fake_apps_version;
 
@@ -134,6 +136,7 @@ void ipc_client_send_exec(struct ipc_client *client, const unsigned short comman
 
 /* Utility functions */
 void imei_bcd2ascii(char* out, const char* in);
+void imsi_bcd2ascii(char* out, const char* in, int len);
 void bcd2ascii(char* out, const char* in, int size);
 void ipc_hex_dump(struct ipc_client *client, void *data, int size);
 void *ipc_mtd_read(struct ipc_client *client, char *mtd_name, int size, int block_size);
