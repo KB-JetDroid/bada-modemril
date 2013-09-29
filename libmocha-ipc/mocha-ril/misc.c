@@ -29,10 +29,12 @@
 
 void ril_request_get_imei(RIL_Token t)
 {
-	if(cached_imei[0] != 0x00)
+	if(cached_imei[0] != 0x00) {
 		ril_request_complete(t, RIL_E_SUCCESS, cached_imei, sizeof(cached_imei));
-	else
-		ril_data.tokens.get_imei = t;
+	} else {
+		ALOGE("%s: Error!", __func__);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+	}
 }
 
 
@@ -41,8 +43,9 @@ void ril_request_baseband_version(RIL_Token t)
 
 	if(ril_data.state.radio_state != RADIO_STATE_OFF) {	
 		ril_request_complete(t, RIL_E_SUCCESS, cached_sw_version, sizeof(cached_sw_version));
-	} else {		
-		ril_data.tokens.baseband_version = t;
+	} else {
+		ALOGE("%s: Error!", __func__);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 	}
 }
 
@@ -73,7 +76,10 @@ void ril_request_screen_state(RIL_Token t, void *data, size_t datalen)
  */
 void ril_request_get_imsi(RIL_Token t)
 {
-
-	//ipc_send_get(IPC_MISC_ME_IMSI, reqGetId(t));
-
+	if (cached_imsi[0] != 0x00) {
+		ril_request_complete(t, RIL_E_SUCCESS, cached_imsi, sizeof(cached_imsi));
+	} else {
+		ALOGE("%s: Error!", __func__);
+		ril_request_complete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+	}
 }
